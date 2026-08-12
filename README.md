@@ -139,7 +139,12 @@ npm run test:backend    # AST validation, XSS/transform, CRDT convergence (10 cl
 npm run test:frontend   # delta merge, block store, app smoke
 ```
 
-Backend tests need no MongoDB — validation and CRDT tests run fully in-memory.
+Backend tests need no MongoDB — validation and CRDT tests run fully in-memory. A full end-to-end integration
+test (real WebSockets + in-memory Mongo via `mongodb-memory-server`) is opt-in:
+
+```bash
+INTEGRATION=1 npm run test:backend
+```
 
 ## Week-wise plan mapping
 

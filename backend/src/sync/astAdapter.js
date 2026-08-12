@@ -1,22 +1,31 @@
 const Y = require('yjs')
 const { flattenAst, buildTree } = require('../validators/ast')
 
+function mapFromObject(obj) {
+  const m = new Y.Map()
+  for (const [key, value] of Object.entries(obj || {})) m.set(key, value)
+  return m
+}
+
 function astToYdoc(doc) {
   const ydoc = new Y.Doc()
   ydoc.getMap('meta').set('title', doc.title || 'Untitled')
 
   const flat = flattenAst(doc.nodes || [])
-  const items = flat.map((f) =>
-    new Y.Map({
+  const items = flat.map((f) => {
+    const m = mapFromObject({
       id: f.id,
       type: f.type,
       text: f.text || '',
       lang: f.lang || null,
       parentId: f.parentId || null,
-      order: f.order,
-      ...(f.attrs && Object.keys(f.attrs).length ? { attrs: new Y.Map(Object.entries(f.attrs)) } : {})
+      order: f.order
     })
-  )
+    if (f.attrs && Object.keys(f.attrs).length) {
+      m.set('attrs', mapFromObject(f.attrs))
+    }
+    return m
+  })
   ydoc.getArray('blocks').insert(0, items)
   return ydoc
 }

@@ -9,10 +9,13 @@ const astNodeSchema = new Schema(
     lang: { type: String, default: null },
     attrs: { type: Schema.Types.Mixed, default: () => ({}) },
     parentId: { type: String, default: null },
-    order: { type: Number, default: 0 },
-    children: { type: [astNodeSchema], default: [] }
+    order: { type: Number, default: 0 }
   },
   { _id: true }
 )
+
+astNodeSchema.add({ children: { type: [astNodeSchema], default: [] } })
+
+module.exports = { astNodeSchema }
 
 module.exports = { astNodeSchema }
