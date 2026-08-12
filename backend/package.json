@@ -1,0 +1,31 @@
+{
+  "name": "syncdoc-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SyncDoc backend: AST database, Yjs sync engine, transformation pipeline",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/seed.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dompurify": "^3.1.6",
+    "dotenv": "^16.4.5",
+    "escape-html": "^1.0.3",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsdom": "^24.1.1",
+    "lib0": "^0.2.94",
+    "mongoose": "^8.6.0",
+    "pdfkit": "^0.15.0",
+    "ws": "^8.18.0",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.19"
+  },
+  "engines": {
+    "node": ">=18.13"
+  }
+}
