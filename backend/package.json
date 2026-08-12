@@ -8,7 +8,7 @@
     "dev": "node src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed.js",
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -24,6 +24,9 @@
     "ws": "^8.18.0",
     "y-protocols": "^1.0.6",
     "yjs": "^13.6.19"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.0.0"
   },
   "engines": {
     "node": ">=18.13"
