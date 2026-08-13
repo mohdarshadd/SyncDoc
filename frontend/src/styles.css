@@ -57,6 +57,11 @@ body {
   font-weight: 600;
 }
 
+.btn-primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
 .btn-ghost {
   background: transparent;
 }
