@@ -146,10 +146,7 @@ textarea:focus,
 .browser-header h1 {
   margin: 0;
   font-size: 30px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .browser-sub {
