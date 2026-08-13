@@ -39,13 +39,14 @@ layout-destructive overwrites never happen silently.
 
 ## Getting started
 
-Prereqs: Node >= 18.13, npm >= 7, MongoDB (or Docker).
+Prereqs: Node >= 18.13, npm >= 7, and a MongoDB connection string (local `mongod`, or a hosted URL such as
+MongoDB Atlas). No Docker needed.
 
 ```bash
 npm install
 
-# start MongoDB (optional — or use your own mongod)
-docker compose up -d
+# point the backend at MongoDB (copy .env.example to .env and set MONGO_URI)
+copy backend\.env.example backend\.env
 
 # seed a demo document, then copy the printed id
 npm run seed
@@ -57,11 +58,17 @@ npm run dev
 - Frontend: http://localhost:5173
 - Backend:   http://localhost:4000 (API + WebSocket)
 
-`backend/.env` (optional, defaults shown):
+`backend/.env` (copy from `.env.example`, defaults shown):
 
 ```
 PORT=4000
 MONGO_URI=mongodb://127.0.0.1:27017/syncdoc
+```
+
+For a hosted database (e.g. MongoDB Atlas), set:
+
+```
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/syncdoc?retryWrites=true&w=majority
 ```
 
 ## REST API
