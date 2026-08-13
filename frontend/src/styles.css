@@ -6,6 +6,7 @@
   --text: #e2e8f0;
   --muted: #94a3b8;
   --accent: #38bdf8;
+  --accent-strong: #0284c7;
   --accent-2: #818cf8;
   --danger: #f87171;
   --ok: #4ade80;
@@ -50,10 +51,15 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   border-color: transparent;
   color: #06121f;
   font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .btn-ghost {
@@ -84,10 +90,7 @@ body {
 .welcome h1 {
   font-size: 44px;
   margin: 0;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .welcome-sub {
@@ -148,10 +151,7 @@ textarea:focus,
 .browser-header h1 {
   margin: 0;
   font-size: 30px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .browser-sub {
