@@ -85,10 +85,7 @@ body {
 .welcome h1 {
   font-size: 44px;
   margin: 0;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .welcome-sub {
