@@ -15,6 +15,9 @@ const documentsRouter = require('../src/routes/documents')
 const { attachSyncServer } = require('../src/sync/server')
 const Document = require('../src/models/Document')
 
+const MESSAGE_SYNC = 0
+const MESSAGE_AWARENESS = 1
+
 const runIntegration = process.env.INTEGRATION === '1'
 
 let mongod
@@ -59,8 +62,15 @@ before(async () => {
 after(async () => {
   if (!runIntegration) return
   await mongoose.disconnect()
+  server.closeAllConnections?.()
   await new Promise((resolve) => server.close(resolve))
   await mongod.stop()
+  if (mongod.child) {
+    mongod.child.stdin?.destroy()
+    mongod.child.stdout?.destroy()
+    mongod.child.stderr?.destroy()
+  }
+  process.exit(process.exitCode || 0)
 })
 
 function makeClient() {
@@ -76,18 +86,18 @@ function makeClient() {
   }
 
   ws.on('open', () => {
-    send(syncProtocol.messageSync, (e) => syncProtocol.writeSyncStep1(e, ydoc))
+    send(MESSAGE_SYNC, (e) => syncProtocol.writeSyncStep1(e, ydoc))
     awareness.setLocalState({ user: { name: 'client', color: '#fff' } })
   })
 
   ydoc.on('update', (update, origin) => {
-    if (origin !== ws) send(syncProtocol.messageSync, (e) => syncProtocol.writeUpdate(e, update))
+    if (origin !== ws) send(MESSAGE_SYNC, (e) => syncProtocol.writeUpdate(e, update))
   })
 
   awareness.on('update', ({ added, updated, removed }, origin) => {
     if (origin !== ws) {
       const changed = added.concat(updated).concat(removed)
-      send(syncProtocol.messageAwareness, (e) =>
+      send(MESSAGE_AWARENESS, (e) =>
         encoding.writeVarUint8Array(e, awarenessProtocol.encodeAwarenessUpdate(awareness, changed))
       )
     }
@@ -96,12 +106,12 @@ function makeClient() {
   ws.on('message', (data) => {
     const decoder = decoding.createDecoder(new Uint8Array(data))
     const type = decoding.readVarUint(decoder)
-    if (type === syncProtocol.messageSync) {
+    if (type === MESSAGE_SYNC) {
       const encoder = encoding.createEncoder()
-      encoding.writeVarUint(encoder, syncProtocol.messageSync)
+      encoding.writeVarUint(encoder, MESSAGE_SYNC)
       syncProtocol.readSyncMessage(decoder, encoder, ydoc, ws)
       if (encoding.length(encoder) > 1) ws.send(encoding.toUint8Array(encoder))
-    } else if (type === syncProtocol.messageAwareness) {
+    } else if (type === MESSAGE_AWARENESS) {
       awarenessProtocol.applyAwarenessUpdate(awareness, decoding.readVarUint8Array(decoder), ws)
     }
   })
@@ -149,43 +159,41 @@ test('10 concurrent WS clients converge and every edit persists to Mongo', { ski
 
   try {
     await waitFor(() => clients.every((c) => blockTexts(c.ydoc).includes('seed-1')))
-  } catch (e) {
-    throw new Error('clients failed to sync initial document')
-  }
 
-  for (let i = 0; i < N; i++) {
-    clients[i].ydoc.transact(() => {
-      const arr = clients[i].ydoc.getArray('blocks')
-      const m = new Y.Map()
-      m.set('id', `c-${i}`)
-      m.set('type', 'paragraph')
-      m.set('text', `concurrent edit ${i}`)
-      m.set('parentId', null)
-      m.set('order', arr.length)
-      arr.insert(arr.length, [m])
-    })
-  }
+    for (let i = 0; i < N; i++) {
+      clients[i].ydoc.transact(() => {
+        const arr = clients[i].ydoc.getArray('blocks')
+        const m = new Y.Map()
+        m.set('id', `c-${i}`)
+        m.set('type', 'paragraph')
+        m.set('text', `concurrent edit ${i}`)
+        m.set('parentId', null)
+        m.set('order', arr.length)
+        arr.insert(arr.length, [m])
+      })
+    }
 
-  await waitFor(() => clients.every((c) => blockTexts(c.ydoc).length === 3 + N))
+    await waitFor(() => clients.every((c) => blockTexts(c.ydoc).length === 3 + N))
 
-  const reference = JSON.stringify(clients[0].ydoc.getArray('blocks').toArray().map((m) => m.get('text')).sort())
-  for (const c of clients) {
-    const texts = JSON.stringify(blockTexts(c.ydoc))
-    assert.equal(texts, reference, 'clients diverged')
-  }
+    const reference = JSON.stringify(clients[0].ydoc.getArray('blocks').toArray().map((m) => m.get('text')).sort())
+    for (const c of clients) {
+      const texts = JSON.stringify(blockTexts(c.ydoc))
+      assert.equal(texts, reference, 'clients diverged')
+    }
 
-  await new Promise((r) => setTimeout(r, 1200))
-  const persisted = await Document.findById(docId)
-  assert.equal(persisted.title, 'Stress Spec')
-  const savedTexts = persisted.nodes.map((n) => n.text).sort()
-  assert.equal(savedTexts.length, 3 + N)
-  for (let i = 0; i < N; i++) assert.ok(savedTexts.includes(`concurrent edit ${i}`), `missing edit ${i}`)
-  assert.ok(savedTexts.includes('seed-1') && savedTexts.includes('seed-2'))
-  assert.ok(persisted.revision > 0)
-
-  for (const c of clients) {
-    c.awareness.destroy()
-    c.ws.close()
+    await new Promise((r) => setTimeout(r, 1200))
+    const persisted = await Document.findById(docId)
+    assert.equal(persisted.title, 'Stress Spec')
+    const savedTexts = persisted.nodes.map((n) => n.text).sort()
+    assert.equal(savedTexts.length, 3 + N)
+    for (let i = 0; i < N; i++) assert.ok(savedTexts.includes(`concurrent edit ${i}`), `missing edit ${i}`)
+    assert.ok(savedTexts.includes('seed-1') && savedTexts.includes('seed-2'))
+    assert.ok(persisted.revision > 0)
+  } finally {
+    for (const c of clients) {
+      try { c.awareness.destroy() } catch (e) { /* ignore */ }
+      try { c.ws.close() } catch (e) { /* ignore */ }
+    }
   }
 })
 

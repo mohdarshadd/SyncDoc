@@ -5,6 +5,10 @@ const syncProtocol = require('y-protocols/sync')
 const awarenessProtocol = require('y-protocols/awareness')
 const mongoose = require('mongoose')
 
+const MESSAGE_SYNC = 0
+const MESSAGE_AWARENESS = 1
+const MESSAGE_QUERY_AWARENESS = 3
+
 const Document = require('../models/Document')
 const { astToYdoc, ydocToAst } = require('./astAdapter')
 const { sanitizeBlocks } = require('../security/sanitize')
@@ -55,7 +59,7 @@ async function loadRoom(room, docId) {
 
 function broadcastUpdate(room, update, origin) {
   const encoder = encoding.createEncoder()
-  encoding.writeVarUint(encoder, syncProtocol.messageSync)
+  encoding.writeVarUint(encoder, MESSAGE_SYNC)
   syncProtocol.writeUpdate(encoder, update)
   const message = encoding.toUint8Array(encoder)
   for (const conn of room.conns) {
@@ -90,6 +94,13 @@ async function persistRoom(docId, ydoc) {
   }
 }
 
+function sendAwarenessTo(ws, awareness, keys) {
+  const encoder = encoding.createEncoder()
+  encoding.writeVarUint(encoder, MESSAGE_AWARENESS)
+  encoding.writeVarUint8Array(encoder, awarenessProtocol.encodeAwarenessUpdate(awareness, keys))
+  ws.send(encoding.toUint8Array(encoder))
+}
+
 function handleConnection(ws, req) {
   const url = new URL(req.url, 'http://localhost')
   const docId = decodeURIComponent(url.pathname.replace(/^\/ws\/?/, ''))
@@ -99,23 +110,51 @@ function handleConnection(ws, req) {
   }
 
   const room = roomFor(docId)
+  const pending = []
+  let loaded = false
+
+  const handleMessage = (ws, data) => {
+    const encoder = encoding.createEncoder()
+    const decoder = decoding.createDecoder(new Uint8Array(data))
+    const messageType = decoding.readVarUint(decoder)
+    switch (messageType) {
+      case MESSAGE_SYNC:
+        encoding.writeVarUint(encoder, MESSAGE_SYNC)
+        syncProtocol.readSyncMessage(decoder, encoder, room.ydoc, ws)
+        if (encoding.length(encoder) > 1) ws.send(encoding.toUint8Array(encoder))
+        break
+      case MESSAGE_AWARENESS:
+        awarenessProtocol.applyAwarenessUpdate(room.awareness, decoding.readVarUint8Array(decoder), ws)
+        break
+      case MESSAGE_QUERY_AWARENESS:
+        sendAwarenessTo(ws, room.awareness, Array.from(room.awareness.getStates().keys()))
+        break
+      default:
+        break
+    }
+  }
+
+  ws.on('message', (data) => {
+    if (loaded) {
+      handleMessage(ws, data)
+    } else {
+      pending.push(data)
+    }
+  })
+
   loadRoom(room, docId)
     .then(() => {
+      loaded = true
       room.conns.add(ws)
-      const { ydoc, awareness } = room
+      const { awareness } = room
 
       const clients = Array.from(awareness.getStates().keys())
-      if (clients.length) {
-        const encoder = encoding.createEncoder()
-        encoding.writeVarUint(encoder, syncProtocol.messageAwareness)
-        encoding.writeVarUint8Array(encoder, awarenessProtocol.encodeAwarenessUpdate(awareness, clients))
-        ws.send(encoding.toUint8Array(encoder))
-      }
+      if (clients.length) sendAwarenessTo(ws, awareness, clients)
 
       const onAwareness = ({ added, updated, removed }, origin) => {
         const changed = added.concat(updated).concat(removed)
         const encoder = encoding.createEncoder()
-        encoding.writeVarUint(encoder, syncProtocol.messageAwareness)
+        encoding.writeVarUint(encoder, MESSAGE_AWARENESS)
         encoding.writeVarUint8Array(encoder, awarenessProtocol.encodeAwarenessUpdate(awareness, changed))
         const message = encoding.toUint8Array(encoder)
         for (const conn of room.conns) {
@@ -126,23 +165,7 @@ function handleConnection(ws, req) {
       }
       awareness.on('update', onAwareness)
 
-      ws.on('message', (data) => {
-        const encoder = encoding.createEncoder()
-        const decoder = decoding.createDecoder(new Uint8Array(data))
-        const messageType = decoding.readVarUint(decoder)
-        switch (messageType) {
-          case syncProtocol.messageSync:
-            encoding.writeVarUint(encoder, syncProtocol.messageSync)
-            syncProtocol.readSyncMessage(decoder, encoder, ydoc, ws)
-            if (encoding.length(encoder) > 1) ws.send(encoding.toUint8Array(encoder))
-            break
-          case syncProtocol.messageAwareness:
-            awarenessProtocol.applyAwarenessUpdate(awareness, decoding.readVarUint8Array(decoder), ws)
-            break
-          default:
-            break
-        }
-      })
+      for (const data of pending.splice(0)) handleMessage(ws, data)
 
       ws.on('close', () => {
         room.conns.delete(ws)
