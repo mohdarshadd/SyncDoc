@@ -1,6 +1,7 @@
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
 import PresenceBar from './PresenceBar'
+import ThemeToggle from './ThemeToggle'
 import { exportUrl } from '../api'
 
 export default function Editor({ docId, user, onBack }) {
@@ -22,6 +23,7 @@ export default function Editor({ docId, user, onBack }) {
           <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
         </div>
+        <ThemeToggle />
       </header>
 
       <div className="editor-body">
