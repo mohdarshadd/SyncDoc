@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
+import ThemeToggle from './components/ThemeToggle'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -10,6 +11,7 @@ function Welcome({ onJoin }) {
 
   return (
     <div className="welcome">
+      <ThemeToggle />
       <h1>SyncDoc</h1>
       <p className="welcome-sub">Collaborative document engine with AST conflict resolution</p>
       <form

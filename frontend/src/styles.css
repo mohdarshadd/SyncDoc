@@ -1,15 +1,35 @@
 :root {
-  --bg: #0f172a;
-  --panel: #1e293b;
-  --panel-2: #273449;
-  --border: #334155;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
+  --bg: #000000;
+  --panel: #0d0d0d;
+  --panel-2: #1a1a1a;
+  --border: #2e2e2e;
+  --text: #ffffff;
+  --muted: #9ca3af;
   --accent: #38bdf8;
   --accent-strong: #0284c7;
   --accent-2: #818cf8;
   --danger: #f87171;
   --ok: #4ade80;
+  --code-bg: #0a0a0a;
+  --quote-text: #c7d2fe;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #ffffff;
+  --panel: #f4f4f4;
+  --panel-2: #e8e8e8;
+  --border: #d4d4d4;
+  --text: #000000;
+  --muted: #525252;
+  --accent: #0284c7;
+  --accent-strong: #0369a1;
+  --accent-2: #4f46e5;
+  --danger: #dc2626;
+  --ok: #16a34a;
+  --code-bg: #f2f2f2;
+  --quote-text: #312e81;
+  color-scheme: light;
 }
 
 * {
@@ -85,6 +105,13 @@ body {
   gap: 8px;
   padding: 24px;
   text-align: center;
+  position: relative;
+}
+
+.welcome .theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
 }
 
 .welcome h1 {
@@ -138,7 +165,7 @@ textarea:focus,
 }
 
 .swatch.active {
-  border-color: #fff;
+  border-color: var(--text);
 }
 
 /* Browser */
@@ -162,6 +189,10 @@ textarea:focus,
   display: flex;
   gap: 10px;
   margin: 20px 0;
+}
+
+.browser-toolbar .theme-toggle {
+  margin-left: auto;
 }
 
 .import-panel {
@@ -256,6 +287,10 @@ textarea:focus,
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.editor-header .theme-toggle {
+  flex-shrink: 0;
 }
 
 .doc-title-input {
@@ -355,7 +390,7 @@ textarea:focus,
 }
 
 .block-code {
-  background: #0b1120;
+  background: var(--code-bg);
   border-color: var(--border);
 }
 
@@ -372,7 +407,7 @@ textarea:focus,
 
 .block-quote textarea {
   font-style: italic;
-  color: #c7d2fe;
+  color: var(--quote-text);
 }
 
 .block-lang {

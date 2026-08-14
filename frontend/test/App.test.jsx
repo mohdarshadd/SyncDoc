@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 
 vi.mock('../src/api', () => ({
   listDocuments: vi.fn().mockResolvedValue([
@@ -15,6 +15,12 @@ vi.mock('../src/api', () => ({
 import App from '../src/App'
 
 describe('App', () => {
+  afterEach(() => {
+    cleanup()
+    localStorage.clear()
+    delete document.documentElement.dataset.theme
+  })
+
   it('shows the welcome screen first', () => {
     render(<App />)
     expect(screen.getByRole('heading', { name: 'SyncDoc' })).toBeInTheDocument()
@@ -27,5 +33,17 @@ describe('App', () => {
 
     await waitFor(() => expect(screen.getByText('Tech Spec')).toBeInTheDocument())
     expect(screen.getByText(/5 blocks/)).toBeInTheDocument()
+  })
+
+  it('toggles between dark and light mode and persists the choice', () => {
+    render(<App />)
+    const toggle = screen.getByRole('button', { name: 'Toggle light mode' })
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(toggle).toHaveTextContent('Light')
+
+    fireEvent.click(toggle)
+    expect(document.documentElement.dataset.theme).toBe('light')
+    expect(localStorage.getItem('syncdoc-theme')).toBe('light')
+    expect(screen.getByRole('button', { name: 'Toggle dark mode' })).toHaveTextContent('Dark')
   })
 })

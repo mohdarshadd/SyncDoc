@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
+import ThemeToggle from './ThemeToggle'
 
 export default function DocumentBrowser({ userName, onOpen }) {
   const [docs, setDocs] = useState([])
@@ -65,6 +66,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <button className="btn btn-ghost" onClick={() => setImportOpen((v) => !v)}>
           {importOpen ? 'Hide import' : 'Import Markdown'}
         </button>
+        <ThemeToggle />
       </div>
 
       {importOpen && (
