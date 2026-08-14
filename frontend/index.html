@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      ;(function () {
+        try {
+          var t = localStorage.getItem('syncdoc-theme')
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          }
+          document.documentElement.dataset.theme = t
+        } catch (e) { /* ignore */ }
+      })()
+    </script>
     <title>SyncDoc</title>
   </head>
   <body>
