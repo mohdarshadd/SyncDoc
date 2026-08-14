@@ -105,6 +105,13 @@ body {
   gap: 8px;
   padding: 24px;
   text-align: center;
+  position: relative;
+}
+
+.welcome .theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
 }
 
 .welcome h1 {
