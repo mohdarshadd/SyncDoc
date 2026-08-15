@@ -400,11 +400,63 @@ textarea:focus,
   position: relative;
   border-radius: 10px;
   border: 1px solid transparent;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .block:hover {
   border-color: var(--border);
+  background: var(--panel);
+}
+
+.block-toolbar {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translate(100%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+
+.block:hover .block-toolbar,
+.block:focus-within .block-toolbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tool-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.tool-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.tool-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tool-btn-danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .block textarea {

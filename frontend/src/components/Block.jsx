@@ -25,7 +25,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
 
@@ -62,6 +62,12 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
+      <div className="block-toolbar" aria-label="Block actions">
+        <button type="button" className="tool-btn" title="Add below" onClick={() => onAddAfter(block.id)}>+</button>
+        <button type="button" className="tool-btn" title="Move up" disabled={block.first} onClick={() => onMove(block.id, -1)}>↑</button>
+        <button type="button" className="tool-btn" title="Move down" disabled={block.last} onClick={() => onMove(block.id, 1)}>↓</button>
+        <button type="button" className="tool-btn tool-btn-danger" title="Delete block" onClick={() => onDelete(block.id)}>×</button>
+      </div>
       <textarea
         ref={ref}
         defaultValue={block.text}

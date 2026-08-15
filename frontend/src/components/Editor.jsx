@@ -30,14 +30,17 @@ export default function Editor({ docId, user, onBack }) {
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
 
         <div className="blocks">
-          {sync.blocks.map((b) => (
+          {sync.blocks.map((b, i) => (
             <Block
               key={b.id}
-              block={b}
+              block={{ ...b, first: i === 0, last: i === sync.blocks.length - 1 }}
               users={sync.users}
               myClientId={sync.myClientId}
               onTextChange={sync.updateBlockText}
               onCursor={sync.setCursor}
+              onDelete={sync.deleteBlock}
+              onMove={sync.moveBlock}
+              onAddAfter={(id) => sync.addBlock('paragraph', id)}
             />
           ))}
           {sync.blocks.length === 0 && <div className="empty-state">No blocks yet — add one below.</div>}
