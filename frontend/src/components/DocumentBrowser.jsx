@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
+import { pushToast } from '../lib/toast'
 
 const AVATAR_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -49,9 +50,11 @@ export default function DocumentBrowser({ userName, onOpen }) {
   async function handleCreate() {
     try {
       const doc = await createDocument({ title: 'Untitled', author: userName })
+      pushToast('Document created', 'ok')
       onOpen(doc._id)
     } catch (e) {
       setError(e.message)
+      pushToast('Could not create document', 'error')
     }
   }
 
@@ -59,6 +62,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
     if (!window.confirm('Delete this document?')) return
     try {
       await deleteDocument(id)
+      pushToast('Document deleted', 'warn')
       refresh()
     } catch (e) {
       setError(e.message)
@@ -69,9 +73,11 @@ export default function DocumentBrowser({ userName, onOpen }) {
     if (!markdown.trim()) return
     try {
       const doc = await importMarkdown({ title: 'Imported', author: userName, markdown })
+      pushToast('Imported from Markdown', 'ok')
       onOpen(doc._id)
     } catch (e) {
       setError(e.message)
+      pushToast('Import failed', 'error')
     }
   }
 
