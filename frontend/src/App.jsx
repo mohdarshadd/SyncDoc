@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
 import ThemeToggle from './components/ThemeToggle'
+import Toaster from './components/Toaster'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -48,15 +49,37 @@ function Welcome({ onJoin }) {
 
 export default function App() {
   const [user, setUser] = useState(null)
-  const [docId, setDocId] = useState(null)
+  const [docId, setDocId] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('doc')
+    } catch (e) {
+      return null
+    }
+  })
 
+  useEffect(() => {
+    if (!docId) return
+    try {
+      const url = new URL(window.location.href)
+      if (url.searchParams.get('doc') === docId) return
+      url.searchParams.set('doc', docId)
+      window.history.replaceState({}, '', url)
+    } catch (e) { /* ignore */ }
+  }, [docId])
+
+  let screen
   if (!user) {
-    return <Welcome onJoin={setUser} />
+    screen = <Welcome onJoin={setUser} />
+  } else if (!docId) {
+    screen = <DocumentBrowser userName={user.name} onOpen={setDocId} />
+  } else {
+    screen = <Editor key={docId} docId={docId} user={user} onBack={() => setDocId(null)} />
   }
 
-  if (!docId) {
-    return <DocumentBrowser userName={user.name} onOpen={setDocId} />
-  }
-
-  return <Editor key={docId} docId={docId} user={user} onBack={() => setDocId(null)} />
+  return (
+    <>
+      {screen}
+      <Toaster />
+    </>
+  )
 }

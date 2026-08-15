@@ -120,10 +120,34 @@ export function useDocumentSync(docId, user) {
     if (providerRef.current) providerRef.current.awareness.setLocalStateField('cursor', cursor)
   }
 
+  function deleteBlock(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      const idx = arr.toArray().findIndex((b) => b.get('id') === id)
+      if (idx !== -1) arr.delete(idx, 1)
+    })
+  }
+
+  function moveBlock(id, dir) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      const list = arr.toArray()
+      const idx = list.findIndex((b) => b.get('id') === id)
+      const target = idx + dir
+      if (idx === -1 || target < 0 || target >= list.length) return
+      arr.delete(idx, 1)
+      arr.insert(target, [list[idx]])
+    })
+  }
+
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (ydoc) ydoc.getMap('meta').set('title', value)
   }
 
-  return { status, title, blocks, users, myClientId, updateBlockText, addBlock, setCursor, updateTitle }
+  return { status, title, blocks, users, myClientId, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock }
 }

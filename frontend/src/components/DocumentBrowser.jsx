@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
+import EmptyState from './EmptyState'
+import { pushToast } from '../lib/toast'
+import { copyText, documentLink } from '../lib/clipboard'
+
+const AVATAR_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
+
+function avatarColor(name) {
+  let h = 0
+  for (const c of name || '?') h = (h * 31 + c.charCodeAt(0)) % 997
+  return AVATAR_COLORS[h % AVATAR_COLORS.length]
+}
 
 export default function DocumentBrowser({ userName, onOpen }) {
   const [docs, setDocs] = useState([])
@@ -8,6 +19,8 @@ export default function DocumentBrowser({ userName, onOpen }) {
   const [importOpen, setImportOpen] = useState(false)
   const [markdown, setMarkdown] = useState('')
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [sortBy, setSortBy] = useState('recent')
 
   async function refresh() {
     setLoading(true)
@@ -25,12 +38,25 @@ export default function DocumentBrowser({ userName, onOpen }) {
     refresh()
   }, [])
 
+  const visibleDocs = docs
+    .filter((d) => {
+      const q = query.trim().toLowerCase()
+      if (!q) return true
+      return d.title.toLowerCase().includes(q) || (d.author || '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sortBy === 'title') return a.title.localeCompare(b.title)
+      return new Date(b.updatedAt) - new Date(a.updatedAt)
+    })
+
   async function handleCreate() {
     try {
       const doc = await createDocument({ title: 'Untitled', author: userName })
+      pushToast('Document created', 'ok')
       onOpen(doc._id)
     } catch (e) {
       setError(e.message)
+      pushToast('Could not create document', 'error')
     }
   }
 
@@ -38,19 +64,27 @@ export default function DocumentBrowser({ userName, onOpen }) {
     if (!window.confirm('Delete this document?')) return
     try {
       await deleteDocument(id)
+      pushToast('Document deleted', 'warn')
       refresh()
     } catch (e) {
       setError(e.message)
     }
   }
 
+  async function handleCopyLink(id) {
+    const ok = await copyText(documentLink(id))
+    pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
+  }
+
   async function handleImport() {
     if (!markdown.trim()) return
     try {
       const doc = await importMarkdown({ title: 'Imported', author: userName, markdown })
+      pushToast('Imported from Markdown', 'ok')
       onOpen(doc._id)
     } catch (e) {
       setError(e.message)
+      pushToast('Import failed', 'error')
     }
   }
 
@@ -69,6 +103,33 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <ThemeToggle />
       </div>
 
+      <div className="browser-utils">
+        <input
+          className="search-input"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search documents…"
+          aria-label="Search documents"
+        />
+        <div className="segmented">
+          <button
+            type="button"
+            className={`seg-btn ${sortBy === 'recent' ? 'active' : ''}`}
+            onClick={() => setSortBy('recent')}
+          >
+            Recent
+          </button>
+          <button
+            type="button"
+            className={`seg-btn ${sortBy === 'title' ? 'active' : ''}`}
+            onClick={() => setSortBy('title')}
+          >
+            A–Z
+          </button>
+        </div>
+      </div>
+
       {importOpen && (
         <div className="import-panel">
           <textarea
@@ -85,19 +146,33 @@ export default function DocumentBrowser({ userName, onOpen }) {
       {loading ? (
         <div className="empty-state">Loading documents…</div>
       ) : docs.length === 0 ? (
-        <div className="empty-state">No documents yet. Create one to start collaborating.</div>
+        <EmptyState
+          icon="doc"
+          title="No documents yet"
+          hint="Create your first document, or import a Markdown file to get started."
+          action={<button className="btn btn-primary" onClick={handleCreate}>+ New document</button>}
+        />
+      ) : visibleDocs.length === 0 ? (
+        <EmptyState icon="search" title="No results" hint={`Nothing matches “${query}”. Try a different search.`} />
       ) : (
         <ul className="doc-list">
-          {docs.map((d) => (
-            <li key={d._id} className="doc-row">
+          {visibleDocs.map((d, i) => (
+            <li key={d._id} className="doc-row" style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}>
+              <span className="doc-avatar" style={{ background: avatarColor(d.author) }}>
+                {(d.author || '?')[0]?.toUpperCase()}
+              </span>
               <div className="doc-info">
                 <div className="doc-title">{d.title}</div>
                 <div className="doc-meta">
-                  {d.author} · {d.blockCount} blocks · rev {d.revision} · {new Date(d.updatedAt).toLocaleString()}
+                  <span>{d.author || 'Unknown'}</span>
+                  <span className="badge">{d.blockCount} blocks</span>
+                  <span className="badge">rev {d.revision}</span>
+                  <span>{new Date(d.updatedAt).toLocaleString()}</span>
                 </div>
               </div>
               <div className="doc-actions">
                 <button className="btn btn-ghost" onClick={() => onOpen(d._id)}>Open</button>
+                <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>

@@ -25,7 +25,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
 
@@ -43,6 +43,40 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   }, [block.text])
 
   const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
+
+  const onKeyDown = (e) => {
+    const el = ref.current
+    const mod = e.metaKey || e.ctrlKey
+
+    if (mod && e.key === 's') {
+      e.preventDefault()
+      return
+    }
+
+    if (mod && e.key === 'Enter') {
+      e.preventDefault()
+      onAddAfter(block.id)
+      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      return
+    }
+
+    if (e.key === 'Enter' && !block.text) {
+      e.preventDefault()
+      onAddAfter(block.id)
+      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      return
+    }
+
+    if (e.key === 'Backspace' && !block.text) {
+      e.preventDefault()
+      const prevId = el.closest('.block')?.previousElementSibling?.dataset.blockId
+      onDelete(block.id)
+      requestAnimationFrame(() => {
+        const target = prevId ? document.querySelector(`[data-block-id="${prevId}"] textarea`) : null
+        if (target) target.focus()
+      })
+    }
+  }
 
   return (
     <div className={`block ${cls}`} data-block-id={block.id}>
@@ -62,6 +96,12 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
+      <div className="block-toolbar" aria-label="Block actions">
+        <button type="button" className="tool-btn" title="Add below" onClick={() => onAddAfter(block.id)}>+</button>
+        <button type="button" className="tool-btn" title="Move up" disabled={block.first} onClick={() => onMove(block.id, -1)}>↑</button>
+        <button type="button" className="tool-btn" title="Move down" disabled={block.last} onClick={() => onMove(block.id, 1)}>↓</button>
+        <button type="button" className="tool-btn tool-btn-danger" title="Delete block" onClick={() => onDelete(block.id)}>×</button>
+      </div>
       <textarea
         ref={ref}
         defaultValue={block.text}
@@ -73,6 +113,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         onKeyUp={onSelection}
         onSelect={onSelection}
         onBlur={() => onCursor(null)}
+        onKeyDown={onKeyDown}
       />
       {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
     </div>
