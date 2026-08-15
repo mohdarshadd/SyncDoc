@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
 import { pushToast } from '../lib/toast'
+import { copyText, documentLink } from '../lib/clipboard'
 
 const AVATAR_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -67,6 +68,11 @@ export default function DocumentBrowser({ userName, onOpen }) {
     } catch (e) {
       setError(e.message)
     }
+  }
+
+  async function handleCopyLink(id) {
+    const ok = await copyText(documentLink(id))
+    pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
   }
 
   async function handleImport() {
@@ -160,6 +166,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
               </div>
               <div className="doc-actions">
                 <button className="btn btn-ghost" onClick={() => onOpen(d._id)}>Open</button>
+                <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>

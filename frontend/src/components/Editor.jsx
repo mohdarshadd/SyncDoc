@@ -4,6 +4,8 @@ import Block from './Block'
 import PresenceBar from './PresenceBar'
 import ThemeToggle from './ThemeToggle'
 import { exportUrl } from '../api'
+import { copyText, documentLink } from '../lib/clipboard'
+import { pushToast } from '../lib/toast'
 
 export default function Editor({ docId, user, onBack }) {
   const sync = useDocumentSync(docId, user)
@@ -14,6 +16,11 @@ export default function Editor({ docId, user, onBack }) {
     const minutes = Math.max(1, Math.round(words / 200))
     return { words, chars, blocks: sync.blocks.length, minutes }
   }, [sync.blocks])
+
+  async function handleCopyLink() {
+    const ok = await copyText(documentLink(docId))
+    pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
+  }
 
   return (
     <div className="editor">
@@ -27,6 +34,7 @@ export default function Editor({ docId, user, onBack }) {
         />
         <PresenceBar users={sync.users} />
         <div className="exports">
+          <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
           <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer">HTML</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>

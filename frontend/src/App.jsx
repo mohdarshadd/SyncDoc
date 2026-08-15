@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
 import ThemeToggle from './components/ThemeToggle'
@@ -49,7 +49,23 @@ function Welcome({ onJoin }) {
 
 export default function App() {
   const [user, setUser] = useState(null)
-  const [docId, setDocId] = useState(null)
+  const [docId, setDocId] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('doc')
+    } catch (e) {
+      return null
+    }
+  })
+
+  useEffect(() => {
+    if (!docId) return
+    try {
+      const url = new URL(window.location.href)
+      if (url.searchParams.get('doc') === docId) return
+      url.searchParams.set('doc', docId)
+      window.history.replaceState({}, '', url)
+    } catch (e) { /* ignore */ }
+  }, [docId])
 
   let screen
   if (!user) {
