@@ -158,7 +158,6 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <ul className="doc-list">
           {visibleDocs.map((d, i) => (
             <li key={d._id} className="doc-row" style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}>
-            <li key={d._id} className="doc-row">
               <span className="doc-avatar" style={{ background: avatarColor(d.author) }}>
                 {(d.author || '?')[0]?.toUpperCase()}
               </span>
@@ -166,7 +165,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
                 <div className="doc-title">{d.title}</div>
                 <div className="doc-meta">
                   <span>{d.author || 'Unknown'}</span>
-                  <span className="badge">blocks {d.blockCount}</span>
+                  <span className="badge">{d.blockCount} blocks</span>
                   <span className="badge">rev {d.revision}</span>
                   <span>{new Date(d.updatedAt).toLocaleString()}</span>
                 </div>
