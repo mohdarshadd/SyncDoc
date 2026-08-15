@@ -553,6 +553,44 @@ textarea:focus,
   margin-top: 20px;
 }
 
+/* Editor footer */
+.editor-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 12.5px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.footer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.dot.connected {
+  background: var(--ok);
+}
+
+.dot.error {
+  background: var(--danger);
+}
+
 @media (max-width: 640px) {
   .doc-row {
     flex-direction: column;

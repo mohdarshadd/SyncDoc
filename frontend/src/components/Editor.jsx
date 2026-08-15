@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
 import PresenceBar from './PresenceBar'
@@ -6,6 +7,13 @@ import { exportUrl } from '../api'
 
 export default function Editor({ docId, user, onBack }) {
   const sync = useDocumentSync(docId, user)
+
+  const stats = useMemo(() => {
+    const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
+    const chars = sync.blocks.reduce((n, b) => n + b.text.length, 0)
+    const minutes = Math.max(1, Math.round(words / 200))
+    return { words, chars, blocks: sync.blocks.length, minutes }
+  }, [sync.blocks])
 
   return (
     <div className="editor">
@@ -53,6 +61,17 @@ export default function Editor({ docId, user, onBack }) {
           <button className="btn btn-ghost" onClick={() => sync.addBlock('quote')}>Quote</button>
         </div>
       </div>
+
+      <footer className="editor-footer">
+        <span>{stats.words} words</span>
+        <span>{stats.chars} characters</span>
+        <span>{stats.blocks} blocks</span>
+        <span>~{stats.minutes} min read</span>
+        <span className="footer-status">
+          <i className={`dot ${sync.status}`} />
+          {sync.status === 'connected' ? 'saved' : sync.status}
+        </span>
+      </footer>
     </div>
   )
 }
