@@ -8,6 +8,8 @@ export default function DocumentBrowser({ userName, onOpen }) {
   const [importOpen, setImportOpen] = useState(false)
   const [markdown, setMarkdown] = useState('')
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [sortBy, setSortBy] = useState('recent')
 
   async function refresh() {
     setLoading(true)
@@ -24,6 +26,17 @@ export default function DocumentBrowser({ userName, onOpen }) {
   useEffect(() => {
     refresh()
   }, [])
+
+  const visibleDocs = docs
+    .filter((d) => {
+      const q = query.trim().toLowerCase()
+      if (!q) return true
+      return d.title.toLowerCase().includes(q) || (d.author || '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sortBy === 'title') return a.title.localeCompare(b.title)
+      return new Date(b.updatedAt) - new Date(a.updatedAt)
+    })
 
   async function handleCreate() {
     try {
@@ -69,6 +82,33 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <ThemeToggle />
       </div>
 
+      <div className="browser-utils">
+        <input
+          className="search-input"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search documents…"
+          aria-label="Search documents"
+        />
+        <div className="segmented">
+          <button
+            type="button"
+            className={`seg-btn ${sortBy === 'recent' ? 'active' : ''}`}
+            onClick={() => setSortBy('recent')}
+          >
+            Recent
+          </button>
+          <button
+            type="button"
+            className={`seg-btn ${sortBy === 'title' ? 'active' : ''}`}
+            onClick={() => setSortBy('title')}
+          >
+            A–Z
+          </button>
+        </div>
+      </div>
+
       {importOpen && (
         <div className="import-panel">
           <textarea
@@ -86,9 +126,11 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <div className="empty-state">Loading documents…</div>
       ) : docs.length === 0 ? (
         <div className="empty-state">No documents yet. Create one to start collaborating.</div>
+      ) : visibleDocs.length === 0 ? (
+        <div className="empty-state">No documents match “{query}”.</div>
       ) : (
         <ul className="doc-list">
-          {docs.map((d) => (
+          {visibleDocs.map((d) => (
             <li key={d._id} className="doc-row">
               <div className="doc-info">
                 <div className="doc-title">{d.title}</div>
