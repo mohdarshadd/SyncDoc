@@ -44,6 +44,40 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
 
+  const onKeyDown = (e) => {
+    const el = ref.current
+    const mod = e.metaKey || e.ctrlKey
+
+    if (mod && e.key === 's') {
+      e.preventDefault()
+      return
+    }
+
+    if (mod && e.key === 'Enter') {
+      e.preventDefault()
+      onAddAfter(block.id)
+      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      return
+    }
+
+    if (e.key === 'Enter' && !block.text) {
+      e.preventDefault()
+      onAddAfter(block.id)
+      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      return
+    }
+
+    if (e.key === 'Backspace' && !block.text) {
+      e.preventDefault()
+      const prevId = el.closest('.block')?.previousElementSibling?.dataset.blockId
+      onDelete(block.id)
+      requestAnimationFrame(() => {
+        const target = prevId ? document.querySelector(`[data-block-id="${prevId}"] textarea`) : null
+        if (target) target.focus()
+      })
+    }
+  }
+
   return (
     <div className={`block ${cls}`} data-block-id={block.id}>
       {editingUsers.length > 0 && (
@@ -79,6 +113,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         onKeyUp={onSelection}
         onSelect={onSelection}
         onBlur={() => onCursor(null)}
+        onKeyDown={onKeyDown}
       />
       {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
     </div>
