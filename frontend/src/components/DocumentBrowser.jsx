@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
+import EmptyState from './EmptyState'
 import { pushToast } from '../lib/toast'
 import { copyText, documentLink } from '../lib/clipboard'
 
@@ -145,12 +146,18 @@ export default function DocumentBrowser({ userName, onOpen }) {
       {loading ? (
         <div className="empty-state">Loading documents…</div>
       ) : docs.length === 0 ? (
-        <div className="empty-state">No documents yet. Create one to start collaborating.</div>
+        <EmptyState
+          icon="doc"
+          title="No documents yet"
+          hint="Create your first document, or import a Markdown file to get started."
+          action={<button className="btn btn-primary" onClick={handleCreate}>+ New document</button>}
+        />
       ) : visibleDocs.length === 0 ? (
-        <div className="empty-state">No documents match “{query}”.</div>
+        <EmptyState icon="search" title="No results" hint={`Nothing matches “${query}”. Try a different search.`} />
       ) : (
         <ul className="doc-list">
-          {visibleDocs.map((d) => (
+          {visibleDocs.map((d, i) => (
+            <li key={d._id} className="doc-row" style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}>
             <li key={d._id} className="doc-row">
               <span className="doc-avatar" style={{ background: avatarColor(d.author) }}>
                 {(d.author || '?')[0]?.toUpperCase()}

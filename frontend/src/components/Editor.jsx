@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
+import EmptyState from './EmptyState'
 import PresenceBar from './PresenceBar'
 import ThemeToggle from './ThemeToggle'
 import { exportUrl } from '../api'
@@ -59,7 +60,14 @@ export default function Editor({ docId, user, onBack }) {
               onAddAfter={(id) => sync.addBlock('paragraph', id)}
             />
           ))}
-          {sync.blocks.length === 0 && <div className="empty-state">No blocks yet — add one below.</div>}
+          {sync.blocks.length === 0 && (
+            <EmptyState
+              icon="blocks"
+              title="This document is empty"
+              hint="Start typing below, or add your first block."
+              action={<button className="btn btn-primary" onClick={() => sync.addBlock('paragraph')}>+ Paragraph</button>}
+            />
+          )}
         </div>
 
         <div className="add-bar">
