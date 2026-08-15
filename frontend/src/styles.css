@@ -337,9 +337,33 @@ textarea:focus,
   border-radius: 12px;
   padding: 14px 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.doc-row:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.doc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .doc-title {
@@ -351,6 +375,21 @@ textarea:focus,
   color: var(--muted);
   font-size: 13px;
   margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11.5px;
+  color: var(--text);
 }
 
 .doc-actions {

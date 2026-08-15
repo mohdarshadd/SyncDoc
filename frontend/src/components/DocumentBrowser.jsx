@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
 
+const AVATAR_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
+
+function avatarColor(name) {
+  let h = 0
+  for (const c of name || '?') h = (h * 31 + c.charCodeAt(0)) % 997
+  return AVATAR_COLORS[h % AVATAR_COLORS.length]
+}
+
 export default function DocumentBrowser({ userName, onOpen }) {
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -132,10 +140,16 @@ export default function DocumentBrowser({ userName, onOpen }) {
         <ul className="doc-list">
           {visibleDocs.map((d) => (
             <li key={d._id} className="doc-row">
+              <span className="doc-avatar" style={{ background: avatarColor(d.author) }}>
+                {(d.author || '?')[0]?.toUpperCase()}
+              </span>
               <div className="doc-info">
                 <div className="doc-title">{d.title}</div>
                 <div className="doc-meta">
-                  {d.author} · {d.blockCount} blocks · rev {d.revision} · {new Date(d.updatedAt).toLocaleString()}
+                  <span>{d.author || 'Unknown'}</span>
+                  <span className="badge">blocks {d.blockCount}</span>
+                  <span className="badge">rev {d.revision}</span>
+                  <span>{new Date(d.updatedAt).toLocaleString()}</span>
                 </div>
               </div>
               <div className="doc-actions">
