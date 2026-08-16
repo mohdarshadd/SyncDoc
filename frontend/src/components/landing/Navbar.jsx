@@ -1,0 +1,23 @@
+import ThemeToggle from '../ThemeToggle'
+
+export default function Navbar({ onGetStarted }) {
+  return (
+    <nav className="nav">
+      <div className="nav-inner">
+        <a className="nav-brand" href="#top">
+          <span className="nav-logo">S</span>
+          <span className="nav-name">SyncDoc</span>
+        </a>
+        <div className="nav-links">
+          <a href="#features">Features</a>
+          <a href="#stats">Why SyncDoc</a>
+          <a href="#cta">Get started</a>
+        </div>
+        <div className="nav-actions">
+          <ThemeToggle />
+          <button className="btn btn-primary" onClick={onGetStarted}>Get started</button>
+        </div>
+      </div>
+    </nav>
+  )
+}

@@ -3,6 +3,7 @@ import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
 import ThemeToggle from './components/ThemeToggle'
 import Toaster from './components/Toaster'
+import LandingPage from './components/landing/LandingPage'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -49,6 +50,7 @@ function Welcome({ onJoin }) {
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [view, setView] = useState('landing')
   const [docId, setDocId] = useState(() => {
     try {
       return new URLSearchParams(window.location.search).get('doc')
@@ -69,7 +71,9 @@ export default function App() {
 
   let screen
   if (!user) {
-    screen = <Welcome onJoin={setUser} />
+    screen = view === 'landing'
+      ? <LandingPage onGetStarted={() => setView('join')} />
+      : <Welcome onJoin={setUser} />
   } else if (!docId) {
     screen = <DocumentBrowser userName={user.name} onOpen={setDocId} />
   } else {

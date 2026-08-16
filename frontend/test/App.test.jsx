@@ -21,13 +21,21 @@ describe('App', () => {
     delete document.documentElement.dataset.theme
   })
 
-  it('shows the welcome screen first', () => {
+  it('shows the landing page first', () => {
     render(<App />)
+    expect(screen.getByRole('heading', { name: 'Write together, without the conflicts.' })).toBeInTheDocument()
+    expect(screen.getAllByText('Features').length).toBeGreaterThan(0)
+  })
+
+  it('navigates from the landing page to the join screen', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
     expect(screen.getByRole('heading', { name: 'SyncDoc' })).toBeInTheDocument()
   })
 
   it('lets a user join the workspace and browse documents', async () => {
     render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
     fireEvent.change(screen.getByPlaceholderText('Your name'), { target: { value: 'Alice' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enter workspace' }))
 
