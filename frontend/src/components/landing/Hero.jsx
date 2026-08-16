@@ -14,6 +14,27 @@ export default function Hero({ onGetStarted }) {
           <a className="btn btn-ghost btn-lg" href="#features">See how it works</a>
         </div>
       </div>
+      <div className="mock" aria-hidden="true">
+        <div className="mock-bar">
+          <span className="mock-dot" />
+          <span className="mock-dot" />
+          <span className="mock-dot" />
+          <span className="mock-file">Untitled document</span>
+        </div>
+        <div className="mock-body">
+          <div className="mock-title">Team Launch Notes</div>
+          <div className="mock-line" />
+          <div className="mock-line" />
+          <div className="mock-line mock-line-short" />
+          <div className="mock-line" />
+          <div className="mock-avatar-row">
+            <span className="mock-avatar" style={{ background: '#e11d48' }}>A</span>
+            <span className="mock-avatar" style={{ background: '#2563eb' }}>B</span>
+            <span className="mock-avatar" style={{ background: '#16a34a' }}>C</span>
+            <span className="mock-typing">Alice is typing…</span>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
