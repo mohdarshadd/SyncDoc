@@ -1,0 +1,11 @@
+export default function Cta({ onGetStarted }) {
+  return (
+    <section className="cta" id="cta">
+      <div className="cta-inner">
+        <h2 className="cta-title">Ready to write together?</h2>
+        <p className="cta-sub">Join a workspace and start a collaborative document in seconds. No signup required.</p>
+        <button className="btn btn-primary btn-lg" onClick={onGetStarted}>Get started free</button>
+      </div>
+    </section>
+  )
+}
