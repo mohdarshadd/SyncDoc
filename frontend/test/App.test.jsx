@@ -19,23 +19,26 @@ describe('App', () => {
     cleanup()
     localStorage.clear()
     delete document.documentElement.dataset.theme
+    window.history.pushState({}, '', '/')
   })
 
   it('shows the landing page first', () => {
     render(<App />)
     expect(screen.getByRole('heading', { name: 'Write together, without the conflicts.' })).toBeInTheDocument()
-    expect(screen.getAllByText('Features').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('SyncDoc').length).toBeGreaterThan(0)
   })
 
-  it('navigates from the landing page to the join screen', () => {
+  it('navigates from the landing page to the join screen', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
-    expect(screen.getByRole('heading', { name: 'SyncDoc' })).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'SyncDoc' })).toBeInTheDocument())
+    expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument()
   })
 
   it('lets a user join the workspace and browse documents', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
+    await waitFor(() => expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument())
     fireEvent.change(screen.getByPlaceholderText('Your name'), { target: { value: 'Alice' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enter workspace' }))
 
