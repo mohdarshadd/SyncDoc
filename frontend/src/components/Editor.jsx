@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
 import EmptyState from './EmptyState'
@@ -7,8 +8,12 @@ import ThemeToggle from './ThemeToggle'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
 import { pushToast } from '../lib/toast'
+import { useAuth } from '../contexts/AuthContext'
 
-export default function Editor({ docId, user, onBack }) {
+export default function Editor() {
+  const { docId } = useParams()
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const sync = useDocumentSync(docId, user)
 
   const stats = useMemo(() => {
@@ -26,7 +31,7 @@ export default function Editor({ docId, user, onBack }) {
   return (
     <div className="editor">
       <header className="editor-header">
-        <button className="btn btn-ghost" onClick={onBack}>← Documents</button>
+        <button className="btn btn-ghost" onClick={() => navigate('/documents')}>&#8592; Documents</button>
         <input
           className="doc-title-input"
           value={sync.title}
