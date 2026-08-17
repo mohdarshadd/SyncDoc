@@ -1,4 +1,8 @@
-export default function Hero({ onGetStarted }) {
+import { useNavigate } from 'react-router-dom'
+
+export default function Hero() {
+  const navigate = useNavigate()
+
   return (
     <section className="hero" id="top">
       <div className="hero-glow" aria-hidden="true" />
@@ -10,7 +14,7 @@ export default function Hero({ onGetStarted }) {
           live presence, and Markdown import and export — right in your browser.
         </p>
         <div className="hero-actions">
-          <button className="btn btn-primary btn-lg" onClick={onGetStarted}>Get started free</button>
+          <button className="btn btn-primary btn-lg" onClick={() => navigate('/join')}>Get started free</button>
           <a className="btn btn-ghost btn-lg" href="#features">See how it works</a>
         </div>
       </div>
