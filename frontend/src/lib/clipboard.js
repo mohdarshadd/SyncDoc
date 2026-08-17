@@ -1,5 +1,5 @@
 export function documentLink(id) {
-  return `${window.location.origin}${window.location.pathname}?doc=${id}`
+  return `${window.location.origin}/editor/${id}`
 }
 
 export async function copyText(text) {

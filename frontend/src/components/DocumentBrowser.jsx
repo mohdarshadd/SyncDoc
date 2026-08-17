@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
 import ThemeToggle from './ThemeToggle'
 import EmptyState from './EmptyState'
 import { pushToast } from '../lib/toast'
 import { copyText, documentLink } from '../lib/clipboard'
+import { useAuth } from '../contexts/AuthContext'
 
 const AVATAR_COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -13,7 +15,10 @@ function avatarColor(name) {
   return AVATAR_COLORS[h % AVATAR_COLORS.length]
 }
 
-export default function DocumentBrowser({ userName, onOpen }) {
+export default function DocumentBrowser() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const userName = user?.name || 'Unknown'
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
   const [importOpen, setImportOpen] = useState(false)
@@ -53,7 +58,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
     try {
       const doc = await createDocument({ title: 'Untitled', author: userName })
       pushToast('Document created', 'ok')
-      onOpen(doc._id)
+      navigate('/editor/' + doc._id)
     } catch (e) {
       setError(e.message)
       pushToast('Could not create document', 'error')
@@ -81,7 +86,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
     try {
       const doc = await importMarkdown({ title: 'Imported', author: userName, markdown })
       pushToast('Imported from Markdown', 'ok')
-      onOpen(doc._id)
+      navigate('/editor/' + doc._id)
     } catch (e) {
       setError(e.message)
       pushToast('Import failed', 'error')
@@ -171,7 +176,7 @@ export default function DocumentBrowser({ userName, onOpen }) {
                 </div>
               </div>
               <div className="doc-actions">
-                <button className="btn btn-ghost" onClick={() => onOpen(d._id)}>Open</button>
+                <button className="btn btn-ghost" onClick={() => navigate('/editor/' + d._id)}>Open</button>
                 <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
                 <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>

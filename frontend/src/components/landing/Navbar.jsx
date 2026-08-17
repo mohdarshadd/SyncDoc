@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../ThemeToggle'
 
-export default function Navbar({ onGetStarted }) {
+export default function Navbar() {
+  const navigate = useNavigate()
+
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -15,7 +18,7 @@ export default function Navbar({ onGetStarted }) {
         </div>
         <div className="nav-actions">
           <ThemeToggle />
-          <button className="btn btn-primary" onClick={onGetStarted}>Get started</button>
+          <button className="btn btn-primary" onClick={() => navigate('/join')}>Get started</button>
         </div>
       </div>
     </nav>

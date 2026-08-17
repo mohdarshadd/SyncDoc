@@ -5,20 +5,20 @@ import Features from './Features'
 import Stats from './Stats'
 import Cta from './Cta'
 import Footer from './Footer'
-import { useScrollReveal } from '../hooks/useScrollReveal'
+import { useScrollReveal } from '../../hooks/useScrollReveal'
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage() {
   const rootRef = useRef(null)
   useScrollReveal(rootRef)
 
   return (
     <div className="landing" ref={rootRef}>
-      <Navbar onGetStarted={onGetStarted} />
+      <Navbar />
       <main>
-        <Hero onGetStarted={onGetStarted} />
+        <Hero />
         <Features />
         <Stats />
-        <Cta onGetStarted={onGetStarted} />
+        <Cta />
       </main>
       <Footer />
     </div>
