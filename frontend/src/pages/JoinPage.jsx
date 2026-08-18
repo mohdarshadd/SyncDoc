@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -21,6 +21,7 @@ export default function JoinPage() {
   return (
     <div className="welcome">
       <ThemeToggle />
+      <Link className="back-link" to="/">Back to home</Link>
       <h1>SyncDoc</h1>
       <p className="welcome-sub">Collaborative document engine with AST conflict resolution</p>
       <form className="welcome-form" onSubmit={handleSubmit}>

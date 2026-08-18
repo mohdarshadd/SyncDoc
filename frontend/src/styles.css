@@ -152,6 +152,20 @@ input:focus-visible {
   right: 16px;
 }
 
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  transition: color 0.15s;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
 .welcome h1 {
   font-size: 44px;
   margin: 0;
