@@ -155,7 +155,7 @@ input:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 24px;
   text-align: center;
   position: relative;
@@ -174,7 +174,7 @@ input:focus-visible {
   position: absolute;
   top: 20px;
   left: 24px;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .back-link:hover {
@@ -187,21 +187,28 @@ input:focus-visible {
 }
 
 .welcome h1 {
-  font-size: 44px;
+  font-size: 48px;
   margin: 0;
-  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .welcome-sub {
   color: var(--muted);
-  margin: 0 0 24px;
+  margin: 0 0 32px;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .welcome-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: 320px;
+  gap: 16px;
+  width: 340px;
 }
 
 .welcome-form input,
@@ -229,16 +236,16 @@ textarea:focus,
 .color-row {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .swatch {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .swatch:hover {
@@ -246,12 +253,13 @@ textarea:focus,
 }
 
 .swatch:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .swatch.active {
   border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg);
 }
 
 /* Browser */
@@ -899,15 +907,16 @@ textarea:focus,
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 .nav-inner {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -919,9 +928,10 @@ textarea:focus,
   align-items: center;
   gap: 10px;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
 .nav-logo {
@@ -941,7 +951,7 @@ textarea:focus,
 
 .nav-links {
   display: flex;
-  gap: 24px;
+  gap: 28px;
 }
 
 .nav-links a {
@@ -949,7 +959,7 @@ textarea:focus,
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  transition: color 0.15s;
+  transition: color 0.2s;
 }
 
 .nav-links a:hover {
