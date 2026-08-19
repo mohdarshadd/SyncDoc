@@ -152,6 +152,25 @@ input:focus-visible {
   right: 16px;
 }
 
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  transition: color 0.15s;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.theme-icon {
+  margin-right: 4px;
+  font-size: 15px;
+}
+
 .welcome h1 {
   font-size: 44px;
   margin: 0;
@@ -202,6 +221,16 @@ textarea:focus,
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.swatch:hover {
+  transform: scale(1.15);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .swatch.active {

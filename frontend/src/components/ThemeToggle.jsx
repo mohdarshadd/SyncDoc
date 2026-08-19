@@ -12,6 +12,7 @@ export default function ThemeToggle() {
       aria-label={`Toggle ${next} mode`}
       title={`Switch to ${next} mode`}
     >
+      <span className="theme-icon">{theme === 'dark' ? '\u2600' : '\u263E'}</span>
       {theme === 'dark' ? 'Light' : 'Dark'}
     </button>
   )

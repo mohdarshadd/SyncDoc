@@ -5,6 +5,7 @@ import JoinPage from './pages/JoinPage'
 import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
 import Toaster from './components/Toaster'
+import usePageTitle from './hooks/usePageTitle'
 
 function RequireAuth({ children }) {
   const { user } = useAuth()
@@ -14,6 +15,7 @@ function RequireAuth({ children }) {
 
 function AppRoutes() {
   const { user } = useAuth()
+  usePageTitle()
 
   return (
     <>
