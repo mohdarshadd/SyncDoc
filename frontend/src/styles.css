@@ -1,34 +1,34 @@
 :root {
   --bg: #000000;
-  --panel: #0d0d0d;
-  --panel-2: #1a1a1a;
-  --border: #2e2e2e;
-  --text: #ffffff;
-  --muted: #9ca3af;
-  --accent: #38bdf8;
-  --accent-strong: #0284c7;
-  --accent-2: #818cf8;
-  --danger: #f87171;
-  --ok: #4ade80;
+  --panel: #111111;
+  --panel-2: #1c1c1e;
+  --border: #38383a;
+  --text: #f5f5f7;
+  --muted: #86868b;
+  --accent: #2997ff;
+  --accent-strong: #0077ed;
+  --accent-2: #bf5af2;
+  --danger: #ff453a;
+  --ok: #30d158;
   --code-bg: #0a0a0a;
-  --quote-text: #c7d2fe;
+  --quote-text: #a5a5c7;
   color-scheme: dark;
 }
 
 [data-theme='light'] {
   --bg: #ffffff;
-  --panel: #f4f4f4;
-  --panel-2: #e8e8e8;
-  --border: #d4d4d4;
-  --text: #000000;
-  --muted: #525252;
-  --accent: #0284c7;
-  --accent-strong: #0369a1;
-  --accent-2: #4f46e5;
-  --danger: #dc2626;
-  --ok: #16a34a;
-  --code-bg: #f2f2f2;
-  --quote-text: #312e81;
+  --panel: #f5f5f7;
+  --panel-2: #e8e8ed;
+  --border: #d2d2d7;
+  --text: #1d1d1f;
+  --muted: #86868b;
+  --accent: #0071e3;
+  --accent-strong: #006edb;
+  --accent-2: #5856d6;
+  --danger: #ff3b30;
+  --ok: #34c759;
+  --code-bg: #f5f5f7;
+  --quote-text: #5856d6;
   color-scheme: light;
 }
 
@@ -40,29 +40,32 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.47059;
+  letter-spacing: -0.022em;
 }
 
 ::selection {
   background: var(--accent);
-  color: #000;
+  color: #fff;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 999px;
-  border: 2px solid var(--bg);
+  border: 2px solid transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -77,41 +80,45 @@ body {
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: 980px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .btn:hover {
-  border-color: var(--accent);
+  background: var(--border);
+  border-color: var(--border);
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn:focus-visible,
 textarea:focus-visible,
 input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .btn-primary {
   background: var(--accent);
   border-color: transparent;
-  color: #06121f;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -122,15 +129,23 @@ input:focus-visible {
 
 .btn-ghost {
   background: transparent;
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--panel-2);
+  border-color: var(--border);
 }
 
 .btn-danger {
   color: var(--danger);
-  border-color: #7f1d1d;
+  border-color: transparent;
+  background: transparent;
 }
 
 .btn-danger:hover {
-  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
 /* Welcome */
@@ -195,10 +210,12 @@ textarea {
   background: var(--panel);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 12px 14px;
   font-size: 15px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .welcome-form input:focus,
@@ -206,7 +223,7 @@ textarea:focus,
 .doc-title-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .color-row {
@@ -278,15 +295,16 @@ textarea:focus,
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 14px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .segmented {
@@ -301,10 +319,12 @@ textarea:focus,
   border: none;
   background: transparent;
   color: var(--muted);
-  padding: 7px 12px;
+  padding: 7px 14px;
   font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.2s;
 }
 
 .seg-btn + .seg-btn {
@@ -313,7 +333,7 @@ textarea:focus,
 
 .seg-btn.active {
   background: var(--accent);
-  color: #000;
+  color: #fff;
   font-weight: 600;
 }
 
