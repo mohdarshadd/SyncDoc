@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 
+const mockGetMe = vi.fn().mockRejectedValue(new Error('not authenticated'))
+const mockLogin = vi.fn()
+const mockRegister = vi.fn()
+const mockSetAccessToken = vi.fn()
+
 vi.mock('../src/api', () => ({
+  getMe: (...args) => mockGetMe(...args),
+  login: (...args) => mockLogin(...args),
+  register: (...args) => mockRegister(...args),
+  setAccessToken: (...args) => mockSetAccessToken(...args),
+  logout: vi.fn().mockResolvedValue(undefined),
   listDocuments: vi.fn().mockResolvedValue([
     { _id: 'd1', title: 'Tech Spec', author: 'Alice', updatedAt: new Date().toISOString(), revision: 3, blockCount: 5 }
   ]),
@@ -20,6 +30,8 @@ describe('App', () => {
     localStorage.clear()
     delete document.documentElement.dataset.theme
     window.history.pushState({}, '', '/')
+    vi.clearAllMocks()
+    mockGetMe.mockRejectedValue(new Error('not authenticated'))
   })
 
   it('shows the landing page first', () => {
@@ -28,22 +40,18 @@ describe('App', () => {
     expect(screen.getAllByText('SyncDoc').length).toBeGreaterThan(0)
   })
 
-  it('navigates from the landing page to the join screen', async () => {
+  it('navigates from the landing page to the register screen', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'SyncDoc' })).toBeInTheDocument())
-    expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Get started free' }))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create account' })).toBeInTheDocument())
   })
 
-  it('lets a user join the workspace and browse documents', async () => {
+  it('shows login form when clicking sign in link', async () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: 'Get started' }))
-    await waitFor(() => expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument())
-    fireEvent.change(screen.getByPlaceholderText('Your name'), { target: { value: 'Alice' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Enter workspace' }))
-
-    await waitFor(() => expect(screen.getByText('Tech Spec')).toBeInTheDocument())
-    expect(screen.getByText(/5 blocks/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Get started free' }))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create account' })).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Sign in'))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument())
   })
 
   it('toggles between dark and light mode and persists the choice', () => {
