@@ -1,5 +1,6 @@
 const { WebSocketServer } = require('ws')
 const Y = require('yjs')
+const jwt = require('jsonwebtoken')
 const { encoding, decoding } = require('lib0')
 const syncProtocol = require('y-protocols/sync')
 const awarenessProtocol = require('y-protocols/awareness')
@@ -8,6 +9,8 @@ const mongoose = require('mongoose')
 const MESSAGE_SYNC = 0
 const MESSAGE_AWARENESS = 1
 const MESSAGE_QUERY_AWARENESS = 3
+
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'syncdoc-access-secret-dev'
 
 const Document = require('../models/Document')
 const { astToYdoc, ydocToAst } = require('./astAdapter')
@@ -32,13 +35,16 @@ function roomFor(docId) {
   return room
 }
 
-async function loadRoom(room, docId) {
+async function loadRoom(room, docId, userId) {
   if (room.loaded) return
   if (!room.loadPromise) {
     room.loadPromise = (async () => {
       let doc = null
       if (mongoose.Types.ObjectId.isValid(docId)) {
         doc = await Document.findById(docId)
+      }
+      if (doc && doc.owner.toString() !== userId) {
+        throw new Error('Access denied')
       }
       const loaded = astToYdoc(doc ? { title: doc.title, nodes: doc.nodes } : { title: 'Untitled' })
       const update = Y.encodeStateAsUpdate(loaded)
@@ -109,6 +115,21 @@ function handleConnection(ws, req) {
     return
   }
 
+  const token = url.searchParams.get('token')
+  if (!token) {
+    ws.close(4001, 'authentication required')
+    return
+  }
+
+  let userId
+  try {
+    const payload = jwt.verify(token, ACCESS_SECRET)
+    userId = payload.sub
+  } catch {
+    ws.close(4001, 'invalid token')
+    return
+  }
+
   const room = roomFor(docId)
   const pending = []
   let loaded = false
@@ -142,7 +163,7 @@ function handleConnection(ws, req) {
     }
   })
 
-  loadRoom(room, docId)
+  loadRoom(room, docId, userId)
     .then(() => {
       loaded = true
       room.conns.add(ws)
