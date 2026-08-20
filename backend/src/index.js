@@ -5,6 +5,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 
 const { connectDB, isConnected } = require('./db')
+const authRouter = require('./routes/auth')
 const documentsRouter = require('./routes/documents')
 const { attachSyncServer } = require('./sync/server')
 
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
   res.json({ service: 'SyncDoc', mongo: isConnected() ? 'connected' : 'disconnected' })
 })
 
+app.use('/api', authRouter)
 app.use('/api', documentsRouter)
 
 app.use((err, req, res, next) => {

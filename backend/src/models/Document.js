@@ -6,6 +6,7 @@ const documentSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, default: 'Untitled' },
     author: { type: String, default: 'Anonymous', trim: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     nodes: { type: [astNodeSchema], default: [] },
     revision: { type: Number, default: 0 }
   },

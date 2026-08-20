@@ -14,7 +14,7 @@ export default function Hero() {
           live presence, and Markdown import and export — right in your browser.
         </p>
         <div className="hero-actions">
-          <button className="btn btn-primary btn-lg" onClick={() => navigate('/join')}>Get started free</button>
+          <button className="btn btn-primary btn-lg" onClick={() => navigate('/register')}>Get started free</button>
           <a className="btn btn-ghost btn-lg" href="#features">See how it works</a>
         </div>
       </div>

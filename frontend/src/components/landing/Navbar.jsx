@@ -18,7 +18,7 @@ export default function Navbar() {
         </div>
         <div className="nav-actions">
           <ThemeToggle />
-          <button className="btn btn-primary" onClick={() => navigate('/join')}>Get started</button>
+          <button className="btn btn-primary" onClick={() => navigate('/register')}>Get started</button>
         </div>
       </div>
     </nav>
