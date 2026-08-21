@@ -31,63 +31,75 @@ export default function RegisterPage({ onLogin }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Create account</h1>
-        <p className="auth-subtitle">Get started with SyncDoc</p>
-        {error && <div className="error-banner">{error}</div>}
+        <div className="auth-logo">
+          <span className="auth-logo-icon">S</span>
+        </div>
+        <h1 className="auth-title">Create your account</h1>
+        <p className="auth-subtitle">Start collaborating in seconds.</p>
+        {error && <div className="auth-error">{error}</div>}
         <form onSubmit={handleSubmit} className="auth-form">
-          <label className="field">
-            <span className="field-label">Name</span>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-name">Full name</label>
             <input
+              id="reg-name"
+              className="auth-input"
               type="text"
-              className="input"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               autoFocus
+              autoComplete="name"
             />
-          </label>
-          <label className="field">
-            <span className="field-label">Email</span>
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-email">Email</label>
             <input
+              id="reg-email"
+              className="auth-input"
               type="email"
-              className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
-          </label>
-          <label className="field">
-            <span className="field-label">Password</span>
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-password">Password</label>
             <input
+              id="reg-password"
+              className="auth-input"
               type="password"
-              className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+              autoComplete="new-password"
             />
-          </label>
-          <div className="field">
-            <span className="field-label">Color</span>
-            <div className="swatches">
+            <span className="auth-hint">Minimum 8 characters</span>
+          </div>
+          <div className="auth-field">
+            <label className="auth-label">Your color</label>
+            <div className="auth-swatches">
               {COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
-                  className={`swatch ${c === color ? 'active' : ''}`}
+                  className={`auth-swatch ${c === color ? 'active' : ''}`}
                   style={{ background: c }}
                   onClick={() => setColor(c)}
+                  aria-label={`Select color ${c}`}
                 />
               ))}
             </div>
           </div>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create account'}
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? 'Creating...' : 'Continue'}
           </button>
         </form>
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+        <div className="auth-divider">
+          <span>Already have an account?</span>
+        </div>
+        <Link to="/login" className="auth-btn auth-btn-secondary">Sign in</Link>
       </div>
     </div>
   )
