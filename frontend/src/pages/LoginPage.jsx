@@ -27,38 +27,46 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Sign in to continue to SyncDoc</p>
-        {error && <div className="error-banner">{error}</div>}
+        <div className="auth-logo">
+          <span className="auth-logo-icon">S</span>
+        </div>
+        <h1 className="auth-title">Sign in to SyncDoc</h1>
+        <p className="auth-subtitle">Collaborative editing, simplified.</p>
+        {error && <div className="auth-error">{error}</div>}
         <form onSubmit={handleSubmit} className="auth-form">
-          <label className="field">
-            <span className="field-label">Email</span>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="login-email">Email</label>
             <input
+              id="login-email"
+              className="auth-input"
               type="email"
-              className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
+              autoComplete="email"
             />
-          </label>
-          <label className="field">
-            <span className="field-label">Password</span>
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="login-password">Password</label>
             <input
+              id="login-password"
+              className="auth-input"
               type="password"
-              className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
-          </label>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign in'}
+          </div>
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? 'Signing in...' : 'Continue'}
           </button>
         </form>
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Create one</Link>
-        </p>
+        <div className="auth-divider">
+          <span>New to SyncDoc?</span>
+        </div>
+        <Link to="/register" className="auth-btn auth-btn-secondary">Create an account</Link>
       </div>
     </div>
   )

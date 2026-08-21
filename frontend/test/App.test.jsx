@@ -43,15 +43,15 @@ describe('App', () => {
   it('navigates from the landing page to the register screen', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Get started free' }))
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create account' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create your account' })).toBeInTheDocument())
   })
 
   it('shows login form when clicking sign in link', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Get started free' }))
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create account' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Create your account' })).toBeInTheDocument())
     fireEvent.click(screen.getByText('Sign in'))
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Sign in to SyncDoc' })).toBeInTheDocument())
   })
 
   it('toggles between dark and light mode and persists the choice', () => {
