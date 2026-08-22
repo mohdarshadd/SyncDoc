@@ -13,6 +13,7 @@ const MESSAGE_QUERY_AWARENESS = 3
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'syncdoc-access-secret-dev'
 
 const Document = require('../models/Document')
+const Share = require('../models/Share')
 const { astToYdoc, ydocToAst } = require('./astAdapter')
 const { sanitizeBlocks } = require('../security/sanitize')
 
@@ -43,8 +44,11 @@ async function loadRoom(room, docId, userId) {
       if (mongoose.Types.ObjectId.isValid(docId)) {
         doc = await Document.findById(docId)
       }
-      if (doc && doc.owner.toString() !== userId) {
-        throw new Error('Access denied')
+      if (!doc) throw new Error('Document not found')
+      const isOwner = doc.owner.toString() === userId
+      if (!isOwner) {
+        const share = await Share.findOne({ document: docId, user: userId })
+        if (!share) throw new Error('Access denied')
       }
       const loaded = astToYdoc(doc ? { title: doc.title, nodes: doc.nodes } : { title: 'Untitled' })
       const update = Y.encodeStateAsUpdate(loaded)
