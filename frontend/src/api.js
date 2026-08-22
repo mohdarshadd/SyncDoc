@@ -71,4 +71,12 @@ export const importMarkdown = (body) => request('/import/markdown', { method: 'P
 
 export const exportUrl = (id, format) => `/api/documents/${id}/export/${format}`
 
+export const listShares = (docId) => request(`/documents/${docId}/shares`)
+
+export const addShare = (docId, body) => request(`/documents/${docId}/shares`, { method: 'POST', body: JSON.stringify(body) })
+
+export const removeShare = (docId, shareId) => request(`/documents/${docId}/shares/${shareId}`, { method: 'DELETE' })
+
+export const listSharedWithMe = () => request('/shared-with-me')
+
 export const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:4000/ws'

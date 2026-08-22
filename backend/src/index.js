@@ -7,6 +7,7 @@ const helmet = require('helmet')
 const { connectDB, isConnected } = require('./db')
 const authRouter = require('./routes/auth')
 const documentsRouter = require('./routes/documents')
+const sharesRouter = require('./routes/shares')
 const { attachSyncServer } = require('./sync/server')
 
 const app = express()
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api', authRouter)
 app.use('/api', documentsRouter)
+app.use('/api', sharesRouter)
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err)

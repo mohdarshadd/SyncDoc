@@ -15,6 +15,7 @@ export function useDocumentSync(docId, user) {
   const [blocks, setBlocks] = useState([])
   const [users, setUsers] = useState([])
   const [myClientId, setMyClientId] = useState(null)
+  const [docRole, setDocRole] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -26,6 +27,7 @@ export function useDocumentSync(docId, user) {
         const doc = await getDocument(docId)
         if (cancelled) return
 
+        setDocRole(doc.role || 'owner')
         ydoc = buildYdoc(doc)
         provider = new WebsocketProvider(WS_URL, docId, ydoc, { connect: true })
         provider.on('status', ({ status: s }) => {
@@ -149,5 +151,5 @@ export function useDocumentSync(docId, user) {
     if (ydoc) ydoc.getMap('meta').set('title', value)
   }
 
-  return { status, title, blocks, users, myClientId, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock }
 }

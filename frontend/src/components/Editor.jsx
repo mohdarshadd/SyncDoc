@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
 import EmptyState from './EmptyState'
 import PresenceBar from './PresenceBar'
 import ThemeToggle from './ThemeToggle'
+import ShareDialog from './ShareDialog'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
 import { pushToast } from '../lib/toast'
@@ -15,6 +16,9 @@ export default function Editor() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const sync = useDocumentSync(docId, user)
+  const [showShare, setShowShare] = useState(false)
+
+  const isOwner = sync.docRole === 'owner'
 
   const stats = useMemo(() => {
     const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
@@ -37,16 +41,24 @@ export default function Editor() {
           value={sync.title}
           onChange={(e) => sync.updateTitle(e.target.value)}
           aria-label="Document title"
+          disabled={!isOwner}
         />
         <PresenceBar users={sync.users} />
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
+          {isOwner && (
+            <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
+          )}
           <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer">HTML</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
         </div>
         <ThemeToggle />
       </header>
+
+      {showShare && (
+        <ShareDialog docId={docId} isOwner={isOwner} onClose={() => setShowShare(false)} />
+      )}
 
       <div className="editor-body">
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
