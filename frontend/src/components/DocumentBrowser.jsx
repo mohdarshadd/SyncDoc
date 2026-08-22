@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl } from '../api'
+import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl, listSharedWithMe } from '../api'
 import ThemeToggle from './ThemeToggle'
 import EmptyState from './EmptyState'
 import { pushToast } from '../lib/toast'
@@ -20,6 +20,7 @@ export default function DocumentBrowser() {
   const navigate = useNavigate()
   const userName = user?.name || 'Unknown'
   const [docs, setDocs] = useState([])
+  const [sharedDocs, setSharedDocs] = useState([])
   const [loading, setLoading] = useState(true)
   const [importOpen, setImportOpen] = useState(false)
   const [markdown, setMarkdown] = useState('')
@@ -30,7 +31,9 @@ export default function DocumentBrowser() {
   async function refresh() {
     setLoading(true)
     try {
-      setDocs(await listDocuments())
+      const [owned, shared] = await Promise.all([listDocuments(), listSharedWithMe()])
+      setDocs(owned)
+      setSharedDocs(shared)
       setError('')
     } catch (e) {
       setError(e.message)
@@ -43,7 +46,8 @@ export default function DocumentBrowser() {
     refresh()
   }, [])
 
-  const visibleDocs = docs
+  const allDocs = [...docs, ...sharedDocs]
+  const visibleDocs = allDocs
     .filter((d) => {
       const q = query.trim().toLowerCase()
       if (!q) return true
@@ -53,6 +57,9 @@ export default function DocumentBrowser() {
       if (sortBy === 'title') return a.title.localeCompare(b.title)
       return new Date(b.updatedAt) - new Date(a.updatedAt)
     })
+
+  const visibleOwned = visibleDocs.filter((d) => docs.some((o) => o._id === d._id))
+  const visibleShared = visibleDocs.filter((d) => sharedDocs.some((s) => s._id === d._id))
 
   async function handleCreate() {
     try {
@@ -93,6 +100,43 @@ export default function DocumentBrowser() {
     }
   }
 
+  function renderDocRow(d, isShared) {
+    return (
+      <li key={d._id} className="doc-row">
+        <span className="doc-avatar" style={{ background: isShared ? '#86868b' : avatarColor(d.author) }}>
+          {isShared ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1v14M1 8h14" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            (d.author || '?')[0]?.toUpperCase()
+          )}
+        </span>
+        <div className="doc-info">
+          <div className="doc-title">{d.title}</div>
+          <div className="doc-meta">
+            <span>{d.author || 'Unknown'}</span>
+            {isShared && <span className="badge">{d.role === 'editor' ? 'Can edit' : 'Can view'}</span>}
+            {isShared && d.sharedBy && <span className="badge">by {d.sharedBy.name}</span>}
+            <span className="badge">{d.blockCount} blocks</span>
+            <span className="badge">rev {d.revision}</span>
+            <span>{new Date(d.updatedAt).toLocaleString()}</span>
+          </div>
+        </div>
+        <div className="doc-actions">
+          <button className="btn btn-ghost" onClick={() => navigate('/editor/' + d._id)}>Open</button>
+          <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
+          <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
+          <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
+          <a className="btn btn-ghost" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
+          {!isShared && (
+            <button className="btn btn-danger" onClick={() => handleDelete(d._id)}>Delete</button>
+          )}
+        </div>
+      </li>
+    )
+  }
+
   return (
     <div className="browser">
       <header className="browser-header">
@@ -114,7 +158,7 @@ export default function DocumentBrowser() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search documents…"
+          placeholder="Search documents..."
           aria-label="Search documents"
         />
         <div className="segmented">
@@ -130,7 +174,7 @@ export default function DocumentBrowser() {
             className={`seg-btn ${sortBy === 'title' ? 'active' : ''}`}
             onClick={() => setSortBy('title')}
           >
-            A–Z
+            A-Z
           </button>
         </div>
       </div>
@@ -142,15 +186,15 @@ export default function DocumentBrowser() {
             onChange={(e) => setMarkdown(e.target.value)}
             placeholder={'# Heading\n\nSome paragraph.\n\n```js\nconst x = 1\n```'}
           />
-          <button className="btn btn-primary" onClick={handleImport} disabled={!markdown.trim()}>Import → document</button>
+          <button className="btn btn-primary" onClick={handleImport} disabled={!markdown.trim()}>Import</button>
         </div>
       )}
 
       {error && <div className="error-banner">{error}</div>}
 
       {loading ? (
-        <div className="empty-state">Loading documents…</div>
-      ) : docs.length === 0 ? (
+        <div className="empty-state">Loading documents...</div>
+      ) : allDocs.length === 0 ? (
         <EmptyState
           icon="doc"
           title="No documents yet"
@@ -158,34 +202,26 @@ export default function DocumentBrowser() {
           action={<button className="btn btn-primary" onClick={handleCreate}>+ New document</button>}
         />
       ) : visibleDocs.length === 0 ? (
-        <EmptyState icon="search" title="No results" hint={`Nothing matches “${query}”. Try a different search.`} />
+        <EmptyState icon="search" title="No results" hint={`Nothing matches "${query}". Try a different search.`} />
       ) : (
-        <ul className="doc-list">
-          {visibleDocs.map((d, i) => (
-            <li key={d._id} className="doc-row" style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}>
-              <span className="doc-avatar" style={{ background: avatarColor(d.author) }}>
-                {(d.author || '?')[0]?.toUpperCase()}
-              </span>
-              <div className="doc-info">
-                <div className="doc-title">{d.title}</div>
-                <div className="doc-meta">
-                  <span>{d.author || 'Unknown'}</span>
-                  <span className="badge">{d.blockCount} blocks</span>
-                  <span className="badge">rev {d.revision}</span>
-                  <span>{new Date(d.updatedAt).toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="doc-actions">
-                <button className="btn btn-ghost" onClick={() => navigate('/editor/' + d._id)}>Open</button>
-                <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
-                <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
-                <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
-                <a className="btn btn-ghost" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
-                <button className="btn btn-danger" onClick={() => handleDelete(d._id)}>Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          {visibleOwned.length > 0 && (
+            <>
+              <h2 className="browser-section-title">Your documents</h2>
+              <ul className="doc-list">
+                {visibleOwned.map((d) => renderDocRow(d, false))}
+              </ul>
+            </>
+          )}
+          {visibleShared.length > 0 && (
+            <>
+              <h2 className="browser-section-title">Shared with you</h2>
+              <ul className="doc-list">
+                {visibleShared.map((d) => renderDocRow(d, true))}
+              </ul>
+            </>
+          )}
+        </>
       )}
     </div>
   )
