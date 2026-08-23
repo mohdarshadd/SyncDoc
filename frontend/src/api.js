@@ -79,4 +79,10 @@ export const removeShare = (docId, shareId) => request(`/documents/${docId}/shar
 
 export const listSharedWithMe = () => request('/shared-with-me')
 
+export const listVersions = (docId) => request(`/documents/${docId}/versions`)
+
+export const getVersion = (docId, revision) => request(`/documents/${docId}/versions/${revision}`)
+
+export const restoreVersion = (docId, revision) => request(`/documents/${docId}/versions/${revision}/restore`, { method: 'POST' })
+
 export const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:4000/ws'
