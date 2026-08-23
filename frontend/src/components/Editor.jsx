@@ -6,6 +6,8 @@ import EmptyState from './EmptyState'
 import PresenceBar from './PresenceBar'
 import ThemeToggle from './ThemeToggle'
 import ShareDialog from './ShareDialog'
+import VersionHistory from './VersionHistory'
+import VersionViewer from './VersionViewer'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
 import { pushToast } from '../lib/toast'
@@ -17,6 +19,8 @@ export default function Editor() {
   const navigate = useNavigate()
   const sync = useDocumentSync(docId, user)
   const [showShare, setShowShare] = useState(false)
+  const [showVersions, setShowVersions] = useState(false)
+  const [viewVersion, setViewVersion] = useState(null)
 
   const isOwner = sync.docRole === 'owner'
 
@@ -46,6 +50,7 @@ export default function Editor() {
         <PresenceBar users={sync.users} />
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
+          <button className="btn btn-ghost" onClick={() => setShowVersions(true)}>History</button>
           {isOwner && (
             <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
           )}
@@ -58,6 +63,23 @@ export default function Editor() {
 
       {showShare && (
         <ShareDialog docId={docId} isOwner={isOwner} onClose={() => setShowShare(false)} />
+      )}
+
+      {showVersions && (
+        <VersionHistory
+          docId={docId}
+          isOwner={isOwner}
+          onSelect={(rev) => { setShowVersions(false); setViewVersion(rev) }}
+          onClose={() => setShowVersions(false)}
+        />
+      )}
+
+      {viewVersion !== null && (
+        <VersionViewer
+          docId={docId}
+          revision={viewVersion}
+          onClose={() => setViewVersion(null)}
+        />
       )}
 
       <div className="editor-body">
