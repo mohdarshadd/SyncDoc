@@ -108,6 +108,12 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     const targetIndex = insertBefore ? blockIndex : blockIndex + 1
 
     setDragOverIndex(targetIndex)
+
+    const indicator = e.currentTarget.querySelector('.drop-indicator')
+    if (indicator) {
+      indicator.style.top = insertBefore ? '-1px' : 'calc(100% + 1px)'
+      indicator.classList.add('visible')
+    }
   }
 
   function handleDrop(e) {
@@ -180,6 +186,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         onKeyDown={onKeyDown}
       />
       {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
+      <div className="drop-indicator" />
     </div>
   )
 }
