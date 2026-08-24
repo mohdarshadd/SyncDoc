@@ -8,6 +8,7 @@ import ThemeToggle from './ThemeToggle'
 import ShareDialog from './ShareDialog'
 import VersionHistory from './VersionHistory'
 import VersionViewer from './VersionViewer'
+import { DragProvider } from './DragProvider'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
 import { pushToast } from '../lib/toast'
@@ -85,17 +86,19 @@ export default function Editor() {
       <div className="editor-body">
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
 
-        <div className="blocks">
-          {sync.blocks.map((b, i) => (
-            <Block
-              key={b.id}
-              block={{ ...b, first: i === 0, last: i === sync.blocks.length - 1 }}
-              users={sync.users}
-              myClientId={sync.myClientId}
-              onTextChange={sync.updateBlockText}
-              onCursor={sync.setCursor}
-              onDelete={sync.deleteBlock}
-              onMove={sync.moveBlock}
+        <DragProvider>
+          <div className="blocks">
+            {sync.blocks.map((b, i) => (
+              <Block
+                key={b.id}
+                block={{ ...b, first: i === 0, last: i === sync.blocks.length - 1, order: i }}
+                users={sync.users}
+                myClientId={sync.myClientId}
+                onTextChange={sync.updateBlockText}
+                onCursor={sync.setCursor}
+                onDelete={sync.deleteBlock}
+                onMove={sync.moveBlock}
+                onReorder={sync.reorderBlock}
               onAddAfter={(id) => sync.addBlock('paragraph', id)}
             />
           ))}
@@ -108,6 +111,7 @@ export default function Editor() {
             />
           )}
         </div>
+        </DragProvider>
 
         <div className="add-bar">
           <button className="btn btn-primary" onClick={() => sync.addBlock('paragraph')}>+ Paragraph</button>

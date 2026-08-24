@@ -146,10 +146,26 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function reorderBlock(fromId, toIndex) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      const list = arr.toArray()
+      const fromIdx = list.findIndex((b) => b.get('id') === fromId)
+      if (fromIdx === -1 || fromIdx === toIndex) return
+      const [block] = list.splice(fromIdx, 1)
+      const adjustedIndex = fromIdx < toIndex ? toIndex - 1 : toIndex
+      list.splice(adjustedIndex, 0, block)
+      arr.delete(0, arr.length)
+      arr.insert(0, list)
+    })
+  }
+
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (ydoc) ydoc.getMap('meta').set('title', value)
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
 }

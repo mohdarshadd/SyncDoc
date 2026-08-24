@@ -818,6 +818,69 @@ textarea:focus,
   border-radius: 2px;
 }
 
+/* Drag to reorder */
+.block {
+  position: relative;
+}
+
+.block[draggable] {
+  cursor: default;
+}
+
+.block-drag-handle {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  user-select: none;
+}
+
+.block:hover .block-drag-handle {
+  opacity: 1;
+}
+
+.block-drag-handle:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.block-drag-handle:active {
+  cursor: grabbing;
+}
+
+.block.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.drop-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+
+.drop-indicator.visible {
+  opacity: 1;
+}
+
 .add-bar {
   display: flex;
   gap: 10px;
