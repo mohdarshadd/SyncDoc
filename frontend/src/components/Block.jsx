@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useContext } from 'react'
+import { DragContext } from './DragProvider'
 
 const TYPE_CLASS = {
   heading: 'block-heading',
@@ -13,21 +14,22 @@ const TYPE_CLASS = {
 function placeholderFor(type) {
   switch (type) {
     case 'code':
-      return 'Code block…'
+      return 'Code...'
     case 'heading':
-      return 'Heading…'
+      return 'Heading...'
     case 'quote':
-      return 'Quote…'
+      return 'Quote...'
     case 'list':
-      return 'List item…'
+      return 'List item...'
     default:
-      return 'Start typing…'
+      return 'Start typing...'
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
+  const { dragId, dragOverIndex, setDragId, setDragOverIndex } = useContext(DragContext)
 
   const editingUsers = users.filter(
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
@@ -78,8 +80,60 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }
 
+  function handleDragStart(e) {
+    setDragId(block.id)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', block.id)
+    requestAnimationFrame(() => {
+      e.target.closest('.block')?.classList.add('dragging')
+    })
+  }
+
+  function handleDragEnd() {
+    setDragId(null)
+    setDragOverIndex(null)
+    document.querySelectorAll('.block.dragging').forEach((el) => el.classList.remove('dragging'))
+    document.querySelectorAll('.drop-indicator').forEach((el) => el.classList.remove('visible'))
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault()
+    if (dragId === block.id) return
+    e.dataTransfer.dropEffect = 'move'
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const midY = rect.top + rect.height / 2
+    const insertBefore = e.clientY < midY
+    const blockIndex = block.order ?? 0
+    const targetIndex = insertBefore ? blockIndex : blockIndex + 1
+
+    setDragOverIndex(targetIndex)
+  }
+
+  function handleDrop(e) {
+    e.preventDefault()
+    if (dragId && dragId !== block.id) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      const midY = rect.top + rect.height / 2
+      const insertBefore = e.clientY < midY
+      const blockIndex = block.order ?? 0
+      const targetIndex = insertBefore ? blockIndex : blockIndex + 1
+      onReorder(dragId, targetIndex)
+    }
+    setDragId(null)
+    setDragOverIndex(null)
+  }
+
   return (
-    <div className={`block ${cls}`} data-block-id={block.id}>
+    <div
+      className={`block ${cls} ${dragId === block.id ? 'dragging' : ''}`}
+      data-block-id={block.id}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       {editingUsers.length > 0 && (
         <div className="block-editors">
           {editingUsers.map((u) => (
@@ -96,6 +150,16 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
+      <div className="block-drag-handle" title="Drag to reorder">
+        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+          <circle cx="3" cy="3" r="1.2" fill="currentColor" />
+          <circle cx="7" cy="3" r="1.2" fill="currentColor" />
+          <circle cx="3" cy="8" r="1.2" fill="currentColor" />
+          <circle cx="7" cy="8" r="1.2" fill="currentColor" />
+          <circle cx="3" cy="13" r="1.2" fill="currentColor" />
+          <circle cx="7" cy="13" r="1.2" fill="currentColor" />
+        </svg>
+      </div>
       <div className="block-toolbar" aria-label="Block actions">
         <button type="button" className="tool-btn" title="Add below" onClick={() => onAddAfter(block.id)}>+</button>
         <button type="button" className="tool-btn" title="Move up" disabled={block.first} onClick={() => onMove(block.id, -1)}>↑</button>
