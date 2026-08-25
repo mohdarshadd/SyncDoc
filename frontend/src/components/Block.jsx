@@ -1,5 +1,6 @@
-import { useEffect, useRef, useContext } from 'react'
+import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
+import SlashMenu from './SlashMenu'
 
 const TYPE_CLASS = {
   heading: 'block-heading',
@@ -22,14 +23,15 @@ function placeholderFor(type) {
     case 'list':
       return 'List item...'
     default:
-      return 'Start typing...'
+      return 'Start typing or / for commands...'
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { dragId, dragOverIndex, setDragId, setDragOverIndex } = useContext(DragContext)
+  const [slashState, setSlashState] = useState({ active: false, query: '' })
 
   const editingUsers = users.filter(
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
@@ -50,6 +52,17 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     const el = ref.current
     const mod = e.metaKey || e.ctrlKey
 
+    if (slashState.active) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setSlashState({ active: false, query: '' })
+        return
+      }
+      if (['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) {
+        return
+      }
+    }
+
     if (mod && e.key === 's') {
       e.preventDefault()
       return
@@ -62,7 +75,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       return
     }
 
-    if (e.key === 'Enter' && !block.text) {
+    if (e.key === 'Enter' && !slashState.active) {
       e.preventDefault()
       onAddAfter(block.id)
       requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
@@ -78,6 +91,37 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         if (target) target.focus()
       })
     }
+  }
+
+  function handleInput(e) {
+    const value = e.target.value
+    onTextChange(block.id, value)
+
+    if (value === '/') {
+      setSlashState({ active: true, query: '' })
+    } else if (slashState.active) {
+      if (value.startsWith('/')) {
+        setSlashState({ active: true, query: value.slice(1) })
+      } else {
+        setSlashState({ active: false, query: '' })
+      }
+    }
+  }
+
+  function handleSlashSelect(type) {
+    const el = ref.current
+    if (el) {
+      el.value = ''
+      onTextChange(block.id, '')
+    }
+    onChangeBlockType(block.id, type)
+    setSlashState({ active: false, query: '' })
+    requestAnimationFrame(() => el?.focus())
+  }
+
+  function handleSlashClose() {
+    setSlashState({ active: false, query: '' })
+    ref.current?.focus()
   }
 
   function handleDragStart(e) {
@@ -177,7 +221,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         defaultValue={block.text}
         placeholder={placeholderFor(block.type)}
         spellCheck={false}
-        onInput={(e) => onTextChange(block.id, e.target.value)}
+        onInput={handleInput}
         onFocus={onSelection}
         onClick={onSelection}
         onKeyUp={onSelection}
@@ -187,6 +231,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       />
       {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
       <div className="drop-indicator" />
+      {slashState.active && (
+        <SlashMenu
+          query={slashState.query}
+          onSelect={handleSlashSelect}
+          onClose={handleSlashClose}
+        />
+      )}
     </div>
   )
 }

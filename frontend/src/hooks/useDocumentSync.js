@@ -118,6 +118,20 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function changeBlockType(id, newType) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      ydoc.getArray('blocks').forEach((m) => {
+        if (m.get('id') === id) {
+          m.set('type', newType)
+          if (newType === 'code') m.set('lang', 'text')
+          else m.set('lang', null)
+        }
+      })
+    })
+  }
+
   function setCursor(cursor) {
     if (providerRef.current) providerRef.current.awareness.setLocalStateField('cursor', cursor)
   }
@@ -167,5 +181,5 @@ export function useDocumentSync(docId, user) {
     if (ydoc) ydoc.getMap('meta').set('title', value)
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
 }
