@@ -99,6 +99,7 @@ export default function Editor() {
                 onDelete={sync.deleteBlock}
                 onMove={sync.moveBlock}
                 onReorder={sync.reorderBlock}
+                onChangeBlockType={sync.changeBlockType}
               onAddAfter={(id) => sync.addBlock('paragraph', id)}
             />
           ))}
