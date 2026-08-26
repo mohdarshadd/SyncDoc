@@ -79,6 +79,12 @@ export const removeShare = (docId, shareId) => request(`/documents/${docId}/shar
 
 export const listSharedWithMe = () => request('/shared-with-me')
 
+export const getProfile = () => request('/user/profile')
+
+export const updateProfile = (body) => request('/user/profile', { method: 'PATCH', body: JSON.stringify(body) })
+
+export const changePassword = (body) => request('/user/password', { method: 'POST', body: JSON.stringify(body) })
+
 export const listVersions = (docId) => request(`/documents/${docId}/versions`)
 
 export const getVersion = (docId, revision) => request(`/documents/${docId}/versions/${revision}`)

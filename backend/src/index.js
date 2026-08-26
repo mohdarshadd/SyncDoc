@@ -9,6 +9,7 @@ const authRouter = require('./routes/auth')
 const documentsRouter = require('./routes/documents')
 const sharesRouter = require('./routes/shares')
 const versionsRouter = require('./routes/versions')
+const profileRouter = require('./routes/profile')
 const { attachSyncServer } = require('./sync/server')
 
 const app = express()
@@ -25,6 +26,7 @@ app.use('/api', authRouter)
 app.use('/api', documentsRouter)
 app.use('/api', sharesRouter)
 app.use('/api', versionsRouter)
+app.use('/api', profileRouter)
 
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err)

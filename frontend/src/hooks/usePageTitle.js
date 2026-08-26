@@ -4,7 +4,8 @@ import { useLocation } from 'react-router-dom'
 const TITLES = {
   '/': 'SyncDoc - Collaborative documents',
   '/join': 'SyncDoc - Join workspace',
-  '/documents': 'SyncDoc - My documents'
+  '/documents': 'SyncDoc - My documents',
+  '/profile': 'SyncDoc - Profile'
 }
 
 export default function usePageTitle() {
