@@ -60,6 +60,11 @@ export default function Editor() {
           <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
         </div>
         <ThemeToggle />
+        <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
+          <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
+            {(user?.name || 'U').charAt(0).toUpperCase()}
+          </span>
+        </button>
       </header>
 
       {showShare && (

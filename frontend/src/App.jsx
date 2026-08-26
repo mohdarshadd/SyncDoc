@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DocumentBrowser from './components/DocumentBrowser'
 import Editor from './components/Editor'
+import ProfilePage from './pages/ProfilePage'
 import Toaster from './components/Toaster'
 import usePageTitle from './hooks/usePageTitle'
 
@@ -33,6 +34,7 @@ function AppRoutes() {
         <Route path="/login" element={<GuestOnly><LoginPage onLogin={loginUser} /></GuestOnly>} />
         <Route path="/register" element={<GuestOnly><RegisterPage onLogin={loginUser} /></GuestOnly>} />
         <Route path="/documents" element={<RequireAuth><DocumentBrowser /></RequireAuth>} />
+        <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="/editor/:docId" element={<RequireAuth><Editor /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

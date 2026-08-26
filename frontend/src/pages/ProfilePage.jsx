@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProfile, updateProfile, changePassword } from '../api'
 import { useAuth } from '../contexts/AuthContext'
-import { showToast } from '../lib/toast'
+import { pushToast } from '../lib/toast'
 
 const COLORS = ['#2997ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff453a', '#64d2ff', '#ffd60a', '#ff375f', '#ac8e68', '#8e8e93']
 
@@ -31,9 +31,9 @@ export default function ProfilePage() {
     try {
       const { user: updated } = await updateProfile({ name, color })
       updateUser(updated)
-      showToast('Profile updated', 'success')
+      pushToast('Profile updated', 'success')
     } catch (err) {
-      showToast(err.message, 'error')
+      pushToast(err.message, 'error')
     } finally {
       setSaving(false)
     }
@@ -42,18 +42,18 @@ export default function ProfilePage() {
   async function handlePasswordChange(e) {
     e.preventDefault()
     if (newPassword !== confirmPassword) {
-      showToast('Passwords do not match', 'error')
+      pushToast('Passwords do not match', 'error')
       return
     }
     setChangingPassword(true)
     try {
       await changePassword({ currentPassword, newPassword })
-      showToast('Password changed', 'success')
+      pushToast('Password changed', 'success')
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      showToast(err.message, 'error')
+      pushToast(err.message, 'error')
     } finally {
       setChangingPassword(false)
     }
