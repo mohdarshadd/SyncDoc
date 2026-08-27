@@ -2566,3 +2566,35 @@ textarea:focus,
   background: var(--panel-2);
 }
 
+/* Search highlight overlay */
+.block-textarea-wrap {
+  position: relative;
+}
+
+.search-highlight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 0;
+  pointer-events: none;
+  color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+.search-highlight mark {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: transparent;
+  border-radius: 2px;
+}
+
+.search-highlight mark.active {
+  background: var(--accent);
+  color: transparent;
+}
+
+
