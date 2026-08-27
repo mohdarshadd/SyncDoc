@@ -2597,4 +2597,13 @@ textarea:focus,
   color: transparent;
 }
 
+.footer-search {
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.footer-search.no-results {
+  color: var(--error, #ff453a);
+}
+
 
