@@ -162,6 +162,13 @@ export default function Editor() {
         <span>{stats.chars} characters</span>
         <span>{stats.blocks} blocks</span>
         <span>~{stats.minutes} min read</span>
+        {search.query && (
+          <span className={`footer-search ${search.matches.length === 0 ? 'no-results' : ''}`}>
+            {search.matches.length === 0
+              ? 'No matches for "' + search.query + '"'
+              : `${search.matches.length} match${search.matches.length === 1 ? '' : 'es'}`}
+          </span>
+        )}
         <span className="footer-status">
           <i className={`dot ${sync.status}`} />
           {sync.status === 'connected' ? 'saved' : sync.status}
