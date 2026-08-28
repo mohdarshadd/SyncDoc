@@ -157,7 +157,7 @@ export default function Editor() {
               icon="blocks"
               title="This document is empty"
               hint="Start typing below, or add your first block."
-              action={<button className="btn btn-primary" onClick={() => sync.addBlock('paragraph')}>+ Paragraph</button>}
+              action={<button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>}
             />
           )}
         </div>
