@@ -105,6 +105,7 @@ export function useDocumentSync(docId, user) {
       const arr = ydoc.getArray('blocks')
       const existing = arr.toArray()
       const idx = afterId ? existing.findIndex((b) => b.get('id') === afterId) + 1 : existing.length
+      const insertIndex = Math.min(idx, arr.length)
       const id = crypto.randomUUID()
       const block = new Y.Map({
         id,
@@ -112,9 +113,12 @@ export function useDocumentSync(docId, user) {
         text: '',
         lang: type === 'code' ? 'text' : null,
         parentId: null,
-        order: existing.length
+        order: insertIndex
       })
-      arr.insert(Math.min(idx, arr.length), [block])
+      existing.forEach((m) => {
+        if (m.get('order') >= insertIndex) m.set('order', m.get('order') + 1)
+      })
+      arr.insert(insertIndex, [block])
     })
   }
 
@@ -157,6 +161,7 @@ export function useDocumentSync(docId, user) {
       if (idx === -1 || target < 0 || target >= list.length) return
       arr.delete(idx, 1)
       arr.insert(target, [list[idx]])
+      refreshOrder(arr)
     })
   }
 
@@ -173,12 +178,17 @@ export function useDocumentSync(docId, user) {
       list.splice(adjustedIndex, 0, block)
       arr.delete(0, arr.length)
       arr.insert(0, list)
+      refreshOrder(arr)
     })
   }
 
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (ydoc) ydoc.getMap('meta').set('title', value)
+  }
+
+  function refreshOrder(arr) {
+    arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
   return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }

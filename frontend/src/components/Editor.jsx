@@ -40,6 +40,20 @@ export default function Editor() {
     pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
   }
 
+  function handleAddBlock(type, afterId = null) {
+    sync.addBlock(type, afterId)
+    setTimeout(() => {
+      const blocksEl = document.querySelector('.blocks')
+      const els = blocksEl ? Array.from(blocksEl.children).filter((el) => el.classList.contains('block')) : []
+      const last = els[els.length - 1]
+      if (last) {
+        last.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+        const ta = last.querySelector('textarea')
+        if (ta && afterId == null) ta.focus()
+      }
+    }, 30)
+  }
+
   useEffect(() => {
     function handleKeyDown(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
@@ -132,7 +146,7 @@ export default function Editor() {
                 onMove={sync.moveBlock}
                 onReorder={sync.reorderBlock}
                 onChangeBlockType={sync.changeBlockType}
-                onAddAfter={(id) => sync.addBlock('paragraph', id)}
+                onAddAfter={(id) => handleAddBlock('paragraph', id)}
                 searchQuery={search.query}
                 blockMatches={search.matches.filter((m) => m.blockId === b.id)}
                 activeMatch={search.activeMatch}
@@ -143,17 +157,17 @@ export default function Editor() {
               icon="blocks"
               title="This document is empty"
               hint="Start typing below, or add your first block."
-              action={<button className="btn btn-primary" onClick={() => sync.addBlock('paragraph')}>+ Paragraph</button>}
+              action={<button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>}
             />
           )}
         </div>
         </DragProvider>
 
         <div className="add-bar">
-          <button className="btn btn-primary" onClick={() => sync.addBlock('paragraph')}>+ Paragraph</button>
-          <button className="btn btn-ghost" onClick={() => sync.addBlock('heading')}>Heading</button>
-          <button className="btn btn-ghost" onClick={() => sync.addBlock('code')}>Code</button>
-          <button className="btn btn-ghost" onClick={() => sync.addBlock('quote')}>Quote</button>
+          <button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>
+          <button className="btn btn-ghost" onClick={() => handleAddBlock('heading')}>Heading</button>
+          <button className="btn btn-ghost" onClick={() => handleAddBlock('code')}>Code</button>
+          <button className="btn btn-ghost" onClick={() => handleAddBlock('quote')}>Quote</button>
         </div>
       </div>
 
