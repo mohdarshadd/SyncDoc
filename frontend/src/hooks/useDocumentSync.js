@@ -4,6 +4,7 @@ import { WebsocketProvider } from 'y-websocket'
 import { getDocument, WS_URL } from '../api'
 import { buildYdoc } from '../lib/ydoc'
 import { diffBlocks, mergeDelta, snapshotFromYArray } from '../store/blockStore'
+import { uid } from '../lib/uid'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -106,15 +107,14 @@ export function useDocumentSync(docId, user) {
       const existing = arr.toArray()
       const idx = afterId ? existing.findIndex((b) => b.get('id') === afterId) + 1 : existing.length
       const insertIndex = Math.min(idx, arr.length)
-      const id = crypto.randomUUID()
-      const block = new Y.Map({
-        id,
-        type,
-        text: '',
-        lang: type === 'code' ? 'text' : null,
-        parentId: null,
-        order: insertIndex
-      })
+      const id = uid()
+      const block = new Y.Map()
+      block.set('id', id)
+      block.set('type', type)
+      block.set('text', '')
+      block.set('lang', type === 'code' ? 'text' : null)
+      block.set('parentId', null)
+      block.set('order', insertIndex)
       existing.forEach((m) => {
         if (m.get('order') >= insertIndex) m.set('order', m.get('order') + 1)
       })
