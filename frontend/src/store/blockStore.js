@@ -12,10 +12,7 @@ export function mapToBlock(m) {
 }
 
 export function snapshotFromYArray(arr) {
-  return arr
-    .toArray()
-    .map(mapToBlock)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  return arr.toArray().map(mapToBlock)
 }
 
 export function diffBlocks(prev, full) {

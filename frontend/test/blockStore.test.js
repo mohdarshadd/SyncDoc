@@ -22,14 +22,14 @@ describe('snapshotFromYArray', () => {
     return arr
   }
 
-  it('maps a Y.Array of Y.Map blocks to plain objects ordered by order', () => {
+  it('preserves the Y.Array live order (source of truth) for blocks', () => {
     const arr = makeArray([
       { id: 'b', type: 'paragraph', text: 'second', order: 1 },
       { id: 'a', type: 'paragraph', text: 'first', order: 0 }
     ])
     const snap = snapshotFromYArray(arr)
-    expect(snap.map((b) => b.id)).toEqual(['a', 'b'])
-    expect(snap[0].text).toBe('first')
+    expect(snap.map((b) => b.id)).toEqual(['b', 'a'])
+    expect(snap[0].text).toBe('second')
   })
 
   it('mapToBlock converts a Y.Map into a plain block object', () => {
