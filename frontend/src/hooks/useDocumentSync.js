@@ -161,6 +161,7 @@ export function useDocumentSync(docId, user) {
       if (idx === -1 || target < 0 || target >= list.length) return
       arr.delete(idx, 1)
       arr.insert(target, [list[idx]])
+      refreshOrder(arr)
     })
   }
 
@@ -177,12 +178,17 @@ export function useDocumentSync(docId, user) {
       list.splice(adjustedIndex, 0, block)
       arr.delete(0, arr.length)
       arr.insert(0, list)
+      refreshOrder(arr)
     })
   }
 
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (ydoc) ydoc.getMap('meta').set('title', value)
+  }
+
+  function refreshOrder(arr) {
+    arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
   return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
