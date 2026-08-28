@@ -105,7 +105,11 @@ export function useDocumentSync(docId, user) {
     ydoc.transact(() => {
       const arr = ydoc.getArray('blocks')
       const existing = arr.toArray()
-      const idx = afterId ? existing.findIndex((b) => b.get('id') === afterId) + 1 : existing.length
+      let idx = existing.length
+      if (afterId) {
+        const found = existing.findIndex((b) => b.get('id') === afterId)
+        if (found >= 0) idx = found + 1
+      }
       const insertIndex = Math.min(idx, arr.length)
       const id = uid()
       const block = new Y.Map()
