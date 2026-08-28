@@ -1,7 +1,6 @@
 import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
-
 const TYPE_CLASS = {
   heading: 'block-heading',
   paragraph: 'block-paragraph',
@@ -27,11 +26,13 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { dragId, dragOverIndex, setDragId, setDragOverIndex } = useContext(DragContext)
   const [slashState, setSlashState] = useState({ active: false, query: '' })
+
+  const isActiveBlock = activeMatch && activeMatch.blockId === block.id
 
   const editingUsers = users.filter(
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
@@ -45,6 +46,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       } catch (e) { /* noop */ }
     }
   }, [block.text])
+
+  useEffect(() => {
+    if (isActiveBlock && ref.current) {
+      const blockEl = ref.current.closest('.block')
+      blockEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [isActiveBlock, blockMatches, searchQuery])
 
   const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
 
@@ -216,19 +224,29 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         <button type="button" className="tool-btn" title="Move down" disabled={block.last} onClick={() => onMove(block.id, 1)}>↓</button>
         <button type="button" className="tool-btn tool-btn-danger" title="Delete block" onClick={() => onDelete(block.id)}>×</button>
       </div>
-      <textarea
-        ref={ref}
-        defaultValue={block.text}
-        placeholder={placeholderFor(block.type)}
-        spellCheck={false}
-        onInput={handleInput}
-        onFocus={onSelection}
-        onClick={onSelection}
-        onKeyUp={onSelection}
-        onSelect={onSelection}
-        onBlur={() => onCursor(null)}
-        onKeyDown={onKeyDown}
-      />
+      <div className="block-textarea-wrap">
+        {searchQuery && block.text && (
+          <HighlightOverlay
+            text={block.text}
+            query={searchQuery}
+            matches={blockMatches}
+            activeMatch={activeMatch}
+          />
+        )}
+        <textarea
+          ref={ref}
+          defaultValue={block.text}
+          placeholder={placeholderFor(block.type)}
+          spellCheck={false}
+          onInput={handleInput}
+          onFocus={onSelection}
+          onClick={onSelection}
+          onKeyUp={onSelection}
+          onSelect={onSelection}
+          onBlur={() => onCursor(null)}
+          onKeyDown={onKeyDown}
+        />
+      </div>
       {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
       <div className="drop-indicator" />
       {slashState.active && (
@@ -238,6 +256,30 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           onClose={handleSlashClose}
         />
       )}
+    </div>
+  )
+}
+
+function HighlightOverlay({ text, query, matches, activeMatch }) {
+  const parts = []
+  let cursor = 0
+  matches.forEach((m, i) => {
+    if (m.index > cursor) parts.push({ start: cursor, end: m.index, active: false })
+    parts.push({ start: m.index, end: m.index + m.length, active: activeMatch && m.index === activeMatch.index && m.blockId === activeMatch.blockId })
+    cursor = m.index + m.length
+  })
+  if (cursor < text.length) parts.push({ start: cursor, end: text.length, active: false })
+
+  return (
+    <div className="search-highlight" aria-hidden="true">
+      {parts.map((p, i) => (
+        <mark
+          key={i}
+          className={p.active ? 'active' : ''}
+        >
+          {text.slice(p.start, p.end)}
+        </mark>
+      ))}
     </div>
   )
 }

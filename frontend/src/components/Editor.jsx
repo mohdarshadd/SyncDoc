@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
@@ -13,12 +13,15 @@ import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
 import { pushToast } from '../lib/toast'
 import { useAuth } from '../contexts/AuthContext'
+import useDocumentSearch from '../hooks/useDocumentSearch'
+import SearchDialog from './SearchDialog'
 
 export default function Editor() {
   const { docId } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
   const sync = useDocumentSync(docId, user)
+  const search = useDocumentSearch(sync.blocks)
   const [showShare, setShowShare] = useState(false)
   const [showVersions, setShowVersions] = useState(false)
   const [viewVersion, setViewVersion] = useState(null)
@@ -37,6 +40,17 @@ export default function Editor() {
     pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
   }
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        search.openSearch()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [search])
+
   return (
     <div className="editor">
       <header className="editor-header">
@@ -52,6 +66,7 @@ export default function Editor() {
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
           <button className="btn btn-ghost" onClick={() => setShowVersions(true)}>History</button>
+          <button className="btn btn-ghost" onClick={search.openSearch} title="Search (Cmd/Ctrl+F)">Search</button>
           {isOwner && (
             <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
           )}
@@ -88,6 +103,18 @@ export default function Editor() {
         />
       )}
 
+      {search.open && (
+        <SearchDialog
+          query={search.query}
+          setQuery={search.setQuery}
+          matches={search.matches}
+          activeIndex={search.activeIndex}
+          onNext={search.next}
+          onPrev={search.prev}
+          onClose={search.closeSearch}
+        />
+      )}
+
       <div className="editor-body">
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
 
@@ -105,9 +132,12 @@ export default function Editor() {
                 onMove={sync.moveBlock}
                 onReorder={sync.reorderBlock}
                 onChangeBlockType={sync.changeBlockType}
-              onAddAfter={(id) => sync.addBlock('paragraph', id)}
-            />
-          ))}
+                onAddAfter={(id) => sync.addBlock('paragraph', id)}
+                searchQuery={search.query}
+                blockMatches={search.matches.filter((m) => m.blockId === b.id)}
+                activeMatch={search.activeMatch}
+              />
+            ))}
           {sync.blocks.length === 0 && (
             <EmptyState
               icon="blocks"
@@ -132,6 +162,13 @@ export default function Editor() {
         <span>{stats.chars} characters</span>
         <span>{stats.blocks} blocks</span>
         <span>~{stats.minutes} min read</span>
+        {search.query && (
+          <span className={`footer-search ${search.matches.length === 0 ? 'no-results' : ''}`}>
+            {search.matches.length === 0
+              ? 'No matches for "' + search.query + '"'
+              : `${search.matches.length} match${search.matches.length === 1 ? '' : 'es'}`}
+          </span>
+        )}
         <span className="footer-status">
           <i className={`dot ${sync.status}`} />
           {sync.status === 'connected' ? 'saved' : sync.status}
