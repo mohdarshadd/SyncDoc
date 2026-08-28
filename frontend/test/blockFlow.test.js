@@ -16,7 +16,11 @@ function addBlock(ydoc, type = 'paragraph', afterId = null, setId = uid) {
   ydoc.transact(() => {
     const arr = ydoc.getArray('blocks')
     const existing = arr.toArray()
-    const idx = afterId ? existing.findIndex((b) => b.get('id') === afterId) + 1 : existing.length
+    let idx = existing.length
+    if (afterId) {
+      const found = existing.findIndex((b) => b.get('id') === afterId)
+      if (found >= 0) idx = found + 1
+    }
     const insertIndex = Math.min(idx, arr.length)
     const block = new Y.Map()
     block.set('id', setId())
@@ -87,6 +91,24 @@ describe('client block editing flow on an empty document', () => {
     addBlock(ydoc, 'paragraph')
     addBlock(ydoc, 'heading')
     addBlock(ydoc, 'quote')
+    state.forEach((b, i) => expect(b.order).toBe(i))
+  })
+
+  it('adds a block below a specific block and shifts subsequent order values', () => {
+    addBlock(ydoc, 'paragraph')
+    addBlock(ydoc, 'paragraph')
+    const firstId = state[0].id
+    addBlock(ydoc, 'heading', firstId)
+    expect(state).toHaveLength(3)
+    expect(state.map((b) => b.type)).toEqual(['paragraph', 'heading', 'paragraph'])
+    state.forEach((b, i) => expect(b.order).toBe(i))
+  })
+
+  it('adds a block at the end when given an unknown afterId', () => {
+    addBlock(ydoc, 'paragraph')
+    addBlock(ydoc, 'quote', 'does-not-exist')
+    expect(state).toHaveLength(2)
+    expect(state[1].type).toBe('quote')
     state.forEach((b, i) => expect(b.order).toBe(i))
   })
 })
