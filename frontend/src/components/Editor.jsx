@@ -41,23 +41,19 @@ export default function Editor() {
   }
 
   function handleAddBlock(type, afterId = null) {
-    try {
-      sync.addBlock(type, afterId)
-    } catch (e) {
+    const newId = sync.addBlock(type, afterId)
+    if (!newId) {
       pushToast('Could not add block', 'error')
       return
     }
     setTimeout(() => {
-      const blocksEl = document.querySelector('.blocks')
-      const els = blocksEl ? Array.from(blocksEl.children).filter((el) => el.classList.contains('block')) : []
-      const last = els[els.length - 1]
-      if (last) {
-        last.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-        const ta = last.querySelector('textarea')
-        if (ta) {
-          ta.focus()
-          ta.setSelectionRange(ta.value.length, ta.value.length)
-        }
+      const el = document.querySelector(`[data-block-id="${newId}"]`)
+      if (!el) return
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      const ta = el.querySelector('textarea')
+      if (ta) {
+        ta.focus()
+        ta.setSelectionRange(ta.value.length, ta.value.length)
       }
     }, 30)
   }
