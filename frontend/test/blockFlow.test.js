@@ -111,4 +111,11 @@ describe('client block editing flow on an empty document', () => {
     expect(state[1].type).toBe('quote')
     state.forEach((b, i) => expect(b.order).toBe(i))
   })
+
+  it.each(['paragraph', 'heading', 'code', 'quote'])('empty state can start with a %s block', (type) => {
+    addBlock(ydoc, type)
+    expect(state).toHaveLength(1)
+    expect(state[0].type).toBe(type)
+    expect(state[0].order).toBe(0)
+  })
 })

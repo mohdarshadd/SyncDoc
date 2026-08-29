@@ -471,6 +471,14 @@ textarea:focus,
   justify-content: center;
 }
 
+.empty-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+
 .doc-list {
   list-style: none;
   margin: 0;
