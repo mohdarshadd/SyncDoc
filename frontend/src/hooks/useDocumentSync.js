@@ -101,7 +101,8 @@ export function useDocumentSync(docId, user) {
 
   function addBlock(type = 'paragraph', afterId = null) {
     const ydoc = ydocRef.current
-    if (!ydoc) return
+    if (!ydoc) return null
+    let newId = null
     ydoc.transact(() => {
       const arr = ydoc.getArray('blocks')
       const existing = arr.toArray()
@@ -123,7 +124,9 @@ export function useDocumentSync(docId, user) {
         if (m.get('order') >= insertIndex) m.set('order', m.get('order') + 1)
       })
       arr.insert(insertIndex, [block])
+      newId = id
     })
+    return newId
   }
 
   function changeBlockType(id, newType) {
