@@ -160,8 +160,15 @@ export default function Editor() {
             <EmptyState
               icon="blocks"
               title="This document is empty"
-              hint="Start typing below, or add your first block."
-              action={<button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>}
+              hint="Add your first block to start writing."
+              action={
+                <div className="empty-actions">
+                  <button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>
+                  <button className="btn btn-ghost" onClick={() => handleAddBlock('heading')}>Heading</button>
+                  <button className="btn btn-ghost" onClick={() => handleAddBlock('code')}>Code</button>
+                  <button className="btn btn-ghost" onClick={() => handleAddBlock('quote')}>Quote</button>
+                </div>
+              }
             />
           )}
         </div>
