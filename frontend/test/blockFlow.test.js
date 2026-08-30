@@ -44,6 +44,29 @@ function updateBlockText(ydoc, id, text) {
   })
 }
 
+function cloneMap(m) {
+  const c = new Y.Map()
+  m.forEach((value, key) => c.set(key, value))
+  return c
+}
+
+function reorderBlock(ydoc, fromId, toIndex) {
+  ydoc.transact(() => {
+    const arr = ydoc.getArray('blocks')
+    const list = arr.toArray()
+    const fromIdx = list.findIndex((b) => b.get('id') === fromId)
+    if (fromIdx === -1 || fromIdx === toIndex) return
+    const reordered = [...list]
+    const [block] = reordered.splice(fromIdx, 1)
+    const adjusted = fromIdx < toIndex ? toIndex - 1 : toIndex
+    reordered.splice(adjusted, 0, block)
+    const fresh = reordered.map((m) => cloneMap(m))
+    arr.delete(0, arr.length)
+    arr.insert(0, fresh)
+    fresh.forEach((m, i) => m.set('order', i))
+  })
+}
+
 describe('client block editing flow on an empty document', () => {
   let ydoc
   let blocksArr
@@ -117,5 +140,25 @@ describe('client block editing flow on an empty document', () => {
     expect(state).toHaveLength(1)
     expect(state[0].type).toBe(type)
     expect(state[0].order).toBe(0)
+  })
+
+  it('reorders a block forward via drag drop index', () => {
+    addBlock(ydoc, 'paragraph')
+    addBlock(ydoc, 'heading')
+    addBlock(ydoc, 'quote')
+    const headingId = state[1].id
+    reorderBlock(ydoc, headingId, 3)
+    expect(state.map((b) => b.type)).toEqual(['paragraph', 'quote', 'heading'])
+    expect(state.map((b) => b.order)).toEqual([0, 1, 2])
+  })
+
+  it('reorders a block backward via drag drop index', () => {
+    addBlock(ydoc, 'paragraph')
+    addBlock(ydoc, 'heading')
+    addBlock(ydoc, 'quote')
+    const quoteId = state[2].id
+    reorderBlock(ydoc, quoteId, 0)
+    expect(state.map((b) => b.type)).toEqual(['quote', 'paragraph', 'heading'])
+    expect(state.map((b) => b.order)).toEqual([0, 1, 2])
   })
 })
