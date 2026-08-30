@@ -1,6 +1,18 @@
 import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
+
+function blockElements() {
+  return Array.from(document.querySelectorAll('.block'))
+}
+
+function indicatorFor(el) {
+  return el ? el.querySelector('.drop-indicator') : null
+}
+
+function clearIndicators() {
+  document.querySelectorAll('.drop-indicator').forEach((i) => i.classList.remove('visible'))
+}
 const TYPE_CLASS = {
   heading: 'block-heading',
   paragraph: 'block-paragraph',
@@ -29,7 +41,7 @@ function placeholderFor(type) {
 export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
-  const { dragId, dragOverIndex, setDragId, setDragOverIndex } = useContext(DragContext)
+  const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
   const [slashState, setSlashState] = useState({ active: false, query: '' })
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
@@ -132,65 +144,78 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     ref.current?.focus()
   }
 
-  function handleDragStart(e) {
-    setDragId(block.id)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', block.id)
-    requestAnimationFrame(() => {
-      e.target.closest('.block')?.classList.add('dragging')
-    })
-  }
-
-  function handleDragEnd() {
-    setDragId(null)
-    setDragOverIndex(null)
-    document.querySelectorAll('.block.dragging').forEach((el) => el.classList.remove('dragging'))
-    document.querySelectorAll('.drop-indicator').forEach((el) => el.classList.remove('visible'))
-  }
-
-  function handleDragOver(e) {
+  function onHandlePointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return
     e.preventDefault()
-    if (dragId === block.id) return
-    e.dataTransfer.dropEffect = 'move'
+    const el = e.currentTarget.closest('.block')
+    const draggedId = block.id
+    setActiveId(draggedId)
+    el?.classList.add('dragging')
+    document.body.classList.add('dragging-active')
+    e.currentTarget.setPointerCapture?.(e.pointerId)
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    const midY = rect.top + rect.height / 2
-    const insertBefore = e.clientY < midY
-    const blockIndex = block.order ?? 0
-    const targetIndex = insertBefore ? blockIndex : blockIndex + 1
+    let currentIndex = blockElements().findIndex((b) => b.dataset.blockId === draggedId)
 
-    setDragOverIndex(targetIndex)
-
-    const indicator = e.currentTarget.querySelector('.drop-indicator')
-    if (indicator) {
-      indicator.style.top = insertBefore ? '-1px' : 'calc(100% + 1px)'
-      indicator.classList.add('visible')
+    function onPointerMove(ev) {
+      const blocks = blockElements()
+      let targetIndex = blocks.length
+      for (let i = 0; i < blocks.length; i++) {
+        const r = blocks[i].getBoundingClientRect()
+        if (ev.clientY < r.top + r.height / 2) {
+          targetIndex = i
+          break
+        }
+      }
+      currentIndex = targetIndex
+      clearIndicators()
+      if (targetIndex < blocks.length) {
+        const over = blocks[targetIndex]
+        setOverId(over.dataset.blockId)
+        setInsertIndex(targetIndex)
+        const ind = indicatorFor(over)
+        if (ind) {
+          ind.style.top = '-1px'
+          ind.classList.add('visible')
+        }
+      } else {
+        setOverId(null)
+        setInsertIndex(blocks.length)
+        const last = blocks[blocks.length - 1]
+        const ind = indicatorFor(last)
+        if (ind) {
+          ind.style.top = 'calc(100% + 1px)'
+          ind.classList.add('visible')
+        }
+      }
     }
-  }
 
-  function handleDrop(e) {
-    e.preventDefault()
-    if (dragId && dragId !== block.id) {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const midY = rect.top + rect.height / 2
-      const insertBefore = e.clientY < midY
-      const blockIndex = block.order ?? 0
-      const targetIndex = insertBefore ? blockIndex : blockIndex + 1
-      onReorder(dragId, targetIndex)
+    function finish() {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', finish)
+      window.removeEventListener('pointercancel', finish)
+      clearIndicators()
+      document.querySelectorAll('.block.dragging').forEach((b) => b.classList.remove('dragging'))
+      document.body.classList.remove('dragging-active')
+      const from = blockElements().findIndex((b) => b.dataset.blockId === draggedId)
+      const to = currentIndex
+      if (from !== -1 && to != null) {
+        const adjusted = from < to ? to - 1 : to
+        onReorder(draggedId, adjusted)
+      }
+      setActiveId(null)
+      setOverId(null)
+      setInsertIndex(null)
     }
-    setDragId(null)
-    setDragOverIndex(null)
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', finish)
+    window.addEventListener('pointercancel', finish)
   }
 
   return (
     <div
-      className={`block ${cls} ${dragId === block.id ? 'dragging' : ''}`}
+      className={`block ${cls} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
       data-block-id={block.id}
-      draggable
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
     >
       {editingUsers.length > 0 && (
         <div className="block-editors">
@@ -208,7 +233,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
-      <div className="block-drag-handle" title="Drag to reorder">
+      <button
+        type="button"
+        className="block-drag-handle"
+        title="Drag to reorder"
+        aria-label="Drag to reorder block"
+        onPointerDown={onHandlePointerDown}
+      >
         <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
           <circle cx="3" cy="3" r="1.2" fill="currentColor" />
           <circle cx="7" cy="3" r="1.2" fill="currentColor" />
@@ -217,7 +248,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           <circle cx="3" cy="13" r="1.2" fill="currentColor" />
           <circle cx="7" cy="13" r="1.2" fill="currentColor" />
         </svg>
-      </div>
+      </button>
       <div className="block-toolbar" aria-label="Block actions">
         <button type="button" className="tool-btn" title="Add below" onClick={() => onAddAfter(block.id)}>+</button>
         <button type="button" className="tool-btn" title="Move up" disabled={block.first} onClick={() => onMove(block.id, -1)}>↑</button>

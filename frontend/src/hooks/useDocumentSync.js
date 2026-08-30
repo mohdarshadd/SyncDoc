@@ -8,6 +8,12 @@ import { uid } from '../lib/uid'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
+function cloneMap(m) {
+  const c = new Y.Map()
+  m.forEach((value, key) => c.set(key, value))
+  return c
+}
+
 export function useDocumentSync(docId, user) {
   const ydocRef = useRef(null)
   const providerRef = useRef(null)
@@ -166,8 +172,12 @@ export function useDocumentSync(docId, user) {
       const idx = list.findIndex((b) => b.get('id') === id)
       const target = idx + dir
       if (idx === -1 || target < 0 || target >= list.length) return
-      arr.delete(idx, 1)
-      arr.insert(target, [list[idx]])
+      const reordered = [...list]
+      const [block] = reordered.splice(idx, 1)
+      reordered.splice(target, 0, block)
+      const fresh = reordered.map((m) => cloneMap(m))
+      arr.delete(0, arr.length)
+      arr.insert(0, fresh)
       refreshOrder(arr)
     })
   }
@@ -180,11 +190,13 @@ export function useDocumentSync(docId, user) {
       const list = arr.toArray()
       const fromIdx = list.findIndex((b) => b.get('id') === fromId)
       if (fromIdx === -1 || fromIdx === toIndex) return
-      const [block] = list.splice(fromIdx, 1)
+      const reordered = [...list]
+      const [block] = reordered.splice(fromIdx, 1)
       const adjustedIndex = fromIdx < toIndex ? toIndex - 1 : toIndex
-      list.splice(adjustedIndex, 0, block)
+      reordered.splice(adjustedIndex, 0, block)
+      const fresh = reordered.map((m) => cloneMap(m))
       arr.delete(0, arr.length)
-      arr.insert(0, list)
+      arr.insert(0, fresh)
       refreshOrder(arr)
     })
   }

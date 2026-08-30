@@ -3,11 +3,12 @@ import { createContext, useState } from 'react'
 export const DragContext = createContext(null)
 
 export function DragProvider({ children }) {
-  const [dragId, setDragId] = useState(null)
-  const [dragOverIndex, setDragOverIndex] = useState(null)
+  const [activeId, setActiveId] = useState(null)
+  const [overId, setOverId] = useState(null)
+  const [insertIndex, setInsertIndex] = useState(null)
 
   return (
-    <DragContext.Provider value={{ dragId, dragOverIndex, setDragId, setDragOverIndex }}>
+    <DragContext.Provider value={{ activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex }}>
       {children}
     </DragContext.Provider>
   )

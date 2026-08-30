@@ -60,5 +60,5 @@ export function mergeDelta(snapshot, delta) {
     }
   }
 
-  return next
+  return next.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
 }
