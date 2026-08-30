@@ -840,29 +840,34 @@ textarea:focus,
   left: -28px;
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 28px;
+  width: 28px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
-  border-radius: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 8px;
   cursor: grab;
   opacity: 0;
   transition: opacity 0.15s, background 0.15s;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
-.block:hover .block-drag-handle {
+.block:hover .block-drag-handle,
+.block:focus-within .block-drag-handle,
+.block-drag-handle:focus-visible {
   opacity: 1;
 }
 
-.block-drag-handle:hover {
+.block-drag-handle:hover,
+.block-drag-handle:active {
   background: var(--panel-2);
   color: var(--text);
-}
-
-.block-drag-handle:active {
   cursor: grabbing;
 }
 
@@ -870,6 +875,11 @@ textarea:focus,
   opacity: 0.4;
   transform: scale(0.98);
   transition: opacity 0.2s, transform 0.2s;
+}
+
+body.dragging-active {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .drop-indicator {
@@ -887,6 +897,20 @@ textarea:focus,
 
 .drop-indicator.visible {
   opacity: 1;
+}
+
+@media (hover: none) {
+  .block-drag-handle {
+    opacity: 1;
+    left: -34px;
+    width: 32px;
+    height: 44px;
+  }
+  .block-drag-handle:hover,
+  .block-drag-handle:active {
+    background: transparent;
+    color: var(--muted);
+  }
 }
 
 .add-bar {
