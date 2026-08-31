@@ -233,60 +233,63 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
-      <button
-        type="button"
-        className="block-drag-handle"
-        title="Drag to reorder"
-        aria-label="Drag to reorder block"
-        onPointerDown={onHandlePointerDown}
-      >
-        <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
-          <circle cx="3" cy="3" r="1.2" fill="currentColor" />
-          <circle cx="7" cy="3" r="1.2" fill="currentColor" />
-          <circle cx="3" cy="8" r="1.2" fill="currentColor" />
-          <circle cx="7" cy="8" r="1.2" fill="currentColor" />
-          <circle cx="3" cy="13" r="1.2" fill="currentColor" />
-          <circle cx="7" cy="13" r="1.2" fill="currentColor" />
-        </svg>
-      </button>
-      <div className="block-toolbar" aria-label="Block actions">
-        <button type="button" className="tool-btn" title="Add below" onClick={() => onAddAfter(block.id)}>+</button>
-        <button type="button" className="tool-btn" title="Move up" disabled={block.first} onClick={() => onMove(block.id, -1)}>↑</button>
-        <button type="button" className="tool-btn" title="Move down" disabled={block.last} onClick={() => onMove(block.id, 1)}>↓</button>
-        <button type="button" className="tool-btn tool-btn-danger" title="Delete block" onClick={() => onDelete(block.id)}>×</button>
+      <div className="block-gutter">
+        <button type="button" className="block-add-btn" title="Add block" onClick={() => onAddAfter(block.id)}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="block-drag-handle"
+          title="Drag to reorder"
+          aria-label="Drag to reorder block"
+          onPointerDown={onHandlePointerDown}
+        >
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+            <circle cx="3" cy="3" r="1.2" fill="currentColor" />
+            <circle cx="7" cy="3" r="1.2" fill="currentColor" />
+            <circle cx="3" cy="8" r="1.2" fill="currentColor" />
+            <circle cx="7" cy="8" r="1.2" fill="currentColor" />
+            <circle cx="3" cy="13" r="1.2" fill="currentColor" />
+            <circle cx="7" cy="13" r="1.2" fill="currentColor" />
+          </svg>
+        </button>
       </div>
-      <div className="block-textarea-wrap">
-        {searchQuery && block.text && (
-          <HighlightOverlay
-            text={block.text}
-            query={searchQuery}
-            matches={blockMatches}
-            activeMatch={activeMatch}
+      <div className="block-content">
+        <div className="block-textarea-wrap">
+          {searchQuery && block.text && (
+            <HighlightOverlay
+              text={block.text}
+              query={searchQuery}
+              matches={blockMatches}
+              activeMatch={activeMatch}
+            />
+          )}
+          <textarea
+            ref={ref}
+            defaultValue={block.text}
+            placeholder={placeholderFor(block.type)}
+            spellCheck={false}
+            onInput={handleInput}
+            onFocus={onSelection}
+            onClick={onSelection}
+            onKeyUp={onSelection}
+            onSelect={onSelection}
+            onBlur={() => onCursor(null)}
+            onKeyDown={onKeyDown}
+          />
+        </div>
+        {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
+        {slashState.active && (
+          <SlashMenu
+            query={slashState.query}
+            onSelect={handleSlashSelect}
+            onClose={handleSlashClose}
           />
         )}
-        <textarea
-          ref={ref}
-          defaultValue={block.text}
-          placeholder={placeholderFor(block.type)}
-          spellCheck={false}
-          onInput={handleInput}
-          onFocus={onSelection}
-          onClick={onSelection}
-          onKeyUp={onSelection}
-          onSelect={onSelection}
-          onBlur={() => onCursor(null)}
-          onKeyDown={onKeyDown}
-        />
       </div>
-      {block.type === 'code' && <span className="block-lang">{block.lang || 'text'}</span>}
       <div className="drop-indicator" />
-      {slashState.active && (
-        <SlashMenu
-          query={slashState.query}
-          onSelect={handleSlashSelect}
-          onClose={handleSlashClose}
-        />
-      )}
     </div>
   )
 }
