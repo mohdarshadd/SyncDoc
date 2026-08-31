@@ -27,7 +27,7 @@
   --accent-2: #5856d6;
   --danger: #ff3b30;
   --ok: #34c759;
-  --code-bg: #f5f5f7;
+  --code-bg: #ebecef;
   --quote-text: #5856d6;
   color-scheme: light;
 }
@@ -762,14 +762,39 @@ textarea:focus,
 
 .block-code {
   background: var(--code-bg);
-  border-color: var(--border);
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
   border-radius: 12px;
+  margin: 2px 0;
 }
 
 .block-code textarea {
   font-family: 'SF Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
   font-size: 14px;
-  min-height: 60px;
+  line-height: 1.6;
+  min-height: 72px;
+  white-space: pre;
+  word-break: break-word;
+  tab-size: 4;
+  letter-spacing: 0;
+  padding: 10px 70px 10px 14px;
+  color: var(--text);
+}
+
+.block-lang {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 4;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
 }
 
 .block-quote {
@@ -780,15 +805,6 @@ textarea:focus,
 .block-quote textarea {
   font-style: italic;
   color: var(--quote-text);
-}
-
-.block-lang {
-  position: absolute;
-  top: 6px;
-  right: 12px;
-  font-size: 11px;
-  color: var(--muted);
-  font-family: ui-monospace, Consolas, monospace;
 }
 
 .block-editors {
