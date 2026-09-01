@@ -173,13 +173,6 @@ export default function Editor() {
           )}
         </div>
         </DragProvider>
-
-        <div className="add-bar">
-          <button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>
-          <button className="btn btn-ghost" onClick={() => handleAddBlock('heading')}>Heading</button>
-          <button className="btn btn-ghost" onClick={() => handleAddBlock('code')}>Code</button>
-          <button className="btn btn-ghost" onClick={() => handleAddBlock('quote')}>Quote</button>
-        </div>
       </div>
 
       <footer className="editor-footer">
