@@ -15,6 +15,7 @@ import { pushToast } from '../lib/toast'
 import { useAuth } from '../contexts/AuthContext'
 import useDocumentSearch from '../hooks/useDocumentSearch'
 import SearchDialog from './SearchDialog'
+import ShortcutsOverlay from './ShortcutsOverlay'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -25,6 +26,7 @@ export default function Editor() {
   const [showShare, setShowShare] = useState(false)
   const [showVersions, setShowVersions] = useState(false)
   const [viewVersion, setViewVersion] = useState(null)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
   const isOwner = sync.docRole === 'owner'
 
@@ -64,6 +66,11 @@ export default function Editor() {
         e.preventDefault()
         search.openSearch()
       }
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)
+      if (!isTyping && (e.key === '?' || e.key === '/')) {
+        e.preventDefault()
+        setShowShortcuts(true)
+      }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
@@ -88,6 +95,7 @@ export default function Editor() {
           {isOwner && (
             <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
           )}
+          <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)">?</button>
           <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer">HTML</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
           <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
@@ -132,6 +140,8 @@ export default function Editor() {
           onClose={search.closeSearch}
         />
       )}
+
+      {showShortcuts && <ShortcutsOverlay onClose={() => setShowShortcuts(false)} />}
 
       <div className="editor-body">
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
