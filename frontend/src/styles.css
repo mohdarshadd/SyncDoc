@@ -618,6 +618,23 @@ textarea:focus,
 .presence {
   display: flex;
   gap: 6px;
+  align-items: center;
+}
+
+.presence-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
 }
 
 .avatar {
@@ -630,6 +647,24 @@ textarea:focus,
   font-weight: 600;
   color: #fff;
   border: 2px solid var(--bg);
+  position: relative;
+}
+
+.avatar-self::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+
+.avatar-more {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .exports {

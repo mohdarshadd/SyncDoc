@@ -87,7 +87,7 @@ export default function Editor() {
           aria-label="Document title"
           disabled={!isOwner}
         />
-        <PresenceBar users={sync.users} />
+        <PresenceBar users={sync.users} myClientId={sync.myClientId} />
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
           <button className="btn btn-ghost" onClick={() => setShowVersions(true)}>History</button>
