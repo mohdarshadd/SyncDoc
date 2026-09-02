@@ -1156,7 +1156,27 @@ body.dragging-active {
   white-space: nowrap;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+  transition: opacity 0.2s, transform 0.2s;
 }
+
+.toast-exit {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+
+.toast-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.toast-ok .toast-icon { color: var(--ok); }
+.toast-error .toast-icon { color: var(--danger); }
+.toast-warn .toast-icon { color: #facc15; }
 
 .toast-ok {
   border-color: color-mix(in srgb, var(--ok) 50%, transparent);
