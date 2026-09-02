@@ -50,6 +50,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
   )
 
+  function autoGrow() {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
   useEffect(() => {
     if (ref.current && ref.current.value !== block.text) {
       ref.current.value = block.text
@@ -57,6 +64,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         ref.current.setSelectionRange(ref.current.value.length, ref.current.value.length)
       } catch (e) { /* noop */ }
     }
+    autoGrow()
   }, [block.text])
 
   useEffect(() => {
@@ -116,6 +124,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   function handleInput(e) {
     const value = e.target.value
     onTextChange(block.id, value)
+    autoGrow()
 
     if (value === '/') {
       setSlashState({ active: true, query: '' })
