@@ -43,17 +43,21 @@ export default function SearchDialog({ query, setQuery, matches, activeIndex, on
         <span className="search-count">
           {matches.length === 0 ? 'No results' : `${activeIndex + 1} / ${matches.length}`}
         </span>
-        <button className="search-arrow" onClick={onPrev} aria-label="Previous match">
+        <button className="search-arrow" onClick={onPrev} aria-label="Previous match" title="Previous match (Shift+Enter)">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <button className="search-arrow" onClick={onNext} aria-label="Next match">
+        <button className="search-arrow" onClick={onNext} aria-label="Next match" title="Next match (Enter)">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <button className="search-close" onClick={onClose} aria-label="Close search">
+        <div className="search-hints">
+          <span className="search-hint"><kbd>Enter</kbd> next</span>
+          <span className="search-hint"><kbd>Esc</kbd> close</span>
+        </div>
+        <button className="search-close" onClick={onClose} aria-label="Close search" title="Close (Esc)">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 2L10 10M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
