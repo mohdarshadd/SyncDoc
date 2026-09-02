@@ -763,6 +763,9 @@ textarea:focus,
 }
 
 .block-code {
+}
+
+.block-code .block-content {
   background: var(--code-bg);
   border-radius: 6px;
   margin: 2px 0;
@@ -880,20 +883,6 @@ body.dragging-active {
 
 .drop-indicator.visible {
   opacity: 1;
-}
-
-@media (hover: none) {
-  .block-drag-handle {
-    opacity: 1;
-    left: -34px;
-    width: 32px;
-    height: 44px;
-  }
-  .block-drag-handle:hover,
-  .block-drag-handle:active {
-    background: transparent;
-    color: var(--muted);
-  }
 }
 
 .add-bar {
