@@ -110,7 +110,8 @@ body {
 
 .btn:focus-visible,
 textarea:focus-visible,
-input:focus-visible {
+input:focus-visible,
+a:focus-visible {
   outline: none;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
 }

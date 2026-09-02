@@ -79,7 +79,7 @@ export default function Editor() {
   return (
     <div className="editor">
       <header className="editor-header">
-        <button className="btn btn-ghost" onClick={() => navigate('/documents')}>&#8592; Documents</button>
+        <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
         <input
           className="doc-title-input"
           value={sync.title}
@@ -89,16 +89,16 @@ export default function Editor() {
         />
         <PresenceBar users={sync.users} myClientId={sync.myClientId} />
         <div className="exports">
-          <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
-          <button className="btn btn-ghost" onClick={() => setShowVersions(true)}>History</button>
-          <button className="btn btn-ghost" onClick={search.openSearch} title="Search (Cmd/Ctrl+F)">Search</button>
+          <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
+          <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
+          <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
           {isOwner && (
-            <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
+            <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
           )}
-          <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)">?</button>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer">HTML</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
+          <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer" title="Export as HTML" aria-label="Export as HTML">HTML</a>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer" title="Export as Markdown" aria-label="Export as Markdown">MD</a>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer" title="Export as PDF" aria-label="Export as PDF">PDF</a>
         </div>
         <ThemeToggle />
         <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
