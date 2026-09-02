@@ -15,6 +15,7 @@ import { pushToast } from '../lib/toast'
 import { useAuth } from '../contexts/AuthContext'
 import useDocumentSearch from '../hooks/useDocumentSearch'
 import SearchDialog from './SearchDialog'
+import ShortcutsOverlay from './ShortcutsOverlay'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -25,6 +26,7 @@ export default function Editor() {
   const [showShare, setShowShare] = useState(false)
   const [showVersions, setShowVersions] = useState(false)
   const [viewVersion, setViewVersion] = useState(null)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
   const isOwner = sync.docRole === 'owner'
 
@@ -64,6 +66,11 @@ export default function Editor() {
         e.preventDefault()
         search.openSearch()
       }
+      const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)
+      if (!isTyping && (e.key === '?' || e.key === '/')) {
+        e.preventDefault()
+        setShowShortcuts(true)
+      }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
@@ -72,7 +79,7 @@ export default function Editor() {
   return (
     <div className="editor">
       <header className="editor-header">
-        <button className="btn btn-ghost" onClick={() => navigate('/documents')}>&#8592; Documents</button>
+        <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
         <input
           className="doc-title-input"
           value={sync.title}
@@ -80,17 +87,18 @@ export default function Editor() {
           aria-label="Document title"
           disabled={!isOwner}
         />
-        <PresenceBar users={sync.users} />
+        <PresenceBar users={sync.users} myClientId={sync.myClientId} />
         <div className="exports">
-          <button className="btn btn-ghost" onClick={handleCopyLink}>Copy link</button>
-          <button className="btn btn-ghost" onClick={() => setShowVersions(true)}>History</button>
-          <button className="btn btn-ghost" onClick={search.openSearch} title="Search (Cmd/Ctrl+F)">Search</button>
+          <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
+          <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
+          <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
           {isOwner && (
-            <button className="btn btn-ghost" onClick={() => setShowShare(true)}>Share</button>
+            <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
           )}
-          <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer">HTML</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer">MD</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
+          <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer" title="Export as HTML" aria-label="Export as HTML">HTML</a>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer" title="Export as Markdown" aria-label="Export as Markdown">MD</a>
+          <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer" title="Export as PDF" aria-label="Export as PDF">PDF</a>
         </div>
         <ThemeToggle />
         <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
@@ -132,6 +140,8 @@ export default function Editor() {
           onClose={search.closeSearch}
         />
       )}
+
+      {showShortcuts && <ShortcutsOverlay onClose={() => setShowShortcuts(false)} />}
 
       <div className="editor-body">
         <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>

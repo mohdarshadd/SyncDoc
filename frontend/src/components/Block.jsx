@@ -50,6 +50,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
   )
 
+  function autoGrow() {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
   useEffect(() => {
     if (ref.current && ref.current.value !== block.text) {
       ref.current.value = block.text
@@ -57,6 +64,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         ref.current.setSelectionRange(ref.current.value.length, ref.current.value.length)
       } catch (e) { /* noop */ }
     }
+    autoGrow()
   }, [block.text])
 
   useEffect(() => {
@@ -111,11 +119,32 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         if (target) target.focus()
       })
     }
+
+    if (e.key === 'ArrowUp' && el.selectionStart === 0) {
+      e.preventDefault()
+      const prev = el.closest('.block')?.previousElementSibling
+      const target = prev?.querySelector('textarea')
+      if (target) {
+        target.focus()
+        target.setSelectionRange(target.value.length, target.value.length)
+      }
+    }
+
+    if (e.key === 'ArrowDown' && el.selectionStart === el.value.length) {
+      e.preventDefault()
+      const next = el.closest('.block')?.nextElementSibling
+      const target = next?.querySelector('textarea')
+      if (target) {
+        target.focus()
+        target.setSelectionRange(0, 0)
+      }
+    }
   }
 
   function handleInput(e) {
     const value = e.target.value
     onTextChange(block.id, value)
+    autoGrow()
 
     if (value === '/') {
       setSlashState({ active: true, query: '' })

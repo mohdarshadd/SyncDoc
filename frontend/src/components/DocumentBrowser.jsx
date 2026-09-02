@@ -124,14 +124,16 @@ export default function DocumentBrowser() {
           </div>
         </div>
         <div className="doc-actions">
-          <button className="btn btn-ghost" onClick={() => navigate('/editor/' + d._id)}>Open</button>
-          <button className="btn btn-ghost" onClick={() => handleCopyLink(d._id)}>Copy</button>
-          <a className="btn btn-ghost" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
-          <a className="btn btn-ghost" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
-          <a className="btn btn-ghost" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
-          {!isShared && (
-            <button className="btn btn-danger" onClick={() => handleDelete(d._id)}>Delete</button>
-          )}
+          <button className="btn btn-primary btn-sm" onClick={() => navigate('/editor/' + d._id)}>Open</button>
+          <div className="doc-hover-actions">
+            <button className="btn btn-ghost btn-sm" onClick={() => handleCopyLink(d._id)}>Copy</button>
+            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
+            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
+            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
+            {!isShared && (
+              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(d._id)}>Delete</button>
+            )}
+          </div>
         </div>
       </li>
     )
@@ -166,6 +168,11 @@ export default function DocumentBrowser() {
           placeholder="Search documents..."
           aria-label="Search documents"
         />
+        {query && (
+          <span className="search-count-badge" title="Matching documents">
+            {visibleDocs.length}
+          </span>
+        )}
         <div className="segmented">
           <button
             type="button"
