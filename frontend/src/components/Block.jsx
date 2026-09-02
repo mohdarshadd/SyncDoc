@@ -119,6 +119,26 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         if (target) target.focus()
       })
     }
+
+    if (e.key === 'ArrowUp' && el.selectionStart === 0) {
+      e.preventDefault()
+      const prev = el.closest('.block')?.previousElementSibling
+      const target = prev?.querySelector('textarea')
+      if (target) {
+        target.focus()
+        target.setSelectionRange(target.value.length, target.value.length)
+      }
+    }
+
+    if (e.key === 'ArrowDown' && el.selectionStart === el.value.length) {
+      e.preventDefault()
+      const next = el.closest('.block')?.nextElementSibling
+      const target = next?.querySelector('textarea')
+      if (target) {
+        target.focus()
+        target.setSelectionRange(0, 0)
+      }
+    }
   }
 
   function handleInput(e) {
