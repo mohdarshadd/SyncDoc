@@ -318,6 +318,22 @@ textarea:focus,
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
+.search-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+
 .segmented {
   display: inline-flex;
   border: 1px solid var(--border);
@@ -567,11 +583,41 @@ textarea:focus,
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
+}
+
+.doc-hover-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateX(4px);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.doc-row:hover .doc-hover-actions,
+.doc-row:focus-within .doc-hover-actions {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
 }
 
 .doc-actions .btn {
   padding: 6px 10px;
   font-size: 13px;
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 13px;
+}
+
+@media (hover: none) {
+  .doc-hover-actions {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 
 /* Editor */
