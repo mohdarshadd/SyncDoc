@@ -1,24 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
 
 const COMMANDS = [
-  { label: 'Paragraph', type: 'paragraph', icon: '¶', description: 'Plain text block' },
-  { label: 'Heading', type: 'heading', icon: 'H', description: 'Section heading' },
-  { label: 'Code', type: 'code', icon: '<>', description: 'Code block' },
-  { label: 'Quote', type: 'quote', icon: '"', description: 'Blockquote' },
-  { label: 'Divider', type: 'divider', icon: '—', description: 'Horizontal rule' },
+  { label: 'Paragraph', type: 'paragraph', icon: '¶', description: 'Plain text block', shortcut: 'p' },
+  { label: 'Heading', type: 'heading', icon: 'H', description: 'Section heading', shortcut: 'h' },
+  { label: 'Code', type: 'code', icon: '<>', description: 'Code block', shortcut: 'c' },
+  { label: 'Quote', type: 'quote', icon: '"', description: 'Blockquote', shortcut: 'q' },
+  { label: 'Divider', type: 'divider', icon: '—', description: 'Horizontal rule', shortcut: 'd' },
 ]
 
 export default function SlashMenu({ query, onSelect, onClose }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const listRef = useRef(null)
+  const itemRefs = useRef([])
 
   const filtered = COMMANDS.filter(
-    (c) => c.label.toLowerCase().includes(query.toLowerCase())
+    (c) =>
+      c.label.toLowerCase().includes(query.toLowerCase()) ||
+      (c.shortcut && c.shortcut.includes(query.toLowerCase()))
   )
 
   useEffect(() => {
     setActiveIndex(0)
   }, [query])
+
+  useEffect(() => {
+    itemRefs.current[activeIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -45,9 +52,11 @@ export default function SlashMenu({ query, onSelect, onClose }) {
 
   return (
     <div className="slash-menu" ref={listRef}>
+      {query && <div className="slash-query">“{query}”</div>}
       {filtered.map((cmd, i) => (
         <button
           key={cmd.type}
+          ref={(node) => (itemRefs.current[i] = node)}
           className={`slash-item ${i === activeIndex ? 'active' : ''}`}
           onMouseDown={(e) => {
             e.preventDefault()
@@ -60,6 +69,7 @@ export default function SlashMenu({ query, onSelect, onClose }) {
             <span className="slash-label">{cmd.label}</span>
             <span className="slash-desc">{cmd.description}</span>
           </div>
+          {cmd.shortcut && <span className="slash-shortcut">/{cmd.shortcut}</span>}
         </button>
       ))}
     </div>
