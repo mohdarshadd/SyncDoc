@@ -160,6 +160,8 @@ export default function Editor() {
                 onMove={sync.moveBlock}
                 onReorder={sync.reorderBlock}
                 onChangeBlockType={sync.changeBlockType}
+                onToggleChecked={sync.toggleBlockChecked}
+                onToggleOpen={sync.toggleBlockOpen}
                 onAddAfter={(id) => handleAddBlock('paragraph', id)}
                 searchQuery={search.query}
                 blockMatches={search.matches.filter((m) => m.blockId === b.id)}

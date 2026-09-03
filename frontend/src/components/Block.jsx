@@ -44,7 +44,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
@@ -292,6 +292,35 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         </button>
       </div>
       <div className="block-content">
+        {block.type === 'checklist' && (
+          <button
+            type="button"
+            className={`block-check ${block.checked ? 'checked' : ''}`}
+            onClick={() => onToggleChecked(block.id)}
+            aria-label={block.checked ? 'Mark as incomplete' : 'Mark as complete'}
+            aria-pressed={block.checked}
+            title={block.checked ? 'Mark as incomplete' : 'Mark as complete'}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="1.5" />
+              <path className="check-mark" d="M4.5 8.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
+        {block.type === 'toggle' && (
+          <button
+            type="button"
+            className={`block-caret ${block.open ? 'open' : ''}`}
+            onClick={() => onToggleOpen(block.id)}
+            aria-label={block.open ? 'Collapse' : 'Expand'}
+            aria-expanded={block.open}
+            title={block.open ? 'Collapse' : 'Expand'}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
         <div className="block-textarea-wrap">
           {searchQuery && block.text && (
             <HighlightOverlay
