@@ -19,6 +19,8 @@ const TYPE_CLASS = {
   code: 'block-code',
   quote: 'block-quote',
   list: 'block-list',
+  checklist: 'block-checkbox',
+  toggle: 'block-toggle',
   divider: 'block-divider',
   image: 'block-image'
 }
@@ -33,6 +35,10 @@ function placeholderFor(type) {
       return 'Quote...'
     case 'list':
       return 'List item...'
+    case 'checklist':
+      return 'To-do...'
+    case 'toggle':
+      return 'Toggle...'
     default:
       return 'Start typing or / for commands...'
   }
