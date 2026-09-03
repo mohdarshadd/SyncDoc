@@ -86,6 +86,12 @@ function astToMarkdown(nodes) {
         case 'list':
           for (const child of node.children || []) lines.push(`- ${child.text || ''}`)
           break
+        case 'checklist':
+          lines.push(`- [${node.checked ? 'x' : ' '}] ${node.text || ''}`)
+          break
+        case 'toggle':
+          lines.push(`> ▸ ${node.text || ''}`)
+          break
         case 'image': {
           const src = (node.attrs && node.attrs.src) || ''
           const alt = (node.attrs && node.attrs.alt) || ''

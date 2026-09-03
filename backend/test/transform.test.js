@@ -108,3 +108,26 @@ test('nodeToHtml escapes raw script in code block', () => {
   const html = nodeToHtml({ type: 'code', text: '<script>alert(1)</script>' })
   assert.ok(!html.includes('<script>'))
 })
+
+test('astToHtml renders checklist and toggle blocks', () => {
+  const html = astToHtml([
+    { type: 'checklist', text: 'task', checked: true },
+    { type: 'toggle', text: 'More', open: true }
+  ])
+  assert.ok(html.includes('type="checkbox"'))
+  assert.ok(html.includes('checked=""'))
+  assert.ok(html.includes('checkbox"'))
+  assert.ok(html.includes('<summary>More</summary>'))
+  assert.ok(html.includes('open'))
+})
+
+test('astToMarkdown renders checklist and toggle', () => {
+  const md = astToMarkdown([
+    { type: 'checklist', text: 'done', checked: true },
+    { type: 'checklist', text: 'todo', checked: false },
+    { type: 'toggle', text: 'Fold', open: false }
+  ])
+  assert.ok(md.includes('- [x] done'))
+  assert.ok(md.includes('- [ ] todo'))
+  assert.ok(md.includes('▸ Fold'))
+})
