@@ -5,6 +5,8 @@ export function mapToBlock(m) {
     type: m.get('type'),
     text: m.get('text') || '',
     lang: m.get('lang') || null,
+    checked: !!m.get('checked'),
+    open: m.get('open') !== false,
     attrs: attrs instanceof Map && attrs.entries ? Object.fromEntries(attrs.entries()) : attrs || {},
     parentId: m.get('parentId') || null,
     order: m.get('order')
