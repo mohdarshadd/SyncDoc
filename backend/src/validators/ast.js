@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 
-const NODE_TYPES = ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider']
+const NODE_TYPES = ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle']
 const MAX_DEPTH = 20
 
 const genId = () => crypto.randomUUID()
@@ -63,6 +63,8 @@ function flattenAst(nodes, parentId = null, out = []) {
       type: node.type,
       text: node.text || '',
       lang: node.lang || null,
+      checked: !!node.checked,
+      open: node.open !== false,
       attrs: node.attrs && typeof node.attrs === 'object' ? { ...node.attrs } : {},
       parentId: node.parentId ?? parentId,
       order: node.order ?? i,
@@ -82,6 +84,8 @@ function buildTree(flat) {
       type: n.type,
       text: n.text || '',
       lang: n.lang || null,
+      checked: !!n.checked,
+      open: n.open !== false,
       attrs: n.attrs && typeof n.attrs === 'object' ? { ...n.attrs } : {},
       parentId: n.parentId ?? null,
       order: n.order ?? idx,
