@@ -44,7 +44,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
@@ -82,6 +82,15 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
 
+  const TYPING_TYPES = ['checklist', 'toggle']
+
+  function addBelow() {
+    const nextType = TYPING_TYPES.includes(block.type) && onAddAfterType ? block.type : null
+    if (nextType) onAddAfterType(nextType, block.id)
+    else onAddAfter(block.id)
+    requestAnimationFrame(() => ref.current?.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+  }
+
   const onKeyDown = (e) => {
     const el = ref.current
     const mod = e.metaKey || e.ctrlKey
@@ -104,15 +113,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
     if (mod && e.key === 'Enter') {
       e.preventDefault()
-      onAddAfter(block.id)
-      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      addBelow()
       return
     }
 
     if (e.key === 'Enter' && !slashState.active) {
       e.preventDefault()
-      onAddAfter(block.id)
-      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      addBelow()
       return
     }
 
@@ -124,6 +131,12 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         const target = prevId ? document.querySelector(`[data-block-id="${prevId}"] textarea`) : null
         if (target) target.focus()
       })
+    }
+
+    if (block.type === 'checklist' && e.key === ' ' && !block.text) {
+      e.preventDefault()
+      onToggleChecked(block.id)
+      return
     }
 
     if (e.key === 'ArrowUp' && el.selectionStart === 0) {
