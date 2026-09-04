@@ -820,6 +820,75 @@ textarea:focus,
 .block-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.block-check,
+.block-caret {
+  flex-shrink: 0;
+  width: 22px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.block-caret svg {
+  transition: transform 0.15s;
+}
+
+.block-caret.open svg {
+  transform: rotate(90deg);
+}
+
+.block-caret svg {
+  color: var(--muted);
+}
+
+.block-caret:hover,
+.block-check:hover {
+  color: var(--text);
+}
+
+.block-check {
+  color: var(--border);
+}
+
+.block-check svg .check-mark {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.block-check.checked {
+  color: var(--accent);
+}
+
+.block-check.checked svg .check-mark {
+  opacity: 1;
+  stroke: #fff;
+}
+
+.block-check.checked rect {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.block-checkbox .block-textarea-wrap textarea,
+.block-toggle .block-textarea-wrap textarea {
+  padding-left: 2px;
+}
+.block-checkbox.checked .block-textarea-wrap textarea {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent);
 }
 
 @media (hover: none) {

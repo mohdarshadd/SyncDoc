@@ -37,6 +37,35 @@ describe('snapshotFromYArray', () => {
     const b = mapToBlock(arr.toArray()[0])
     expect(b).toMatchObject({ id: 'x', type: 'code', text: 'hi', lang: 'js' })
   })
+
+  it('mapToBlock reads checked and open state for checklist/toggle blocks', () => {
+    const doc = new Y.Doc()
+    const arr = doc.getArray('blocks')
+    const m = new Y.Map()
+    m.set('id', 't')
+    m.set('type', 'checklist')
+    m.set('text', 'task')
+    m.set('checked', true)
+    m.set('open', false)
+    m.set('parentId', null)
+    m.set('order', 0)
+    arr.insert(0, [m])
+
+    const checked = mapToBlock(arr.toArray()[0])
+    expect(checked.type).toBe('checklist')
+    expect(checked.checked).toBe(true)
+    expect(checked.open).toBe(false)
+
+    const untouched = new Y.Map()
+    untouched.set('id', 'p')
+    untouched.set('type', 'toggle')
+    untouched.set('text', '')
+    untouched.set('parentId', null)
+    untouched.set('order', 1)
+    const toggled = mapToBlock(untouched)
+    expect(toggled.checked).toBe(false)
+    expect(toggled.open).toBe(true)
+  })
 })
 
 describe('diffBlocks', () => {

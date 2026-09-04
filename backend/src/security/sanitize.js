@@ -7,9 +7,10 @@ const DOMPurify = createDOMPurify(window)
 const ALLOWED_TAGS = [
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'p', 'pre', 'code', 'ul', 'ol', 'li',
-  'blockquote', 'img', 'hr', 'br', 'strong', 'em'
+  'blockquote', 'img', 'hr', 'br', 'strong', 'em',
+  'details', 'summary', 'input'
 ]
-const ALLOWED_ATTR = ['src', 'alt', 'class', 'lang']
+const ALLOWED_ATTR = ['src', 'alt', 'class', 'lang', 'type', 'checked', 'disabled', 'open']
 
 function sanitizeHtml(html, opts = {}) {
   return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR, ...opts })

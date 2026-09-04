@@ -19,6 +19,8 @@ const TYPE_CLASS = {
   code: 'block-code',
   quote: 'block-quote',
   list: 'block-list',
+  checklist: 'block-checkbox',
+  toggle: 'block-toggle',
   divider: 'block-divider',
   image: 'block-image'
 }
@@ -33,12 +35,16 @@ function placeholderFor(type) {
       return 'Quote...'
     case 'list':
       return 'List item...'
+    case 'checklist':
+      return 'To-do...'
+    case 'toggle':
+      return 'Toggle...'
     default:
       return 'Start typing or / for commands...'
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onReorder, onChangeBlockType, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
@@ -76,6 +82,15 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
 
+  const TYPING_TYPES = ['checklist', 'toggle']
+
+  function addBelow() {
+    const nextType = TYPING_TYPES.includes(block.type) && onAddAfterType ? block.type : null
+    if (nextType) onAddAfterType(nextType, block.id)
+    else onAddAfter(block.id)
+    requestAnimationFrame(() => ref.current?.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+  }
+
   const onKeyDown = (e) => {
     const el = ref.current
     const mod = e.metaKey || e.ctrlKey
@@ -98,15 +113,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
     if (mod && e.key === 'Enter') {
       e.preventDefault()
-      onAddAfter(block.id)
-      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      addBelow()
       return
     }
 
     if (e.key === 'Enter' && !slashState.active) {
       e.preventDefault()
-      onAddAfter(block.id)
-      requestAnimationFrame(() => el.closest('.block')?.nextElementSibling?.querySelector('textarea')?.focus())
+      addBelow()
       return
     }
 
@@ -118,6 +131,12 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         const target = prevId ? document.querySelector(`[data-block-id="${prevId}"] textarea`) : null
         if (target) target.focus()
       })
+    }
+
+    if (block.type === 'checklist' && e.key === ' ' && !block.text) {
+      e.preventDefault()
+      onToggleChecked(block.id)
+      return
     }
 
     if (e.key === 'ArrowUp' && el.selectionStart === 0) {
@@ -286,6 +305,35 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         </button>
       </div>
       <div className="block-content">
+        {block.type === 'checklist' && (
+          <button
+            type="button"
+            className={`block-check ${block.checked ? 'checked' : ''}`}
+            onClick={() => onToggleChecked(block.id)}
+            aria-label={block.checked ? 'Mark as incomplete' : 'Mark as complete'}
+            aria-pressed={block.checked}
+            title={block.checked ? 'Mark as incomplete' : 'Mark as complete'}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="1.5" />
+              <path className="check-mark" d="M4.5 8.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
+        {block.type === 'toggle' && (
+          <button
+            type="button"
+            className={`block-caret ${block.open ? 'open' : ''}`}
+            onClick={() => onToggleOpen(block.id)}
+            aria-label={block.open ? 'Collapse' : 'Expand'}
+            aria-expanded={block.open}
+            title={block.open ? 'Collapse' : 'Expand'}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
         <div className="block-textarea-wrap">
           {searchQuery && block.text && (
             <HighlightOverlay

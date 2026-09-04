@@ -16,6 +16,10 @@ function nodeToHtml(node) {
       const items = (node.children || []).map((c) => `<li>${escapeHtml(c.text || '')}</li>`).join('')
       return `<ul>${items}</ul>`
     }
+    case 'checklist':
+      return `<p><input type="checkbox"${node.checked ? ' checked' : ''} disabled> <span${node.checked ? ' style="text-decoration:line-through"' : ''}>${text}</span></p>`
+    case 'toggle':
+      return `<details${node.open === false ? '' : ' open'}><summary>${text}</summary></details>`
     case 'image': {
       const src = escapeHtml((node.attrs && node.attrs.src) || '')
       const alt = escapeHtml((node.attrs && node.attrs.alt) || '')

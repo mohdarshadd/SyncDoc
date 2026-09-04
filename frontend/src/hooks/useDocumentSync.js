@@ -124,6 +124,8 @@ export function useDocumentSync(docId, user) {
       block.set('type', type)
       block.set('text', '')
       block.set('lang', type === 'code' ? 'text' : null)
+      block.set('checked', false)
+      block.set('open', true)
       block.set('parentId', null)
       block.set('order', insertIndex)
       existing.forEach((m) => {
@@ -145,6 +147,26 @@ export function useDocumentSync(docId, user) {
           if (newType === 'code') m.set('lang', 'text')
           else m.set('lang', null)
         }
+      })
+    })
+  }
+
+  function toggleBlockChecked(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      ydoc.getArray('blocks').forEach((m) => {
+        if (m.get('id') === id) m.set('checked', !m.get('checked'))
+      })
+    })
+  }
+
+  function toggleBlockOpen(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      ydoc.getArray('blocks').forEach((m) => {
+        if (m.get('id') === id) m.set('open', !m.get('open'))
       })
     })
   }
@@ -210,5 +232,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
 }

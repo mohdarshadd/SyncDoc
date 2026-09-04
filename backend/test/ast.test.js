@@ -107,7 +107,24 @@ test('flattened ids stay stable across normalize/round-trip', () => {
 })
 
 test('NODE_TYPES exposes the documented block types', () => {
-  for (const t of ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider']) {
+  for (const t of ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle']) {
     assert.ok(NODE_TYPES.includes(t))
   }
+})
+
+test('checklist and toggle nodes validate and preserve checked/open', () => {
+  const nodes = [
+    { type: 'checklist', text: 'soon', checked: false },
+    { type: 'toggle', text: 'fold', checked: true, open: false }
+  ]
+  assert.equal(validateAstTree(nodes), true)
+  const flat = flattenAst(nodes)
+  assert.equal(flat[0].type, 'checklist')
+  assert.equal(flat[0].checked, false)
+  assert.equal(flat[1].type, 'toggle')
+  assert.equal(flat[1].checked, true)
+  assert.equal(flat[1].open, false)
+  const tree = buildTree(flat)
+  assert.equal(tree[1].checked, true)
+  assert.equal(tree[1].open, false)
 })
