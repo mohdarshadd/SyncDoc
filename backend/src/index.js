@@ -52,8 +52,9 @@ function corsOrigin() {
   if (CLIENT_ORIGIN === '*') return '*'
   const origins = CLIENT_ORIGIN.split(',').map((o) => o.trim())
   return (origin, cb) => {
-    if (!origin || origins.includes(origin)) cb(null, true)
-    else cb(new Error('Not allowed by CORS'))
+    if (!origin) return cb(null, true)
+    if (origins.includes(origin)) return cb(null, true)
+    return cb(new Error('Not allowed by CORS'))
   }
 }
 
