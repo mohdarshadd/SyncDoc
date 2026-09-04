@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
-import { getDocument, WS_URL } from '../api'
+import { getDocument, getAccessToken, WS_URL } from '../api'
 import { buildYdoc } from '../lib/ydoc'
 import { diffBlocks, mergeDelta, snapshotFromYArray } from '../store/blockStore'
 import { uid } from '../lib/uid'
@@ -36,7 +36,10 @@ export function useDocumentSync(docId, user) {
 
         setDocRole(doc.role || 'owner')
         ydoc = buildYdoc(doc)
-        provider = new WebsocketProvider(WS_URL, docId, ydoc, { connect: true })
+        provider = new WebsocketProvider(WS_URL, docId, ydoc, {
+          connect: true,
+          params: { token: getAccessToken() || '' }
+        })
         provider.on('status', ({ status: s }) => {
           if (!cancelled) setStatus(s)
         })
