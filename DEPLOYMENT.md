@@ -23,7 +23,10 @@ single domain. That means you only need **one** Render web service (no separate 
 ## Option A — Deploy from the `render.yaml` blueprint (recommended)
 
 1. On Render: **New -> Blueprint**.
-2. Connect the SyncDoc GitHub repo. Render reads `render.yaml` and proposes the service.
+2. Connect the SyncDoc GitHub repo **and make sure the deploy branch is the one with this config**
+   (`Arshad's-Branch`) — Render defaults to `main`. You must set the **Branch** to `Arshad's-Branch`
+   when creating the service, or merge these changes into `main`.
+3. Render reads `render.yaml` and proposes the service.
 3. For the `MONGO_URI` env var, select a connected MongoDB (Render MongoDB or Atlas) or paste
    a connection string.
 4. Set `CLIENT_ORIGIN` to your app domain, e.g. `https://syncdoc.onrender.com`
@@ -34,12 +37,18 @@ single domain. That means you only need **one** Render web service (no separate 
 
 Your app is live at `https://<service>.onrender.com`.
 
+## Why the build includes dev dependencies
+Render sets `NODE_ENV=production` when it builds. npm then skips `devDependencies`, and since
+`vite` lives in `devDependencies`, the build fails with `vite: not found`. The root `.npmrc`
+forces `include=dev`, and the build command re-installs with `--include=dev`, so `vite` and the
+other build tooling are always available during the build.
+
 ## Option B — Manual web service (if not using the blueprint)
 
 1. **New -> Web Service**, connect the repo.
 2. **Root Directory**: leave `.` (repo root).
 3. **Environment**: Node.
-4. **Build Command**: `npm install && npm run build`
+4. **Build Command**: `npm install --include=dev && npm run build`
 5. **Start Command**: `npm start -w backend`
 6. **Health Check Path**: `/api/health`
 7. Add environment variables (see table below).
