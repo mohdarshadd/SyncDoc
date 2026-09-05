@@ -175,6 +175,16 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function toggleBlockCollapsed(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      ydoc.getArray('blocks').forEach((m) => {
+        if (m.get('id') === id) m.set('collapsed', !m.get('collapsed'))
+      })
+    })
+  }
+
   function toggleBlockMark(id, from, to, type, href) {
     const ydoc = ydocRef.current
     if (!ydoc) return
@@ -265,5 +275,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
 }
