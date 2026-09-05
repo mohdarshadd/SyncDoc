@@ -367,7 +367,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       )}
       <div className="block-gutter">
         {depth > 0 && <span className="block-indent" style={{ width: `${Math.min(depth, 8) * 18}px` }} aria-hidden="true" />}
-        {block.hasHiddenDescendants && (
+        {block.hasChildren && (
           <button
             type="button"
             className={`block-collapse-caret ${block.collapsed ? 'collapsed' : ''}`}
@@ -474,7 +474,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           x={menuPos.x}
           y={menuPos.y}
           collapsed={block.collapsed}
-          hideable={block.hasHiddenDescendants}
+          hideable={block.hasChildren}
           isChecklist={block.type === 'checklist'}
           isChecked={block.checked}
           onAction={handleContextAction}

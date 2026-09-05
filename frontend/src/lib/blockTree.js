@@ -2,9 +2,11 @@ export function buildBlockTree(blocks) {
   const byId = new Map(blocks.map((b) => [b.id, b]))
   const depthOf = new Map()
   const collapsedAncestors = new Map() // id -> count of collapsed ancestors
-  const hasHiddenDescendants = new Set()
+  const hasChildren = new Set() // ids that are a parent of at least one block
+  const hasHiddenDescendants = new Set() // ids of collapsed roots hiding a subtree
 
   for (const b of blocks) {
+    if (b.parentId != null && byId.has(b.parentId)) hasChildren.add(b.parentId)
     let depth = 0
     let hiddenBy = 0
     let parent = b.parentId != null ? byId.get(b.parentId) : null
@@ -20,12 +22,8 @@ export function buildBlockTree(blocks) {
   }
 
   for (const b of blocks) {
-    if (!b.collapsed) continue
-    let parent = b.parentId != null ? byId.get(b.parentId) : null
-    while (parent && parent.parentId != null && !hasHiddenDescendants.has(parent.id)) {
-      hasHiddenDescendants.add(parent.id)
-      parent = byId.get(parent.parentId)
-    }
+    if (!b.collapsed || !hasChildren.has(b.id)) continue
+    hasHiddenDescendants.add(b.id)
   }
 
   return blocks.map((b, i) => {
@@ -48,6 +46,7 @@ export function buildBlockTree(blocks) {
       ...b,
       depth: depthOf.get(b.id) || 0,
       hidden,
+      hasChildren: hasChildren.has(b.id),
       hasHiddenDescendants: hasHiddenDescendants.has(b.id),
       firstChildOfParent,
       lastOfSubtree
