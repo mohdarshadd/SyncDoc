@@ -45,7 +45,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch, comments = [], me, onAddComment, onResolveComment, onDeleteComment }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const depth = block.depth || 0
@@ -54,8 +54,11 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   const [selection, setSelection] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 })
+  const [commentsOpen, setCommentsOpen] = useState(false)
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
+  const blockComments = comments.filter((c) => c.blockId === block.id)
+  const openComments = blockComments.filter((c) => !c.resolved)
 
   const editingUsers = users.filter(
     (u) => u.cursor && u.cursor.blockId === block.id && u.clientId !== myClientId
@@ -367,6 +370,20 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       )}
       <div className="block-gutter">
         {depth > 0 && <span className="block-indent" style={{ width: `${Math.min(depth, 8) * 18}px` }} aria-hidden="true" />}
+        {blockComments.length > 0 && (
+          <button
+            type="button"
+            className="block-comment-badge"
+            title={openComments.length ? `${openComments.length} comment${openComments.length === 1 ? '' : 's'}` : 'Resolved'}
+            aria-label="View comments"
+            onClick={() => setCommentsOpen(true)}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M2 3.5h12v8H8l-3 2.5v-2.5H2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            </svg>
+            <span className="block-comment-count">{openComments.length}</span>
+          </button>
+        )}
         {block.hasChildren && (
           <button
             type="button"
@@ -444,6 +461,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           )}
           {block.type !== 'code' && block.marks && block.marks.length > 0 && (
             <RichTextOverlay text={block.text} marks={block.marks} />
+          )}
+          {block.type !== 'code' && blockComments.length > 0 && (
+            <CommentOverlay text={block.text} comments={blockComments} />
           )}
           <textarea
             ref={ref}
@@ -560,7 +580,40 @@ function activeMarksAt(marks, at) {
   return set
 }
 
-function RichTextOverlay({ text, marks }) {
+function CommentOverlay({ text, comments }) {
+  const len = text.length
+  const points = new Set([0, len])
+  for (const c of comments) {
+    if (!Number.isFinite(c.from) || !Number.isFinite(c.to)) continue
+    points.add(Math.max(0, Math.min(c.from, len)))
+    points.add(Math.max(0, Math.min(c.to, len)))
+  }
+  const sorted = Array.from(points).sort((a, b) => a - b)
+  const covers = (c, from, to) => c.from <= from && c.to >= to
+  const segments = []
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const from = sorted[i]
+    const to = sorted[i + 1]
+    const active = comments.filter((c) => covers(c, from, to))
+    if (to > len) break
+    segments.push({ from, to, active })
+  }
+  return (
+    <div className="comment-overlay" aria-hidden="true">
+      {segments.map((s, i) => {
+        const slice = text.slice(s.from, s.to)
+        if (!slice || s.active.length === 0) return <span key={i}>{slice}</span>
+        const resolved = s.active.every((c) => c.resolved)
+        return (
+          <mark key={i} className={resolved ? 'resolved' : 'open'}>
+            {slice}
+          </mark>
+        )
+      })}
+    </div>
+  )
+}
+  function RichTextOverlay({ text, marks }) {
   const boundaries = marksBoundaries(marks)
   const segments = []
   for (let i = 0; i < boundaries.length - 1; i++) {
