@@ -33,6 +33,21 @@ describe('encodeMention / decodeMentions', () => {
   it('strips markup but keeps @name', () => {
     expect(stripMentions('see @[Arshad](9) here')).toBe('see @Arshad here')
   })
+
+  it('escapes square brackets in mention names so tokens stay parseable', () => {
+    const token = encodeMention({ name: 'A]B', id: '1' })
+    expect(token).toBe('@[A⁄B](1)')
+    const out = decodeMentions(token)
+    expect(out).toHaveLength(1)
+    expect(out[0]).toMatchObject({ name: 'A⁄B', id: '1' })
+  })
+
+  it('decodes a mention that ends the text', () => {
+    const text = 'ping @[Neha](7)'
+    const out = decodeMentions(text)
+    expect(out).toHaveLength(1)
+    expect(text.slice(out[0].from, out[0].to)).toBe('@[Neha](7)')
+  })
 })
 
 describe('findMentionQuery / insertMention', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { diffBlocks, mergeDelta, snapshotFromYArray, mapToBlock } from '../src/store/blockStore'
+import { diffBlocks, mergeDelta, snapshotFromYArray, mapToBlock, commentFromYMap, commentsFromYArray } from '../src/store/blockStore'
+import { buildYdoc } from '../src/lib/ydoc'
 import * as Y from 'yjs'
 
 const block = (id, text) => ({ id, type: 'paragraph', text, lang: null, attrs: {}, parentId: null, order: 0 })
@@ -90,6 +91,77 @@ describe('snapshotFromYArray', () => {
     openMap.set('order', 1)
     const openBlock = mapToBlock(openMap)
     expect(openBlock.collapsed).toBe(false)
+  })
+})
+
+describe('commentsFromYArray', () => {
+  const makeArray = (items) => {
+    const doc = new Y.Doc()
+    const arr = doc.getArray('comments')
+    const maps = items.map((c) => {
+      const m = new Y.Map()
+      m.set('id', c.id)
+      m.set('blockId', c.blockId)
+      m.set('from', c.from)
+      m.set('to', c.to)
+      m.set('authorId', c.authorId)
+      m.set('authorName', c.authorName)
+      m.set('text', c.text)
+      m.set('created', c.created)
+      m.set('resolved', !!c.resolved)
+      return m
+    })
+    arr.insert(0, maps)
+    return arr
+  }
+
+  it('maps comment maps to plain objects with safe defaults', () => {
+    const arr = makeArray([{ id: 'c1', blockId: 'b1', from: 0, to: 4, authorId: 'u1', authorName: 'Arshad', text: 'hi', created: 10, resolved: false }])
+    expect(commentsFromYArray(arr)).toEqual([
+      { id: 'c1', blockId: 'b1', from: 0, to: 4, authorId: 'u1', authorName: 'Arshad', text: 'hi', created: 10, resolved: false }
+    ])
+  })
+
+  it('sorts by created time (oldest first)', () => {
+    const arr = makeArray([
+      { id: 'c2', blockId: 'b1', created: 20, authorName: 'A', text: 'second' },
+      { id: 'c1', blockId: 'b1', created: 10, authorName: 'A', text: 'first' }
+    ])
+    expect(commentsFromYArray(arr).map((c) => c.id)).toEqual(['c1', 'c2'])
+  })
+
+  it('drops maps missing a block id', () => {
+    const arr = makeArray([{ id: 'c1', blockId: 'b1', created: 1, authorName: 'A', text: 'ok' }])
+    const bad = new Y.Map()
+    bad.set('id', 'c2')
+    bad.set('from', 0)
+    bad.set('to', 1)
+    arr.insert(arr.length, [bad])
+    const out = commentsFromYArray(arr)
+    expect(out).toHaveLength(1)
+    expect(out[0].blockId).toBe('b1')
+  })
+
+  it('commentFromYMap falls back to Anonymous and empty text', () => {
+    const doc = new Y.Doc()
+    const arr = doc.getArray('comments')
+    const m = new Y.Map()
+    m.set('id', 'c1')
+    m.set('blockId', 'b1')
+    arr.insert(0, [m])
+    const c = commentFromYMap(arr.toArray()[0])
+    expect(c).toMatchObject({ id: 'c1', blockId: 'b1', authorName: 'Anonymous', text: '', resolved: false, created: 0 })
+  })
+
+  it('populates the comments array from a seeded document', () => {
+    const ydoc = buildYdoc({
+      title: 'T',
+      blocks: [{ id: 'b1', type: 'paragraph', text: 'hi', order: 0 }],
+      comments: [{ id: 'c1', blockId: 'b1', from: 0, to: 2, authorId: 'u1', authorName: 'Arshad', text: 'note', created: 50, resolved: false }]
+    })
+    const out = commentsFromYArray(ydoc.getArray('comments'))
+    expect(out).toHaveLength(1)
+    expect(out[0]).toMatchObject({ id: 'c1', blockId: 'b1', authorName: 'Arshad', text: 'note' })
   })
 })
 
