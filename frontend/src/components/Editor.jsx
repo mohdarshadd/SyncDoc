@@ -170,7 +170,7 @@ export default function Editor() {
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
                 comments={sync.comments}
-                me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color }}
+                me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color, clientId: sync.myClientId }}
                 onAddComment={sync.addComment}
                 onResolveComment={sync.resolveComment}
                 onDeleteComment={sync.deleteComment}

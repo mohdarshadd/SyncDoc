@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { stripMentions } from '../lib/comments'
+import { commentMessages, findMentionQuery, insertMention } from '../lib/comments'
 
 function timeLabel(ts) {
   if (!ts) return ''
@@ -12,7 +12,10 @@ function timeLabel(ts) {
 
 export default function CommentThread({ block, thread = [], targetRange, me, onAdd, onResolve, onDelete, onClose, participants = [] }) {
   const [draft, setDraft] = useState('')
+  const [cursorPos, setCursorPos] = useState(0)
+  const [mentionIndex, setMentionIndex] = useState(0)
   const inputRef = useRef(null)
+  const listRef = useRef(null)
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -26,13 +29,57 @@ export default function CommentThread({ block, thread = [], targetRange, me, onA
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  const mentionQuery = findMentionQuery(draft, cursorPos)
+  const mentionActive = !!mentionQuery && mentionQuery.query.length >= 1
+  const mentionMatches = mentionActive
+    ? participants
+        .filter((p) => p?.name && p.name.toLowerCase().includes(mentionQuery.query.toLowerCase()))
+        .slice(0, 6)
+    : []
+  const mentionKey = mentionMatches.map((p) => p.clientId).join('|')
+  useEffect(() => setMentionIndex(0), [mentionKey])
+
   const excerpt = targetRange?.start != null
-    ? block.text.slice(targetRange.start, Math.max(targetRange.end ?? targetRange.start, targetRange.start))
+    ? String(block.text || '').slice(targetRange.start, Math.max(targetRange.end ?? targetRange.start, targetRange.start))
     : block.text
+
+  const applyMention = (u) => {
+    if (!u) return
+    const res = insertMention(draft, cursorPos, { name: u.name, id: u.clientId })
+    setDraft(res.text)
+    setCursorPos(res.cursorPos)
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+        try { inputRef.current.setSelectionRange(res.cursorPos, res.cursorPos) } catch (e) { /* noop */ }
+      }
+    })
+  }
 
   const submit = () => {
     if (!draft.trim()) return
     onAdd(draft.trim())
+  }
+
+  const onComposerKeyDown = (e) => {
+    if (mentionMatches.length > 0) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        setMentionIndex((i) =>
+          e.key === 'ArrowDown' ? (i + 1) % mentionMatches.length : (i - 1 + mentionMatches.length) % mentionMatches.length
+        )
+        return
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        applyMention(mentionMatches[mentionIndex] || mentionMatches[0])
+        return
+      }
+    }
+    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault()
+      submit()
+    }
   }
 
   return (
@@ -60,7 +107,15 @@ export default function CommentThread({ block, thread = [], targetRange, me, onA
                 <span className="comment-author">{c.authorName}</span>
                 <span className="comment-time">{timeLabel(c.created)}</span>
               </div>
-              <div className="comment-text">{stripMentions(c.text)}</div>
+              <div className="comment-text">
+                {commentMessages(c).map((p, i) =>
+                  p.kind === 'mention' ? (
+                    <span key={i} className="mention-pill">{p.name}</span>
+                  ) : (
+                    <span key={i}>{p.value}</span>
+                  )
+                )}
+              </div>
               <div className="comment-actions">
                 {c.resolved ? (
                   <button type="button" className="comment-action-link" onClick={() => onResolve(c.id)}>
@@ -82,19 +137,39 @@ export default function CommentThread({ block, thread = [], targetRange, me, onA
         ))}
       </div>
       <div className="comment-composer">
+        {mentionMatches.length > 0 && (
+          <ul className="mention-picker" role="listbox" ref={listRef}>
+            {mentionMatches.map((u, i) => (
+              <li
+                key={u.clientId}
+                role="option"
+                aria-selected={i === mentionIndex}
+                className={`mention-option ${i === mentionIndex ? 'active' : ''}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => applyMention(u)}
+              >
+                <span className="mention-avatar" style={{ background: u.color || '#2997ff' }}>
+                  {u.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="mention-name">{u.name}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         <textarea
           ref={inputRef}
           className="comment-input"
           rows={2}
           placeholder="Write a comment… (use @ to mention)"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
-              e.preventDefault()
-              submit()
-            }
+          onChange={(e) => {
+            setDraft(e.target.value)
+            setCursorPos(e.target.selectionStart)
           }}
+          onSelect={(e) => setCursorPos(e.target.selectionStart)}
+          onClick={(e) => setCursorPos(e.target.selectionStart)}
+          onKeyUp={(e) => setCursorPos(e.target.selectionStart)}
+          onKeyDown={onComposerKeyDown}
         />
         <div className="comment-composer-actions">
           <span className="comment-participants">
