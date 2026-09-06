@@ -4,7 +4,7 @@ const assert = require('node:assert/strict')
 const { astToHtml, nodeToHtml } = require('../src/transform/html')
 const { markdownToAst, astToMarkdown } = require('../src/transform/markdown')
 const { astToPdf } = require('../src/transform/pdf')
-const { sanitizeHtml, sanitizePlainText, sanitizeBlocks } = require('../src/security/sanitize')
+const { sanitizeHtml, sanitizePlainText, sanitizeBlocks, sanitizeComments } = require('../src/security/sanitize')
 
 test('astToHtml escapes script fragments inside text', () => {
   const html = astToHtml([{ type: 'paragraph', text: '<script>alert(1)</script>hello' }])
@@ -70,6 +70,25 @@ test('sanitizeBlocks strips javascript hrefs and invalid marks', () => {
   assert.equal(safe[0].attrs.marks.length, 2)
   assert.equal(safe[0].attrs.marks[0].href, '')
   assert.ok(!safe[0].attrs.marks.some((m) => m.type === 'italic'))
+})
+
+test('sanitizeComments strips HTML, clamps ranges, and fixes direction', () => {
+  const safe = sanitizeComments([
+    { id: 'a', blockId: 'b1', from: 3, to: 1, authorName: '<b>A</b>', text: '<script>x</script>@[Arshad](c2)', created: 5, resolved: false },
+    { id: 'b', blockId: 'b1', from: -2, to: 4, authorName: 'M', text: 'ok', created: 1, resolved: null }
+  ])
+  assert.equal(safe.length, 2)
+  assert.equal(safe[0].to, safe[0].from)
+  assert.equal(safe[0].authorName, 'A')
+  assert.equal(safe[0].text, '@[Arshad](c2)')
+  assert.equal(safe[1].from, 0)
+  assert.equal(safe[1].resolved, false)
+  assert.deepEqual(safe[1].authorName, 'M')
+})
+
+test('sanitizeComments drops entries without a block id', () => {
+  const safe = sanitizeComments([{ id: 'a', blockId: '', authorName: 'X', text: 'y' }])
+  assert.equal(safe.length, 0)
 })
 
 test('sanitizeHtml allows safe structural tags only', () => {
