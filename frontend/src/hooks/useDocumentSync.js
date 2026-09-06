@@ -3,9 +3,10 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import { getDocument, getAccessToken, WS_URL } from '../api'
 import { buildYdoc } from '../lib/ydoc'
-import { diffBlocks, mergeDelta, snapshotFromYArray } from '../store/blockStore'
+import { diffBlocks, mergeDelta, snapshotFromYArray, commentsFromYArray } from '../store/blockStore'
 import { uid } from '../lib/uid'
 import { toggleMark, clearMarks as emptyMarks } from '../lib/richText'
+import { buildComment } from '../lib/comments'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -21,6 +22,7 @@ export function useDocumentSync(docId, user) {
   const [status, setStatus] = useState('connecting')
   const [title, setTitle] = useState('')
   const [blocks, setBlocks] = useState([])
+  const [comments, setComments] = useState([])
   const [users, setUsers] = useState([])
   const [myClientId, setMyClientId] = useState(null)
   const [docRole, setDocRole] = useState(null)
@@ -49,6 +51,7 @@ export function useDocumentSync(docId, user) {
         provider.awareness.setLocalState({ user: { name: user?.name || 'Anonymous', color }, cursor: null })
 
         const blocksArr = ydoc.getArray('blocks')
+        const commentsArr = ydoc.getArray('comments')
         const applyBlocks = () => {
           const full = snapshotFromYArray(blocksArr)
           setBlocks((prev) => {
@@ -56,6 +59,7 @@ export function useDocumentSync(docId, user) {
             return delta.length ? mergeDelta(prev, delta) : prev
           })
         }
+        const applyComments = () => setComments(commentsFromYArray(commentsArr))
         const applyTitle = () => setTitle(ydoc.getMap('meta').get('title') || 'Untitled')
         const applyUsers = () => {
           setMyClientId(provider.awareness.clientID)
@@ -67,6 +71,7 @@ export function useDocumentSync(docId, user) {
         }
 
         blocksArr.observeDeep(applyBlocks)
+        commentsArr.observeDeep(applyComments)
         ydoc.getMap('meta').observe(applyTitle)
         provider.awareness.on('change', applyUsers)
 
@@ -74,6 +79,7 @@ export function useDocumentSync(docId, user) {
         providerRef.current = provider
 
         applyBlocks()
+        applyComments()
         applyTitle()
         applyUsers()
         if (!cancelled) setStatus('connected')
@@ -185,6 +191,60 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function commentToYMap(c) {
+    const m = new Y.Map()
+    m.set('id', c.id)
+    m.set('blockId', c.blockId)
+    m.set('from', c.from)
+    m.set('to', c.to)
+    m.set('authorId', c.authorId)
+    m.set('authorName', c.authorName)
+    m.set('text', c.text)
+    m.set('created', c.created)
+    m.set('resolved', !!c.resolved)
+    return m
+  }
+
+  function addComment(blockId, from, to, text) {
+    const ydoc = ydocRef.current
+    if (!ydoc || !text.trim()) return null
+    const block = ydoc.getArray('blocks').toArray().find((m) => m.get('id') === blockId)
+    const maxLen = (block?.get('text') || '').length
+    const comment = buildComment({
+      blockId,
+      from: Math.min(from, maxLen),
+      to: Math.min(to, maxLen),
+      text,
+      authorId: user?._id || 'anonymous',
+      authorName: user?.name || 'Anonymous',
+      now: Date.now()
+    })
+    ydoc.transact(() => {
+      ydoc.getArray('comments').push([commentToYMap(comment)])
+    })
+    return comment.id
+  }
+
+  function resolveComment(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      ydoc.getArray('comments').forEach((m) => {
+        if (m.get('id') === id) m.set('resolved', !m.get('resolved'))
+      })
+    })
+  }
+
+  function deleteComment(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('comments')
+      const idx = arr.toArray().findIndex((m) => m.get('id') === id)
+      if (idx !== -1) arr.delete(idx, 1)
+    })
+  }
+
   function toggleBlockMark(id, from, to, type, href) {
     const ydoc = ydocRef.current
     if (!ydoc) return
@@ -275,5 +335,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
+  return { status, title, blocks, comments, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }

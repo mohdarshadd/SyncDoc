@@ -26,5 +26,20 @@ export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
     return m
   })
   ydoc.getArray('blocks').insert(0, items)
+
+  const comments = (doc.comments || []).map((c) =>
+    mapFromObject({
+      id: c.id,
+      blockId: c.blockId,
+      from: c.from,
+      to: c.to,
+      authorId: c.authorId,
+      authorName: c.authorName,
+      text: c.text || '',
+      created: c.created,
+      resolved: !!c.resolved
+    })
+  )
+  if (comments.length) ydoc.getArray('comments').insert(0, comments)
   return ydoc
 }

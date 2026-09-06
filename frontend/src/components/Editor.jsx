@@ -169,6 +169,11 @@ export default function Editor() {
                 onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
+                comments={sync.comments}
+                me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color }}
+                onAddComment={sync.addComment}
+                onResolveComment={sync.resolveComment}
+                onDeleteComment={sync.deleteComment}
                 onAddAfter={(id) => handleAddBlock('paragraph', id)}
                 onAddAfterType={(type, id) => handleAddBlock(type, id)}
                 searchQuery={search.query}
