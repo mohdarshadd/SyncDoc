@@ -89,6 +89,17 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }, [isActiveBlock, blockMatches, searchQuery])
 
+  useEffect(() => {
+    const onOpenComment = (e) => {
+      if (e.detail?.blockId === block.id) {
+        setCommentsState({ open: true, start: null, end: null })
+        ref.current?.closest('.block')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      }
+    }
+    window.addEventListener('syncdoc:open-comment', onOpenComment)
+    return () => window.removeEventListener('syncdoc:open-comment', onOpenComment)
+  }, [block.id])
+
   const onSelection = (e) => {
     onCursor({ blockId: block.id, index: e.target.selectionStart })
     const start = e.target.selectionStart
