@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const { astNodeSchema } = require('./AstNode')
+const { commentSchema } = require('./Comment')
 const { normalizeTree, validateAstTree } = require('../validators/ast')
 const Version = require('./Version')
 
@@ -9,6 +10,7 @@ const documentSchema = new mongoose.Schema(
     author: { type: String, default: 'Anonymous', trim: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     nodes: { type: [astNodeSchema], default: [] },
+    comments: { type: [commentSchema], default: [] },
     revision: { type: Number, default: 0 },
     lastSavedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },

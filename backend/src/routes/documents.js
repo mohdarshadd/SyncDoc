@@ -78,6 +78,7 @@ router.get('/documents/:id', requireAuth, async (req, res, next) => {
       updatedAt: doc.updatedAt,
       nodes: doc.nodes,
       blocks: flattenAst(doc.nodes),
+      comments: doc.comments || [],
       role
     })
   } catch (e) {

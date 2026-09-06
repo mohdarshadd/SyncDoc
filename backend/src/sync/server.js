@@ -15,7 +15,7 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'syncdoc-access-secret-de
 const Document = require('../models/Document')
 const Share = require('../models/Share')
 const { astToYdoc, ydocToAst } = require('./astAdapter')
-const { sanitizeBlocks } = require('../security/sanitize')
+const { sanitizeBlocks, sanitizeComments } = require('../security/sanitize')
 
 const PERSIST_DEBOUNCE_MS = 400
 const rooms = new Map()
@@ -91,6 +91,7 @@ async function persistRoom(docId, ydoc) {
   try {
     const ast = ydocToAst(ydoc)
     ast.nodes = sanitizeBlocks(ast.nodes)
+    ast.comments = sanitizeComments(ast.comments)
     let doc = null
     if (mongoose.Types.ObjectId.isValid(docId)) {
       doc = await Document.findById(docId)
@@ -98,6 +99,7 @@ async function persistRoom(docId, ydoc) {
     if (!doc) return
     doc.title = ast.title || doc.title
     doc.nodes = ast.nodes
+    doc.comments = ast.comments
     await doc.save()
   } catch (e) {
     console.error(`[sync] persist failed ${docId}: ${e.message}`)
