@@ -2,6 +2,7 @@ import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
 import BlockToolbar from './BlockToolbar'
+import CommentThread from './CommentThread'
 
 function blockElements() {
   return Array.from(document.querySelectorAll('.block'))
@@ -54,7 +55,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   const [selection, setSelection] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 })
-  const [commentsOpen, setCommentsOpen] = useState(false)
+  const [commentsState, setCommentsState] = useState({ open: false, start: null, end: null })
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
   const blockComments = comments.filter((c) => c.blockId === block.id)
@@ -366,6 +367,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           activeMarks={activeMarksFor(selection)}
           onApply={handleApplyMark}
           onClear={handleClearMarks}
+          onComment={() => setCommentsState({ open: true, start: selection.start, end: selection.end })}
         />
       )}
       <div className="block-gutter">
@@ -376,7 +378,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             className="block-comment-badge"
             title={openComments.length ? `${openComments.length} comment${openComments.length === 1 ? '' : 's'}` : 'Resolved'}
             aria-label="View comments"
-            onClick={() => setCommentsOpen(true)}
+            onClick={() => setCommentsState({ open: true, start: null, end: null })}
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
               <path d="M2 3.5h12v8H8l-3 2.5v-2.5H2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -488,6 +490,24 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           />
         )}
       </div>
+      {commentsState.open && (
+        <CommentThread
+          block={block}
+          thread={blockComments}
+          targetRange={{ start: commentsState.start, end: commentsState.end }}
+          me={me}
+          onAdd={(text) => {
+            const start = commentsState.start ?? 0
+            const end = commentsState.end ?? block.text.length
+            onAddComment(block.id, start, end, text)
+            setCommentsState({ open: false, start: null, end: null })
+          }}
+          onResolve={onResolveComment}
+          onDelete={onDeleteComment}
+          onClose={() => setCommentsState({ open: false, start: null, end: null })}
+          participants={users}
+        />
+      )}
       <div className="drop-indicator" />
       {menuOpen && block.type !== 'code' && (
         <BlockContextMenu

@@ -6,7 +6,7 @@ const MARKS = [
   { type: 'link', label: 'Link', glyph: 'Link', title: 'Link (Ctrl+K)' }
 ]
 
-export default function BlockToolbar({ activeMarks, onApply, onClear }) {
+export default function BlockToolbar({ activeMarks, onApply, onClear, onComment }) {
   return (
     <div className="block-toolbar" role="toolbar" aria-label="Formatting">
       {MARKS.map((m) => (
@@ -34,6 +34,21 @@ export default function BlockToolbar({ activeMarks, onApply, onClear }) {
       >
         Clear
       </button>
+      {onComment && (
+        <>
+          <span className="toolbar-sep" />
+          <button
+            type="button"
+            className="toolbar-btn"
+            title="Comment on selection"
+            aria-label="Comment on selection"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onComment}
+          >
+            Comment
+          </button>
+        </>
+      )}
     </div>
   )
 }
