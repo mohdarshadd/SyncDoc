@@ -9,6 +9,7 @@ const GROUPS = [
       { keys: 'Backspace', label: 'Delete empty block' },
       { keys: 'Arrow Up / Down', label: 'Jump between blocks at edges' },
       { keys: '/', label: 'Open commands menu' },
+      { keys: 'Right-click', label: 'Collapse / expand nested children' },
     ],
   },
   {

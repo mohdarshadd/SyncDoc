@@ -45,12 +45,15 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
+  const depth = block.depth || 0
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
   const [slashState, setSlashState] = useState({ active: false, query: '' })
   const [selection, setSelection] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 })
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
 
@@ -251,8 +254,22 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     })
   }
 
-  function onHandlePointerDown(e) {
-    if (e.button !== undefined && e.button !== 0) return
+  function onBlockContextMenu(e) {
+    if (block.type === 'code') return
+    e.preventDefault()
+    setMenuPos({ x: e.clientX, y: e.clientY })
+    setMenuOpen(true)
+  }
+
+  function handleContextAction(action) {
+    setMenuOpen(false)
+    if (action === 'collapse') onToggleCollapsed(block.id)
+    else if (action === 'expand') onToggleCollapsed(block.id)
+    else if (action === 'delete') onDelete(block.id)
+    else if (block.type === 'checklist' && action === 'toggle-check') onToggleChecked(block.id)
+  }
+
+  function onHandlePointerDown(e) {    if (e.button !== undefined && e.button !== 0) return
     e.preventDefault()
     const el = e.currentTarget.closest('.block')
     const draggedId = block.id
@@ -321,8 +338,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   return (
     <div
-      className={`block ${cls} ${block.marks && block.marks.length ? 'block-rich' : ''} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
+      className={`block ${cls} ${depth > 0 ? 'block-nested' : ''} ${block.hidden ? 'block-hidden' : ''} ${block.hasHiddenDescendants ? 'block-hideable' : ''} ${block.marks && block.marks.length ? 'block-rich' : ''} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
       data-block-id={block.id}
+      onContextMenu={onBlockContextMenu}
     >
       {editingUsers.length > 0 && (
         <div className="block-editors">
@@ -348,6 +366,21 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         />
       )}
       <div className="block-gutter">
+        {depth > 0 && <span className="block-indent" style={{ width: `${Math.min(depth, 8) * 18}px` }} aria-hidden="true" />}
+        {block.hasChildren && (
+          <button
+            type="button"
+            className={`block-collapse-caret ${block.collapsed ? 'collapsed' : ''}`}
+            title={block.collapsed ? 'Expand children' : 'Collapse children'}
+            aria-label={block.collapsed ? 'Expand children' : 'Collapse children'}
+            aria-expanded={!block.collapsed}
+            onClick={() => onToggleCollapsed(block.id)}
+          >
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
         <button type="button" className="block-add-btn" title="Add block" onClick={() => onAddAfter(block.id)}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -436,6 +469,52 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
         )}
       </div>
       <div className="drop-indicator" />
+      {menuOpen && block.type !== 'code' && (
+        <BlockContextMenu
+          x={menuPos.x}
+          y={menuPos.y}
+          collapsed={block.collapsed}
+          hideable={block.hasChildren}
+          isChecklist={block.type === 'checklist'}
+          isChecked={block.checked}
+          onAction={handleContextAction}
+          onClose={() => setMenuOpen(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+function BlockContextMenu({ x, y, collapsed, hideable, isChecklist, isChecked, onAction, onClose }) {
+  const refMenu = useRef(null)
+  useEffect(() => {
+    const onDown = (e) => {
+      if (refMenu.current && !refMenu.current.contains(e.target)) onClose()
+    }
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+  const style = { left: x, top: y }
+  return (
+    <div ref={refMenu} className="block-context-menu" style={style} role="menu">
+      {hideable && (
+        <button type="button" role="menuitem" onClick={() => onAction(collapsed ? 'expand' : 'collapse')}>
+          {collapsed ? 'Expand children' : 'Collapse children'}
+        </button>
+      )}
+      {isChecklist && (
+        <button type="button" role="menuitem" onClick={() => onAction('toggle-check')}>
+          {isChecked ? 'Mark as incomplete' : 'Mark as complete'}
+        </button>
+      )}
+      <button type="button" role="menuitem" className="danger" onClick={() => onAction('delete')}>
+        Delete
+      </button>
     </div>
   )
 }

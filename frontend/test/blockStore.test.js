@@ -66,6 +66,31 @@ describe('snapshotFromYArray', () => {
     expect(toggled.checked).toBe(false)
     expect(toggled.open).toBe(true)
   })
+
+  it('mapToBlock reads collapsed state for collapse folders', () => {
+    const doc = new Y.Doc()
+    const arr = doc.getArray('blocks')
+    const m = new Y.Map()
+    m.set('id', 'c')
+    m.set('type', 'paragraph')
+    m.set('text', 'parent')
+    m.set('collapsed', true)
+    m.set('parentId', null)
+    m.set('order', 0)
+    arr.insert(0, [m])
+
+    const collapsed = mapToBlock(arr.toArray()[0])
+    expect(collapsed.collapsed).toBe(true)
+
+    const openMap = new Y.Map()
+    openMap.set('id', 'o')
+    openMap.set('type', 'paragraph')
+    openMap.set('text', '')
+    openMap.set('parentId', null)
+    openMap.set('order', 1)
+    const openBlock = mapToBlock(openMap)
+    expect(openBlock.collapsed).toBe(false)
+  })
 })
 
 describe('diffBlocks', () => {

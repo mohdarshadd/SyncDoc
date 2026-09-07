@@ -19,7 +19,8 @@ function astToYdoc(doc) {
       text: f.text || '',
       lang: f.lang || null,
       parentId: f.parentId || null,
-      order: f.order
+      order: f.order,
+      collapsed: !!f.collapsed
     })
     if (f.attrs && Object.keys(f.attrs).length) {
       m.set('attrs', mapFromObject(f.attrs))
@@ -42,7 +43,8 @@ function ydocToAst(ydoc) {
       lang: m.get('lang') || null,
       attrs: attrs instanceof Y.Map ? Object.fromEntries(attrs.entries()) : attrs || {},
       parentId: m.get('parentId') || null,
-      order: m.get('order')
+      order: m.get('order'),
+      collapsed: !!m.get('collapsed')
     }
   })
   return { title: meta.get('title') || 'Untitled', nodes: buildTree(flat) }

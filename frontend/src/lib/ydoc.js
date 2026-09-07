@@ -19,7 +19,8 @@ export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
       text: b.text || '',
       lang: b.lang || null,
       parentId: b.parentId || null,
-      order: b.order
+      order: b.order,
+      collapsed: !!b.collapsed
     })
     if (Object.keys(attrs).length) m.set('attrs', mapFromObject(attrs))
     return m

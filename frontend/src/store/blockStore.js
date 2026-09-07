@@ -8,6 +8,7 @@ export function mapToBlock(m) {
     lang: m.get('lang') || null,
     checked: !!m.get('checked'),
     open: m.get('open') !== false,
+    collapsed: !!m.get('collapsed'),
     attrs: attrsObj,
     marks: Array.isArray(attrsObj.marks) ? attrsObj.marks : [],
     parentId: m.get('parentId') || null,

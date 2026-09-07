@@ -128,3 +128,17 @@ test('checklist and toggle nodes validate and preserve checked/open', () => {
   assert.equal(tree[1].checked, true)
   assert.equal(tree[1].open, false)
 })
+
+test('collapsed state is preserved through flatten and buildTree', () => {
+  const nodes = [
+    { type: 'paragraph', text: 'root', collapsed: true },
+    { type: 'paragraph', text: 'plain' }
+  ]
+  assert.equal(validateAstTree(nodes), true)
+  const flat = flattenAst(nodes)
+  assert.equal(flat[0].collapsed, true)
+  assert.equal(flat[1].collapsed, false)
+  const tree = buildTree(flat)
+  assert.equal(tree[0].collapsed, true)
+  assert.equal(tree[1].collapsed, false)
+})

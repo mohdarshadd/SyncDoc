@@ -16,6 +16,7 @@ import { useAuth } from '../contexts/AuthContext'
 import useDocumentSearch from '../hooks/useDocumentSearch'
 import SearchDialog from './SearchDialog'
 import ShortcutsOverlay from './ShortcutsOverlay'
+import { buildBlockTree } from '../lib/blockTree'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -36,6 +37,9 @@ export default function Editor() {
     const minutes = Math.max(1, Math.round(words / 200))
     return { words, chars, blocks: sync.blocks.length, minutes }
   }, [sync.blocks])
+
+  const blockTree = useMemo(() => buildBlockTree(sync.blocks), [sync.blocks])
+  const visibleBlockCount = blockTree.filter((b) => !b.hidden).length
 
   async function handleCopyLink() {
     const ok = await copyText(documentLink(docId))
@@ -148,10 +152,10 @@ export default function Editor() {
 
         <DragProvider>
           <div className="blocks">
-            {sync.blocks.map((b, i) => (
+            {blockTree.map((b) => (
               <Block
                 key={b.id}
-                block={{ ...b, first: i === 0, last: i === sync.blocks.length - 1, order: i }}
+                block={{ ...b, first: b.hidden || b.first, last: b.hidden || b.last, order: b.order, depth: b.depth, hidden: b.hidden, hasHiddenDescendants: b.hasHiddenDescendants, firstChildOfParent: b.firstChildOfParent, lastOfSubtree: b.lastOfSubtree }}
                 users={sync.users}
                 myClientId={sync.myClientId}
                 onTextChange={sync.updateBlockText}
@@ -162,6 +166,7 @@ export default function Editor() {
                 onChangeBlockType={sync.changeBlockType}
                 onToggleChecked={sync.toggleBlockChecked}
                 onToggleOpen={sync.toggleBlockOpen}
+                onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
                 onAddAfter={(id) => handleAddBlock('paragraph', id)}
@@ -171,7 +176,7 @@ export default function Editor() {
                 activeMatch={search.activeMatch}
               />
             ))}
-          {sync.blocks.length === 0 && (
+          {visibleBlockCount === 0 && (
             <EmptyState
               icon="blocks"
               title="This document is empty"

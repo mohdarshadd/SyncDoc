@@ -41,6 +41,30 @@ test('astAdapter round-trips AST tree through Y.Doc', () => {
   assert.equal(out.nodes[2].lang, 'js')
 })
 
+test('astAdapter round-trips collapsed subtree state', () => {
+  const nodes = [
+    { type: 'paragraph', text: 'Root', nid: 'root', collapsed: true, children: [
+      { type: 'paragraph', text: 'Child', nid: 'child', parentId: 'root' }
+    ] }
+  ]
+  const doc = { title: 'Fold', nodes }
+  const ydoc = astToYdoc(doc)
+  const out = ydocToAst(ydoc)
+  assert.equal(out.nodes[0].collapsed, true)
+  assert.equal(out.nodes[0].children[0].text, 'Child')
+  assert.equal(out.nodes[0].children[0].collapsed, false)
+})
+
+test('collapsed toggles live on the same Y.Map and round-trip', () => {
+  const ydoc = astToYdoc({ title: 'T', nodes: [{ type: 'paragraph', text: 'p', nid: 'a' }] })
+  ydoc.transact(() => {
+    const arr = ydoc.getArray('blocks')
+    arr.forEach((m) => { if (m.get('id') === 'a') m.set('collapsed', true) })
+  })
+  const out = ydocToAst(ydoc)
+  assert.equal(out.nodes[0].collapsed, true)
+})
+
 test('convergence stress: 10 concurrent clients, zero lost edits', () => {
   const N = 10
   const master = astToYdoc({ title: 'Shared', nodes: [
