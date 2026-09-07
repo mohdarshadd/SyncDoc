@@ -161,3 +161,35 @@ test('astToHtml escapes hrefs in rich-text links', () => {
   ])
   assert.ok(!html.includes('javascript:'))
 })
+
+test('astToMarkdown renders rich-text marks', () => {
+  const md = astToMarkdown([
+    {
+      type: 'paragraph',
+      text: 'ab cd ef',
+      attrs: { marks: [
+        { from: 0, to: 4, type: 'bold' },
+        { from: 3, to: 8, type: 'italic' },
+        { from: 6, to: 8, type: 'strike' }
+      ] }
+    },
+    {
+      type: 'paragraph',
+      text: 'site',
+      attrs: { marks: [{ from: 0, to: 4, type: 'link', href: 'https://example.com' }] }
+    }
+  ])
+  assert.ok(md.includes('**ab **'))
+  assert.ok(md.includes('***c***'))
+  assert.ok(md.includes('*d *'))
+  assert.ok(md.includes('~~*ef*~~'))
+  assert.ok(md.includes('[site](https://example.com)'))
+})
+
+test('astToMarkdown keeps code blocks plain', () => {
+  const md = astToMarkdown([
+    { type: 'code', lang: 'js', text: 'const x = 1', attrs: { marks: [{ from: 0, to: 13, type: 'bold' }] } }
+  ])
+  assert.ok(md.includes('const x = 1'))
+  assert.ok(!md.includes('**'))
+})
