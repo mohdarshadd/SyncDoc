@@ -1093,6 +1093,7 @@ textarea:focus,
 
 .block textarea:focus {
   outline: none;
+  box-shadow: none;
 }
 
 .block textarea::placeholder {
