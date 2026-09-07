@@ -44,7 +44,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
@@ -343,6 +343,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
               activeMatch={activeMatch}
             />
           )}
+          {block.type !== 'code' && block.marks && block.marks.length > 0 && (
+            <RichTextOverlay text={block.text} marks={block.marks} />
+          )}
           <textarea
             ref={ref}
             defaultValue={block.text}
@@ -391,6 +394,52 @@ function HighlightOverlay({ text, query, matches, activeMatch }) {
           {text.slice(p.start, p.end)}
         </mark>
       ))}
+    </div>
+  )
+}
+
+function marksBoundaries(marks) {
+  const points = new Set([0])
+  for (const m of marks || []) {
+    points.add(m.from)
+    points.add(m.to)
+  }
+  return Array.from(points).sort((a, b) => a - b)
+}
+
+function activeMarksAt(marks, at) {
+  const set = new Set()
+  for (const m of marks || []) {
+    if (m.from < at && m.to > at) set.add(m.type)
+  }
+  return set
+}
+
+function RichTextOverlay({ text, marks }) {
+  const boundaries = marksBoundaries(marks)
+  const segments = []
+  for (let i = 0; i < boundaries.length - 1; i++) {
+    const from = boundaries[i]
+    const to = boundaries[i + 1]
+    if (to > text.length) break
+    segments.push({ from, to, marks: activeMarksAt(marks, from + 0.5) })
+  }
+
+  return (
+    <div className="rich-text-overlay" aria-hidden="true">
+      {segments.map((seg, i) => {
+        let content = text.slice(seg.from, seg.to)
+        const wrapped = []
+        if (seg.marks.has('bold')) wrapped.push(<strong key="b">{content}</strong>)
+        if (seg.marks.has('italic')) wrapped.push(<em key="i">{content}</em>)
+        if (seg.marks.has('underline')) wrapped.push(<u key="u">{content}</u>)
+        if (seg.marks.has('strike')) wrapped.push(<s key="s">{content}</s>)
+        const link = marks.find((m) => m.type === 'link' && m.from <= seg.from && m.to >= seg.to)
+        if (seg.marks.has('link') || link) {
+          content = <a key="a" href={link?.href || '#'}>{wrapped.length ? wrapped : content}</a>
+        }
+        return <span key={i}>{wrapped.length ? wrapped : content}</span>
+      })}
     </div>
   )
 }

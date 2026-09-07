@@ -162,6 +162,8 @@ export default function Editor() {
                 onChangeBlockType={sync.changeBlockType}
                 onToggleChecked={sync.toggleBlockChecked}
                 onToggleOpen={sync.toggleBlockOpen}
+                onToggleBlockMark={sync.toggleBlockMark}
+                onClearBlockMarks={sync.clearBlockMarks}
                 onAddAfter={(id) => handleAddBlock('paragraph', id)}
                 onAddAfterType={(type, id) => handleAddBlock(type, id)}
                 searchQuery={search.query}
