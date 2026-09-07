@@ -20,6 +20,28 @@ export function snapshotFromYArray(arr) {
   return arr.toArray().map(mapToBlock)
 }
 
+export function commentFromYMap(m) {
+  return {
+    id: m.get('id'),
+    blockId: m.get('blockId') || null,
+    from: m.get('from'),
+    to: m.get('to'),
+    authorId: m.get('authorId') || null,
+    authorName: m.get('authorName') || 'Anonymous',
+    text: m.get('text') || '',
+    created: m.get('created') || 0,
+    resolved: !!m.get('resolved')
+  }
+}
+
+export function commentsFromYArray(arr) {
+  return arr
+    .toArray()
+    .map(commentFromYMap)
+    .filter((c) => c.blockId && c.id)
+    .sort((a, b) => a.created - b.created)
+}
+
 export function diffBlocks(prev, full) {
   const prevById = new Map(prev.map((b) => [b.id, b]))
   const fullById = new Map(full.map((b) => [b.id, b]))

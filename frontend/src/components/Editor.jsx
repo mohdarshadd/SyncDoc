@@ -17,6 +17,7 @@ import useDocumentSearch from '../hooks/useDocumentSearch'
 import SearchDialog from './SearchDialog'
 import ShortcutsOverlay from './ShortcutsOverlay'
 import { buildBlockTree } from '../lib/blockTree'
+import { extractMentionIds } from '../lib/comments'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -40,6 +41,19 @@ export default function Editor() {
 
   const blockTree = useMemo(() => buildBlockTree(sync.blocks), [sync.blocks])
   const visibleBlockCount = blockTree.filter((b) => !b.hidden).length
+
+  const mentionsMe = useMemo(() => {
+    const myId = sync.myClientId != null ? String(sync.myClientId) : null
+    if (!myId) return []
+    return sync.comments
+      .filter((c) => !c.resolved)
+      .filter((c) => extractMentionIds(c.text).includes(myId))
+  }, [sync.comments, sync.myClientId])
+
+  function handleMentionsClick() {
+    if (mentionsMe.length === 0) return
+    window.dispatchEvent(new CustomEvent('syncdoc:open-comment', { detail: { blockId: mentionsMe[0].blockId, commentId: mentionsMe[0].id } }))
+  }
 
   async function handleCopyLink() {
     const ok = await copyText(documentLink(docId))
@@ -96,6 +110,12 @@ export default function Editor() {
           <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
           <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
           <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
+          {mentionsMe.length > 0 && (
+            <button className="btn btn-ghost mentions-badge-btn" onClick={handleMentionsClick} title={`${mentionsMe.length} comment${mentionsMe.length === 1 ? '' : 's'} mention you`} aria-label="Mentions of you">
+              Mentions
+              <span className="mentions-count">{mentionsMe.length}</span>
+            </button>
+          )}
           {isOwner && (
             <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
           )}
@@ -169,6 +189,11 @@ export default function Editor() {
                 onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
+                comments={sync.comments}
+                me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color, clientId: sync.myClientId }}
+                onAddComment={sync.addComment}
+                onResolveComment={sync.resolveComment}
+                onDeleteComment={sync.deleteComment}
                 onAddAfter={(id) => handleAddBlock('paragraph', id)}
                 onAddAfterType={(type, id) => handleAddBlock(type, id)}
                 searchQuery={search.query}

@@ -32,6 +32,27 @@ function sanitizeMarks(marks) {
     .map((m) => (m.type === 'link' ? { ...m, href: sanitizeHref(m.href) } : { ...m }))
 }
 
+function sanitizeComments(comments) {
+  return (Array.isArray(comments) ? comments : [])
+    .filter((c) => c && typeof c.id === 'string' && c.id && typeof c.blockId === 'string' && c.blockId)
+    .map((c) => {
+      const from = Number.isFinite(c.from) ? Math.max(0, c.from) : 0
+      let to = Number.isFinite(c.to) ? Math.max(0, c.to) : 0
+      if (to < from) to = from
+      return {
+        id: String(c.id).slice(0, 200),
+        blockId: String(c.blockId).slice(0, 200),
+        from,
+        to,
+        authorId: String(c.authorId || 'anonymous').slice(0, 200),
+        authorName: sanitizePlainText(c.authorName).slice(0, 120),
+        text: sanitizePlainText(c.text).slice(0, 4000),
+        created: Number.isFinite(c.created) ? c.created : Date.now(),
+        resolved: !!c.resolved
+      }
+    })
+}
+
 function sanitizeBlocks(nodes) {
   return (nodes || []).map((n) => {
     const copy = { ...n, children: n.children ? sanitizeBlocks(n.children) : [] }
@@ -44,4 +65,4 @@ function sanitizeBlocks(nodes) {
   })
 }
 
-module.exports = { sanitizeHtml, sanitizePlainText, sanitizeBlocks, sanitizeHref }
+module.exports = { sanitizeHtml, sanitizePlainText, sanitizeBlocks, sanitizeHref, sanitizeComments }

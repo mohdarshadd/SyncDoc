@@ -65,6 +65,62 @@ test('collapsed toggles live on the same Y.Map and round-trip', () => {
   assert.equal(out.nodes[0].collapsed, true)
 })
 
+test('comments round-trip from document through Y.Doc', () => {
+  const comments = [
+    { id: 'c1', blockId: 'a', from: 0, to: 2, authorId: 'u1', authorName: 'Arshad', text: '@[Neha](c9) noted this', created: 123, resolved: false },
+    { id: 'c2', blockId: 'a', from: 2, to: 5, authorId: 'u2', authorName: 'Neha', text: 'Fixed.', created: 456, resolved: true }
+  ]
+  const doc = { title: 'T', nodes: [{ type: 'paragraph', text: 'hello', nid: 'a' }], comments }
+  const ydoc = astToYdoc(doc)
+  const out = ydocToAst(ydoc)
+  assert.deepEqual(out.comments, comments)
+})
+
+test('comments added to the Y array converge across clients', () => {
+  const master = astToYdoc({ title: 'T', nodes: [{ type: 'paragraph', text: 'p', nid: 'a' }], comments: [{ id: 'c0', blockId: 'a', from: 0, to: 1, authorId: 'u', authorName: 'A', text: 'seed', created: 1, resolved: false }] })
+  const seed = Y.encodeStateAsUpdate(master)
+
+  const a = new Y.Doc()
+  const b = new Y.Doc()
+  Y.applyUpdate(a, seed)
+  Y.applyUpdate(b, seed)
+
+  a.transact(() => {
+    const arr = a.getArray('comments')
+    const m = new Y.Map()
+    m.set('id', 'ca')
+    m.set('blockId', 'a')
+    m.set('from', 1)
+    m.set('to', 2)
+    m.set('authorId', 'u')
+    m.set('authorName', 'A')
+    m.set('text', 'from A')
+    m.set('created', 2)
+    m.set('resolved', false)
+    arr.insert(arr.length, [m])
+  })
+  b.transact(() => {
+    const arr = b.getArray('comments')
+    arr.forEach((m) => { if (m.get('id') === 'c0') m.set('resolved', true) })
+  })
+
+  Y.applyUpdate(a, Y.encodeStateAsUpdate(b))
+  Y.applyUpdate(b, Y.encodeStateAsUpdate(a))
+
+  const idsA = a.getArray('comments').toArray().map((m) => m.get('id'))
+  const idsB = b.getArray('comments').toArray().map((m) => m.get('id'))
+  assert.deepEqual(idsA.sort(), idsB.sort())
+  assert.ok(idsA.includes('ca'))
+  const resolved = b.getArray('comments').toArray().find((m) => m.get('id') === 'c0').get('resolved')
+  assert.equal(resolved, true)
+})
+
+test('empty doc produces no comments array items', () => {
+  const ydoc = astToYdoc({ title: 'T', nodes: [] })
+  assert.equal(ydoc.getArray('comments').length, 0)
+  assert.deepEqual(ydocToAst(ydoc).comments, [])
+})
+
 test('convergence stress: 10 concurrent clients, zero lost edits', () => {
   const N = 10
   const master = astToYdoc({ title: 'Shared', nodes: [

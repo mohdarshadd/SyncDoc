@@ -6,7 +6,7 @@ function mapFromObject(obj) {
   return m
 }
 
-export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
+export function buildYdoc({ title = 'Untitled', blocks = [], comments = [] } = {}) {
   const ydoc = new Y.Doc()
   ydoc.getMap('meta').set('title', title)
 
@@ -26,5 +26,20 @@ export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
     return m
   })
   ydoc.getArray('blocks').insert(0, items)
+
+  const commentItems = comments.map((c) =>
+    mapFromObject({
+      id: c.id,
+      blockId: c.blockId,
+      from: c.from,
+      to: c.to,
+      authorId: c.authorId,
+      authorName: c.authorName,
+      text: c.text || '',
+      created: c.created,
+      resolved: !!c.resolved
+    })
+  )
+  if (commentItems.length) ydoc.getArray('comments').insert(0, commentItems)
   return ydoc
 }
