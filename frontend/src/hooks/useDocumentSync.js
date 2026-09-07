@@ -5,6 +5,7 @@ import { getDocument, getAccessToken, WS_URL } from '../api'
 import { buildYdoc } from '../lib/ydoc'
 import { diffBlocks, mergeDelta, snapshotFromYArray } from '../store/blockStore'
 import { uid } from '../lib/uid'
+import { toggleMark, clearMarks as emptyMarks } from '../lib/richText'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -174,6 +175,35 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function toggleBlockMark(id, from, to, type, href) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const found = ydoc.getArray('blocks').toArray().find((m) => m.get('id') === id)
+      if (!found) return
+      const textLen = (found.get('text') || '').length
+      const current = Array.isArray(found.get('attrs')?.get?.('marks')) ? found.get('attrs').get('marks') : []
+      const next = toggleMark(textLen, current, from, to, type, href)
+      let attrs = found.get('attrs')
+      if (!(attrs instanceof Y.Map)) {
+        attrs = new Y.Map()
+        found.set('attrs', attrs)
+      }
+      attrs.set('marks', next)
+    })
+  }
+
+  function clearBlockMarks(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const found = ydoc.getArray('blocks').toArray().find((m) => m.get('id') === id)
+      if (!found) return
+      const attrs = found.get('attrs')
+      if (attrs instanceof Y.Map) attrs.set('marks', emptyMarks())
+    })
+  }
+
   function setCursor(cursor) {
     if (providerRef.current) providerRef.current.awareness.setLocalStateField('cursor', cursor)
   }
@@ -235,5 +265,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
+  return { status, title, blocks, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock }
 }
