@@ -11,6 +11,8 @@ export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
   ydoc.getMap('meta').set('title', title)
 
   const items = blocks.map((b) => {
+    const attrs = { ...(b.attrs || {}) }
+    if (Array.isArray(b.marks) && b.marks.length) attrs.marks = b.marks
     const m = mapFromObject({
       id: b.id,
       type: b.type,
@@ -19,7 +21,7 @@ export function buildYdoc({ title = 'Untitled', blocks = [] } = {}) {
       parentId: b.parentId || null,
       order: b.order
     })
-    if (b.attrs && Object.keys(b.attrs).length) m.set('attrs', mapFromObject(b.attrs))
+    if (Object.keys(attrs).length) m.set('attrs', mapFromObject(attrs))
     return m
   })
   ydoc.getArray('blocks').insert(0, items)

@@ -1,5 +1,6 @@
 export function mapToBlock(m) {
   const attrs = m.get('attrs')
+  const attrsObj = attrs instanceof Map && attrs.entries ? Object.fromEntries(attrs.entries()) : attrs || {}
   return {
     id: m.get('id'),
     type: m.get('type'),
@@ -7,7 +8,8 @@ export function mapToBlock(m) {
     lang: m.get('lang') || null,
     checked: !!m.get('checked'),
     open: m.get('open') !== false,
-    attrs: attrs instanceof Map && attrs.entries ? Object.fromEntries(attrs.entries()) : attrs || {},
+    attrs: attrsObj,
+    marks: Array.isArray(attrsObj.marks) ? attrsObj.marks : [],
     parentId: m.get('parentId') || null,
     order: m.get('order')
   }
