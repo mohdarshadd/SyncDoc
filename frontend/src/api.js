@@ -67,6 +67,8 @@ export const createDocument = (body = {}) => request('/documents', { method: 'PO
 
 export const deleteDocument = (id) => request(`/documents/${id}`, { method: 'DELETE' })
 
+export const renameDocument = (id, title) => request(`/documents/${id}/rename`, { method: 'PATCH', body: JSON.stringify({ title }) })
+
 export const importMarkdown = (body) => request('/import/markdown', { method: 'POST', body: JSON.stringify(body) })
 
 export const exportUrl = (id, format) => `/api/documents/${id}/export/${format}`

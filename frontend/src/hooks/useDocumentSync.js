@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
-import { getDocument, getAccessToken, WS_URL } from '../api'
+import { getDocument, getAccessToken, WS_URL, renameDocument } from '../api'
 import { buildYdoc } from '../lib/ydoc'
 import { diffBlocks, mergeDelta, snapshotFromYArray, commentsFromYArray } from '../store/blockStore'
 import { uid } from '../lib/uid'
@@ -19,6 +19,7 @@ function cloneMap(m) {
 export function useDocumentSync(docId, user) {
   const ydocRef = useRef(null)
   const providerRef = useRef(null)
+  const renameTimerRef = useRef(null)
   const [status, setStatus] = useState('connecting')
   const [title, setTitle] = useState('')
   const [blocks, setBlocks] = useState([])
@@ -95,6 +96,7 @@ export function useDocumentSync(docId, user) {
 
     return () => {
       cancelled = true
+      clearTimeout(renameTimerRef.current)
       try {
         provider?.awareness.setLocalState(null)
       } catch (e) { /* noop */ }
@@ -328,7 +330,14 @@ export function useDocumentSync(docId, user) {
 
   function updateTitle(value) {
     const ydoc = ydocRef.current
-    if (ydoc) ydoc.getMap('meta').set('title', value)
+    if (!ydoc) return
+    const next = String(value || '').trim()
+    ydoc.getMap('meta').set('title', next || 'Untitled')
+    if (!next) return
+    clearTimeout(renameTimerRef.current)
+    renameTimerRef.current = setTimeout(() => {
+      renameDocument(docId, next).catch(() => { /* revert relies on Yjs sync persist */ })
+    }, 400)
   }
 
   function refreshOrder(arr) {
