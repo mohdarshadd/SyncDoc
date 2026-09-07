@@ -1,6 +1,7 @@
 import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
+import BlockToolbar from './BlockToolbar'
 
 function blockElements() {
   return Array.from(document.querySelectorAll('.block'))
@@ -49,6 +50,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
   const [slashState, setSlashState] = useState({ active: false, query: '' })
+  const [selection, setSelection] = useState(null)
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
 
@@ -80,7 +82,16 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }, [isActiveBlock, blockMatches, searchQuery])
 
-  const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
+  const onSelection = (e) => {
+    onCursor({ blockId: block.id, index: e.target.selectionStart })
+    const start = e.target.selectionStart
+    const end = e.target.selectionEnd
+    if (block.type !== 'code' && start != null && end != null && end > start) {
+      setSelection({ start, end })
+    } else if (start != null && end != null && start === end) {
+      setSelection(null)
+    }
+  }
 
   const TYPING_TYPES = ['checklist', 'toggle']
 
@@ -192,6 +203,41 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     ref.current?.focus()
   }
 
+  function activeMarksFor(sel) {
+    return (block.marks || []).filter((m) => m.from < sel.end && m.to > sel.start).map((m) => m.type)
+  }
+
+  function handleApplyMark(type) {
+    if (!selection) return
+    let href
+    if (type === 'link') {
+      const existing = (block.marks || []).find((m) => m.type === 'link' && m.from < selection.end && m.to > selection.start)
+      href = window.prompt('Link URL', existing?.href || 'https://')
+      if (href == null) return
+      href = href.trim() || undefined
+    }
+    onToggleBlockMark(block.id, selection.start, selection.end, type, href)
+    requestAnimationFrame(() => {
+      const el = ref.current
+      if (el) {
+        el.focus()
+        try { el.setSelectionRange(selection.start, selection.end) } catch (e) { /* noop */ }
+      }
+    })
+  }
+
+  function handleClearMarks() {
+    if (!selection) return
+    onClearBlockMarks(block.id)
+    requestAnimationFrame(() => {
+      const el = ref.current
+      if (el) {
+        el.focus()
+        try { el.setSelectionRange(selection.start, selection.end) } catch (e) { /* noop */ }
+      }
+    })
+  }
+
   function onHandlePointerDown(e) {
     if (e.button !== undefined && e.button !== 0) return
     e.preventDefault()
@@ -281,6 +327,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           ))}
         </div>
       )}
+      {selection && block.type !== 'code' && (
+        <BlockToolbar
+          activeMarks={activeMarksFor(selection)}
+          onApply={handleApplyMark}
+          onClear={handleClearMarks}
+        />
+      )}
       <div className="block-gutter">
         <button type="button" className="block-add-btn" title="Add block" onClick={() => onAddAfter(block.id)}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -356,7 +409,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             onClick={onSelection}
             onKeyUp={onSelection}
             onSelect={onSelection}
-            onBlur={() => onCursor(null)}
+            onBlur={() => { onCursor(null); setSelection(null) }}
             onKeyDown={onKeyDown}
           />
         </div>
