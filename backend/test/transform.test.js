@@ -131,3 +131,33 @@ test('astToMarkdown renders checklist and toggle', () => {
   assert.ok(md.includes('- [ ] todo'))
   assert.ok(md.includes('▸ Fold'))
 })
+
+test('astToHtml renders rich-text marks', () => {
+  const html = astToHtml([
+    {
+      type: 'paragraph',
+      text: 'ab cd ef',
+      attrs: { marks: [
+        { from: 0, to: 4, type: 'bold' },
+        { from: 3, to: 8, type: 'italic' },
+        { from: 6, to: 8, type: 'link', href: 'https://example.com' }
+      ] }
+    }
+  ])
+  assert.ok(html.includes('<strong>ab </strong>'))
+  assert.ok(html.includes('<em><strong>c</strong></em>'))
+  assert.ok(html.includes('<em>d </em>'))
+  assert.ok(html.includes('<a href="https://example.com">'))
+  assert.ok(html.includes('</a>'))
+})
+
+test('astToHtml escapes hrefs in rich-text links', () => {
+  const html = astToHtml([
+    {
+      type: 'paragraph',
+      text: 'click',
+      attrs: { marks: [{ from: 0, to: 5, type: 'link', href: 'javascript:alert(1)' }] }
+    }
+  ])
+  assert.ok(!html.includes('javascript:'))
+})
