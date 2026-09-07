@@ -1,6 +1,7 @@
 import { useEffect, useRef, useContext, useState } from 'react'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
+import BlockToolbar from './BlockToolbar'
 
 function blockElements() {
   return Array.from(document.querySelectorAll('.block'))
@@ -44,11 +45,12 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, searchQuery, blockMatches, activeMatch }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const { activeId, overId, insertIndex, setActiveId, setOverId, setInsertIndex } = useContext(DragContext)
   const [slashState, setSlashState] = useState({ active: false, query: '' })
+  const [selection, setSelection] = useState(null)
 
   const isActiveBlock = activeMatch && activeMatch.blockId === block.id
 
@@ -80,7 +82,16 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }, [isActiveBlock, blockMatches, searchQuery])
 
-  const onSelection = (e) => onCursor({ blockId: block.id, index: e.target.selectionStart })
+  const onSelection = (e) => {
+    onCursor({ blockId: block.id, index: e.target.selectionStart })
+    const start = e.target.selectionStart
+    const end = e.target.selectionEnd
+    if (block.type !== 'code' && start != null && end != null && end > start) {
+      setSelection({ start, end })
+    } else if (start != null && end != null && start === end) {
+      setSelection(null)
+    }
+  }
 
   const TYPING_TYPES = ['checklist', 'toggle']
 
@@ -109,6 +120,18 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     if (mod && e.key === 's') {
       e.preventDefault()
       return
+    }
+
+    const markShortcuts = { b: 'bold', i: 'italic', u: 'underline', k: 'link' }
+    if (mod && markShortcuts[e.key.toLowerCase()] && block.type !== 'code') {
+      const selStart = el.selectionStart
+      const selEnd = el.selectionEnd
+      if (selStart != null && selEnd != null && selEnd > selStart) {
+        e.preventDefault()
+        setSelection({ start: selStart, end: selEnd })
+        handleApplyMark(markShortcuts[e.key.toLowerCase()], { start: selStart, end: selEnd })
+        return
+      }
     }
 
     if (mod && e.key === 'Enter') {
@@ -192,6 +215,42 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     ref.current?.focus()
   }
 
+  function activeMarksFor(sel) {
+    return (block.marks || []).filter((m) => m.from < sel.end && m.to > sel.start).map((m) => m.type)
+  }
+
+  function handleApplyMark(type, override) {
+    const sel = override || selection
+    if (!sel) return
+    let href
+    if (type === 'link') {
+      const existing = (block.marks || []).find((m) => m.type === 'link' && m.from < sel.end && m.to > sel.start)
+      href = window.prompt('Link URL', existing?.href || 'https://')
+      if (href == null) return
+      href = href.trim() || undefined
+    }
+    onToggleBlockMark(block.id, sel.start, sel.end, type, href)
+    requestAnimationFrame(() => {
+      const el = ref.current
+      if (el) {
+        el.focus()
+        try { el.setSelectionRange(sel.start, sel.end) } catch (e) { /* noop */ }
+      }
+    })
+  }
+
+  function handleClearMarks() {
+    if (!selection) return
+    onClearBlockMarks(block.id)
+    requestAnimationFrame(() => {
+      const el = ref.current
+      if (el) {
+        el.focus()
+        try { el.setSelectionRange(selection.start, selection.end) } catch (e) { /* noop */ }
+      }
+    })
+  }
+
   function onHandlePointerDown(e) {
     if (e.button !== undefined && e.button !== 0) return
     e.preventDefault()
@@ -262,7 +321,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   return (
     <div
-      className={`block ${cls} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
+      className={`block ${cls} ${block.marks && block.marks.length ? 'block-rich' : ''} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
       data-block-id={block.id}
     >
       {editingUsers.length > 0 && (
@@ -280,6 +339,13 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             </span>
           ))}
         </div>
+      )}
+      {selection && block.type !== 'code' && (
+        <BlockToolbar
+          activeMarks={activeMarksFor(selection)}
+          onApply={handleApplyMark}
+          onClear={handleClearMarks}
+        />
       )}
       <div className="block-gutter">
         <button type="button" className="block-add-btn" title="Add block" onClick={() => onAddAfter(block.id)}>
@@ -343,6 +409,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
               activeMatch={activeMatch}
             />
           )}
+          {block.type !== 'code' && block.marks && block.marks.length > 0 && (
+            <RichTextOverlay text={block.text} marks={block.marks} />
+          )}
           <textarea
             ref={ref}
             defaultValue={block.text}
@@ -353,7 +422,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             onClick={onSelection}
             onKeyUp={onSelection}
             onSelect={onSelection}
-            onBlur={() => onCursor(null)}
+            onBlur={() => { onCursor(null); setSelection(null) }}
             onKeyDown={onKeyDown}
           />
         </div>
@@ -391,6 +460,52 @@ function HighlightOverlay({ text, query, matches, activeMatch }) {
           {text.slice(p.start, p.end)}
         </mark>
       ))}
+    </div>
+  )
+}
+
+function marksBoundaries(marks) {
+  const points = new Set([0])
+  for (const m of marks || []) {
+    points.add(m.from)
+    points.add(m.to)
+  }
+  return Array.from(points).sort((a, b) => a - b)
+}
+
+function activeMarksAt(marks, at) {
+  const set = new Set()
+  for (const m of marks || []) {
+    if (m.from < at && m.to > at) set.add(m.type)
+  }
+  return set
+}
+
+function RichTextOverlay({ text, marks }) {
+  const boundaries = marksBoundaries(marks)
+  const segments = []
+  for (let i = 0; i < boundaries.length - 1; i++) {
+    const from = boundaries[i]
+    const to = boundaries[i + 1]
+    if (to > text.length) break
+    segments.push({ from, to, marks: activeMarksAt(marks, from + 0.5) })
+  }
+
+  return (
+    <div className="rich-text-overlay" aria-hidden="true">
+      {segments.map((seg, i) => {
+        let content = text.slice(seg.from, seg.to)
+        const wrapped = []
+        if (seg.marks.has('bold')) wrapped.push(<strong key="b">{content}</strong>)
+        if (seg.marks.has('italic')) wrapped.push(<em key="i">{content}</em>)
+        if (seg.marks.has('underline')) wrapped.push(<u key="u">{content}</u>)
+        if (seg.marks.has('strike')) wrapped.push(<s key="s">{content}</s>)
+        const link = marks.find((m) => m.type === 'link' && m.from <= seg.from && m.to >= seg.to)
+        if (seg.marks.has('link') || link) {
+          content = <a key="a" href={link?.href || '#'}>{wrapped.length ? wrapped : content}</a>
+        }
+        return <span key={i}>{wrapped.length ? wrapped : content}</span>
+      })}
     </div>
   )
 }

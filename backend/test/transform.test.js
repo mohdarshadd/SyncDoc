@@ -55,6 +55,23 @@ test('sanitizeBlocks strips dangerous fragments from saved blocks', () => {
   assert.equal(safe[1].text, '<script>steal()</script>')
 })
 
+test('sanitizeBlocks strips javascript hrefs and invalid marks', () => {
+  const safe = sanitizeBlocks([
+    {
+      type: 'paragraph',
+      text: 'hi',
+      attrs: { marks: [
+        { from: 0, to: 2, type: 'link', href: 'javascript:alert(1)' },
+        { from: 0, to: 1, type: 'bold' },
+        { from: 5, to: 4, type: 'italic' }
+      ] }
+    }
+  ])
+  assert.equal(safe[0].attrs.marks.length, 2)
+  assert.equal(safe[0].attrs.marks[0].href, '')
+  assert.ok(!safe[0].attrs.marks.some((m) => m.type === 'italic'))
+})
+
 test('sanitizeHtml allows safe structural tags only', () => {
   const out = sanitizeHtml('<script>x</script><h2 onclick="y()">Safe</h2>')
   assert.ok(!out.includes('<script'))
@@ -130,4 +147,66 @@ test('astToMarkdown renders checklist and toggle', () => {
   assert.ok(md.includes('- [x] done'))
   assert.ok(md.includes('- [ ] todo'))
   assert.ok(md.includes('▸ Fold'))
+})
+
+test('astToHtml renders rich-text marks', () => {
+  const html = astToHtml([
+    {
+      type: 'paragraph',
+      text: 'ab cd ef',
+      attrs: { marks: [
+        { from: 0, to: 4, type: 'bold' },
+        { from: 3, to: 8, type: 'italic' },
+        { from: 6, to: 8, type: 'link', href: 'https://example.com' }
+      ] }
+    }
+  ])
+  assert.ok(html.includes('<strong>ab </strong>'))
+  assert.ok(html.includes('<em><strong>c</strong></em>'))
+  assert.ok(html.includes('<em>d </em>'))
+  assert.ok(html.includes('<a href="https://example.com">'))
+  assert.ok(html.includes('</a>'))
+})
+
+test('astToHtml escapes hrefs in rich-text links', () => {
+  const html = astToHtml([
+    {
+      type: 'paragraph',
+      text: 'click',
+      attrs: { marks: [{ from: 0, to: 5, type: 'link', href: 'javascript:alert(1)' }] }
+    }
+  ])
+  assert.ok(!html.includes('javascript:'))
+})
+
+test('astToMarkdown renders rich-text marks', () => {
+  const md = astToMarkdown([
+    {
+      type: 'paragraph',
+      text: 'ab cd ef',
+      attrs: { marks: [
+        { from: 0, to: 4, type: 'bold' },
+        { from: 3, to: 8, type: 'italic' },
+        { from: 6, to: 8, type: 'strike' }
+      ] }
+    },
+    {
+      type: 'paragraph',
+      text: 'site',
+      attrs: { marks: [{ from: 0, to: 4, type: 'link', href: 'https://example.com' }] }
+    }
+  ])
+  assert.ok(md.includes('**ab **'))
+  assert.ok(md.includes('***c***'))
+  assert.ok(md.includes('*d *'))
+  assert.ok(md.includes('~~*ef*~~'))
+  assert.ok(md.includes('[site](https://example.com)'))
+})
+
+test('astToMarkdown keeps code blocks plain', () => {
+  const md = astToMarkdown([
+    { type: 'code', lang: 'js', text: 'const x = 1', attrs: { marks: [{ from: 0, to: 13, type: 'bold' }] } }
+  ])
+  assert.ok(md.includes('const x = 1'))
+  assert.ok(!md.includes('**'))
 })

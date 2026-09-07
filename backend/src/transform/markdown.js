@@ -1,3 +1,44 @@
+const MARKDOWN_OPEN = { bold: '**', italic: '*', underline: '__', strike: '~~' }
+const MARKDOWN_CLOSE = { bold: '**', italic: '*', underline: '__', strike: '~~' }
+
+function marksFor(node) {
+  return (node.attrs && node.attrs.marks) || []
+}
+
+function applyMarksToMarkdown(text, marks) {
+  if (!marks || !marks.length) return text
+  const points = new Set([0, text.length])
+  for (const m of marks) {
+    if (m.from == null || m.to == null || m.from >= m.to) continue
+    points.add(m.from)
+    points.add(m.to)
+  }
+  const sorted = Array.from(points).sort((a, b) => a - b)
+  const parts = []
+  const covers = (m, from, to) => m.from <= from && m.to >= to
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const from = sorted[i]
+    const to = sorted[i + 1]
+    if (to > text.length) break
+    const slice = text.slice(from, to)
+    if (!slice) continue
+    let wrap = slice
+    for (const type of ['bold', 'italic', 'underline', 'strike']) {
+      if (marks.some((m) => m.type === type && covers(m, from, to))) {
+        wrap = `${MARKDOWN_OPEN[type]}${wrap}${MARKDOWN_CLOSE[type]}`
+      }
+    }
+    const link = marks.find((m) => m.type === 'link' && covers(m, from, to))
+    if (link) wrap = `[${wrap}](${link.href || ''})`
+    parts.push(wrap)
+  }
+  return parts.join('')
+}
+
+function richText(text, node) {
+  return applyMarksToMarkdown(text || '', marksFor(node))
+}
+
 function markdownToAst(md) {
   const lines = String(md || '').split(/\r?\n/)
   const nodes = []
@@ -74,23 +115,23 @@ function astToMarkdown(nodes) {
       switch (node.type) {
         case 'heading': {
           const level = (node.attrs && node.attrs.level) || 1
-          lines.push(`${'#'.repeat(level)} ${node.text || ''}`)
+          lines.push(`${'#'.repeat(level)} ${richText(node.text, node)}`)
           break
         }
         case 'code':
           lines.push(`\`\`\`${node.lang || ''}\n${node.text || ''}\n\`\`\``)
           break
         case 'quote':
-          lines.push(`> ${node.text || ''}`)
+          lines.push(`> ${richText(node.text, node)}`)
           break
         case 'list':
-          for (const child of node.children || []) lines.push(`- ${child.text || ''}`)
+          for (const child of node.children || []) lines.push(`- ${richText(child.text, child)}`)
           break
         case 'checklist':
-          lines.push(`- [${node.checked ? 'x' : ' '}] ${node.text || ''}`)
+          lines.push(`- [${node.checked ? 'x' : ' '}] ${richText(node.text, node)}`)
           break
         case 'toggle':
-          lines.push(`> ▸ ${node.text || ''}`)
+          lines.push(`> ▸ ${richText(node.text, node)}`)
           break
         case 'image': {
           const src = (node.attrs && node.attrs.src) || ''
@@ -103,7 +144,7 @@ function astToMarkdown(nodes) {
           break
         case 'paragraph':
         default:
-          lines.push(node.text || '')
+          lines.push(richText(node.text, node))
           break
       }
     }
