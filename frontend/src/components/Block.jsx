@@ -122,6 +122,18 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       return
     }
 
+    const markShortcuts = { b: 'bold', i: 'italic', u: 'underline', k: 'link' }
+    if (mod && markShortcuts[e.key.toLowerCase()] && block.type !== 'code') {
+      const selStart = el.selectionStart
+      const selEnd = el.selectionEnd
+      if (selStart != null && selEnd != null && selEnd > selStart) {
+        e.preventDefault()
+        setSelection({ start: selStart, end: selEnd })
+        handleApplyMark(markShortcuts[e.key.toLowerCase()], { start: selStart, end: selEnd })
+        return
+      }
+    }
+
     if (mod && e.key === 'Enter') {
       e.preventDefault()
       addBelow()
@@ -207,21 +219,22 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     return (block.marks || []).filter((m) => m.from < sel.end && m.to > sel.start).map((m) => m.type)
   }
 
-  function handleApplyMark(type) {
-    if (!selection) return
+  function handleApplyMark(type, override) {
+    const sel = override || selection
+    if (!sel) return
     let href
     if (type === 'link') {
-      const existing = (block.marks || []).find((m) => m.type === 'link' && m.from < selection.end && m.to > selection.start)
+      const existing = (block.marks || []).find((m) => m.type === 'link' && m.from < sel.end && m.to > sel.start)
       href = window.prompt('Link URL', existing?.href || 'https://')
       if (href == null) return
       href = href.trim() || undefined
     }
-    onToggleBlockMark(block.id, selection.start, selection.end, type, href)
+    onToggleBlockMark(block.id, sel.start, sel.end, type, href)
     requestAnimationFrame(() => {
       const el = ref.current
       if (el) {
         el.focus()
-        try { el.setSelectionRange(selection.start, selection.end) } catch (e) { /* noop */ }
+        try { el.setSelectionRange(sel.start, sel.end) } catch (e) { /* noop */ }
       }
     })
   }
