@@ -89,17 +89,39 @@ export default function Editor() {
   }
 
   function handlePhantomInput(e) {
-    const value = e.currentTarget.value
+    const ta = e.currentTarget
+    const value = ta.value
     if (!value) return
     const id = sync.addBlock('paragraph')
     if (!id) return
     sync.updateBlockText(id, value)
-    focusBlockInput(id)
+    setTimeout(() => {
+      const el = document.querySelector(`[data-block-id="${id}"] textarea`)
+      if (!el) return
+      el.focus()
+      el.setSelectionRange(el.value.length, el.value.length)
+      if (value === '/') {
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+      } else if (value.startsWith('/')) {
+        el.value = '/'
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+        el.value = value
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+        el.setSelectionRange(el.value.length, el.value.length)
+      }
+    }, 30)
   }
 
   function handlePhantomKeyDown(e) {
-    if (e.key === 'Backspace' && !e.currentTarget.value) {
+    const ta = e.currentTarget
+    if (e.key === 'Backspace' && !ta.value) {
       e.preventDefault()
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (!ta.value.trim()) {
+        const id = sync.addBlock('paragraph')
+        if (id) focusBlockInput(id)
+      }
     }
   }
 
