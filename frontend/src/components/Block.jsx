@@ -321,7 +321,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   return (
     <div
-      className={`block ${cls} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
+      className={`block ${cls} ${block.marks && block.marks.length ? 'block-rich' : ''} ${activeId === block.id ? 'dragging' : ''} ${overId === block.id ? 'drag-over' : ''}`}
       data-block-id={block.id}
     >
       {editingUsers.length > 0 && (
