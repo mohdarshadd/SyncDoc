@@ -6,7 +6,7 @@ const Version = require('./Version')
 
 const documentSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true, default: 'Untitled' },
+    title: { type: String, trim: true, default: 'Untitled', maxlength: 120 },
     author: { type: String, default: 'Anonymous', trim: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     nodes: { type: [astNodeSchema], default: [] },
