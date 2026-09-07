@@ -86,6 +86,21 @@ router.get('/documents/:id', requireAuth, async (req, res, next) => {
   }
 })
 
+router.patch('/documents/:id/rename', requireAuth, async (req, res, next) => {
+  try {
+    const { doc, role } = await getAccess(req.params.id, req.userId)
+    if (!doc) return res.status(404).json({ error: 'document not found' })
+    if (!role || role === 'viewer') return res.status(403).json({ error: 'You do not have permission to rename' })
+    const title = String(req.body.title || '').trim().slice(0, 120)
+    if (!title) return res.status(400).json({ error: 'title is required' })
+    doc.title = title
+    await doc.save()
+    res.json({ _id: doc._id, title: doc.title })
+  } catch (e) {
+    next(e)
+  }
+})
+
 router.delete('/documents/:id', requireAuth, async (req, res, next) => {
   try {
     const doc = await getDocumentOr404(req.params.id, res)

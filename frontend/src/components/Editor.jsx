@@ -31,6 +31,7 @@ export default function Editor() {
   const [showShortcuts, setShowShortcuts] = useState(false)
 
   const isOwner = sync.docRole === 'owner'
+  const canRename = sync.docRole === 'owner' || sync.docRole === 'editor'
 
   const stats = useMemo(() => {
     const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
@@ -98,13 +99,14 @@ export default function Editor() {
     <div className="editor">
       <header className="editor-header">
         <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
-        <input
-          className="doc-title-input"
-          value={sync.title}
-          onChange={(e) => sync.updateTitle(e.target.value)}
-          aria-label="Document title"
-          disabled={!isOwner}
-        />
+          <input
+            className="doc-title-input"
+            value={sync.title}
+            onChange={(e) => sync.updateTitle(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Escape') e.target.blur() }}
+            aria-label="Document title"
+            disabled={!canRename}
+          />
         <PresenceBar users={sync.users} myClientId={sync.myClientId} />
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
