@@ -55,6 +55,23 @@ test('sanitizeBlocks strips dangerous fragments from saved blocks', () => {
   assert.equal(safe[1].text, '<script>steal()</script>')
 })
 
+test('sanitizeBlocks strips javascript hrefs and invalid marks', () => {
+  const safe = sanitizeBlocks([
+    {
+      type: 'paragraph',
+      text: 'hi',
+      attrs: { marks: [
+        { from: 0, to: 2, type: 'link', href: 'javascript:alert(1)' },
+        { from: 0, to: 1, type: 'bold' },
+        { from: 5, to: 4, type: 'italic' }
+      ] }
+    }
+  ])
+  assert.equal(safe[0].attrs.marks.length, 2)
+  assert.equal(safe[0].attrs.marks[0].href, '')
+  assert.ok(!safe[0].attrs.marks.some((m) => m.type === 'italic'))
+})
+
 test('sanitizeHtml allows safe structural tags only', () => {
   const out = sanitizeHtml('<script>x</script><h2 onclick="y()">Safe</h2>')
   assert.ok(!out.includes('<script'))
