@@ -97,7 +97,7 @@ async function persistRoom(docId, ydoc) {
       doc = await Document.findById(docId)
     }
     if (!doc) return
-    doc.title = ast.title || doc.title
+    if (ast.title != null) doc.title = ast.title
     doc.nodes = ast.nodes
     doc.comments = ast.comments
     await doc.save()

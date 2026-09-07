@@ -23,7 +23,7 @@ function commentToYMap(c) {
 
 function astToYdoc(doc) {
   const ydoc = new Y.Doc()
-  ydoc.getMap('meta').set('title', doc.title || 'Untitled')
+  ydoc.getMap('meta').set('title', doc.title != null ? doc.title : 'Untitled')
 
   const flat = flattenAst(doc.nodes || [])
   const items = flat.map((f) => {
@@ -78,7 +78,7 @@ function ydocToAst(ydoc) {
       created: m.get('created'),
       resolved: !!m.get('resolved')
     }))
-  return { title: meta.get('title') || 'Untitled', nodes: buildTree(flat), comments }
+  return { title: meta.get('title'), nodes: buildTree(flat), comments }
 }
 
 module.exports = { astToYdoc, ydocToAst }

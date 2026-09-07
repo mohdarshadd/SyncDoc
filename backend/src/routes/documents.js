@@ -91,8 +91,7 @@ router.patch('/documents/:id/rename', requireAuth, async (req, res, next) => {
     const { doc, role } = await getAccess(req.params.id, req.userId)
     if (!doc) return res.status(404).json({ error: 'document not found' })
     if (!role || role === 'viewer') return res.status(403).json({ error: 'You do not have permission to rename' })
-    const title = String(req.body.title || '').trim().slice(0, 120)
-    if (!title) return res.status(400).json({ error: 'title is required' })
+    const title = String(req.body.title == null ? '' : req.body.title).slice(0, 120)
     doc.title = title
     await doc.save()
     res.json({ _id: doc._id, title: doc.title })

@@ -61,7 +61,10 @@ export function useDocumentSync(docId, user) {
           })
         }
         const applyComments = () => setComments(commentsFromYArray(commentsArr))
-        const applyTitle = () => setTitle(ydoc.getMap('meta').get('title') || 'Untitled')
+        const applyTitle = () => {
+          const metaTitle = ydoc.getMap('meta').get('title')
+          setTitle(metaTitle == null ? 'Untitled' : String(metaTitle))
+        }
         const applyUsers = () => {
           setMyClientId(provider.awareness.clientID)
           const states = []
@@ -331,12 +334,11 @@ export function useDocumentSync(docId, user) {
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (!ydoc) return
-    const next = String(value || '').trim()
-    ydoc.getMap('meta').set('title', next || 'Untitled')
-    if (!next) return
+    const next = String(value ?? '')
+    ydoc.getMap('meta').set('title', next)
     clearTimeout(renameTimerRef.current)
     renameTimerRef.current = setTimeout(() => {
-      renameDocument(docId, next).catch(() => { /* revert relies on Yjs sync persist */ })
+      renameDocument(docId, next).catch(() => { /* rely on Yjs sync persist */ })
     }, 400)
   }
 
