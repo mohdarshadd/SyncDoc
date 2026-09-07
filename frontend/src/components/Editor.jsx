@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDocumentSync } from '../hooks/useDocumentSync'
 import Block from './Block'
-import EmptyState from './EmptyState'
 import PresenceBar from './PresenceBar'
 import ThemeToggle from './ThemeToggle'
 import ShareDialog from './ShareDialog'
@@ -79,6 +78,31 @@ export default function Editor() {
     }, 30)
   }
 
+  function focusBlockInput(id) {
+    setTimeout(() => {
+      const el = document.querySelector(`[data-block-id="${id}"] textarea`)
+      if (el) {
+        el.focus()
+        el.setSelectionRange(el.value.length, el.value.length)
+      }
+    }, 30)
+  }
+
+  function handlePhantomInput(e) {
+    const value = e.currentTarget.value
+    if (!value) return
+    const id = sync.addBlock('paragraph')
+    if (!id) return
+    sync.updateBlockText(id, value)
+    focusBlockInput(id)
+  }
+
+  function handlePhantomKeyDown(e) {
+    if (e.key === 'Backspace' && !e.currentTarget.value) {
+      e.preventDefault()
+    }
+  }
+
   useEffect(() => {
     function handleKeyDown(e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
@@ -99,14 +123,6 @@ export default function Editor() {
     <div className="editor">
       <header className="editor-header">
         <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
-          <input
-            className="doc-title-input"
-            value={sync.title}
-            onChange={(e) => sync.updateTitle(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Escape') e.target.blur() }}
-            aria-label="Document title"
-            disabled={!canRename}
-          />
         <PresenceBar users={sync.users} myClientId={sync.myClientId} />
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
@@ -170,7 +186,16 @@ export default function Editor() {
       {showShortcuts && <ShortcutsOverlay onClose={() => setShowShortcuts(false)} />}
 
       <div className="editor-body">
-        <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'synced' : sync.status}</div>
+        <input
+          className="editor-title-input"
+          value={sync.title}
+          onChange={(e) => sync.updateTitle(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') e.target.blur() }}
+          aria-label="Document title"
+          placeholder="Untitled"
+          disabled={!canRename}
+        />
+        <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'All changes saved' : sync.status}</div>
 
         <DragProvider>
           <div className="blocks">
@@ -204,19 +229,19 @@ export default function Editor() {
               />
             ))}
           {visibleBlockCount === 0 && (
-            <EmptyState
-              icon="blocks"
-              title="This document is empty"
-              hint="Add your first block to start writing."
-              action={
-                <div className="empty-actions">
-                  <button className="btn btn-primary" onClick={() => handleAddBlock('paragraph')}>+ Paragraph</button>
-                  <button className="btn btn-ghost" onClick={() => handleAddBlock('heading')}>Heading</button>
-                  <button className="btn btn-ghost" onClick={() => handleAddBlock('code')}>Code</button>
-                  <button className="btn btn-ghost" onClick={() => handleAddBlock('quote')}>Quote</button>
+            <div className="block block-paragraph block-phantom">
+              <div className="block-gutter" />
+              <div className="block-content">
+                <div className="block-textarea-wrap">
+                  <textarea
+                    placeholder="Start typing or / for commands..."
+                    spellCheck={false}
+                    onInput={handlePhantomInput}
+                    onKeyDown={handlePhantomKeyDown}
+                  />
                 </div>
-              }
-            />
+              </div>
+            </div>
           )}
         </div>
         </DragProvider>
