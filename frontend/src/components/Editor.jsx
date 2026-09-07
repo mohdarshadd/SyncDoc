@@ -40,7 +40,6 @@ export default function Editor() {
   }, [sync.blocks])
 
   const blockTree = useMemo(() => buildBlockTree(sync.blocks), [sync.blocks])
-  const visibleBlockCount = blockTree.filter((b) => !b.hidden).length
 
   const mentionsMe = useMemo(() => {
     const myId = sync.myClientId != null ? String(sync.myClientId) : null
@@ -78,52 +77,11 @@ export default function Editor() {
     }, 30)
   }
 
-  function focusBlockInput(id) {
-    setTimeout(() => {
-      const el = document.querySelector(`[data-block-id="${id}"] textarea`)
-      if (el) {
-        el.focus()
-        el.setSelectionRange(el.value.length, el.value.length)
-      }
-    }, 30)
-  }
-
-  function handlePhantomInput(e) {
-    const ta = e.currentTarget
-    const value = ta.value
-    if (!value) return
-    const id = sync.addBlock('paragraph')
-    if (!id) return
-    sync.updateBlockText(id, value)
-    setTimeout(() => {
-      const el = document.querySelector(`[data-block-id="${id}"] textarea`)
-      if (!el) return
-      el.focus()
-      el.setSelectionRange(el.value.length, el.value.length)
-      if (value === '/') {
-        el.dispatchEvent(new Event('input', { bubbles: true }))
-      } else if (value.startsWith('/')) {
-        el.value = '/'
-        el.dispatchEvent(new Event('input', { bubbles: true }))
-        el.value = value
-        el.dispatchEvent(new Event('input', { bubbles: true }))
-        el.setSelectionRange(el.value.length, el.value.length)
-      }
-    }, 30)
-  }
-
-  function handlePhantomKeyDown(e) {
-    const ta = e.currentTarget
-    if (e.key === 'Backspace' && !ta.value) {
-      e.preventDefault()
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (!ta.value.trim()) {
-        const id = sync.addBlock('paragraph')
-        if (id) focusBlockInput(id)
-      }
+  useEffect(() => {
+    if (sync.blocks.length === 0 && sync.status === 'connected') {
+      sync.addBlock('paragraph')
     }
-  }
+  }, [sync.blocks.length, sync.status])
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -250,20 +208,8 @@ export default function Editor() {
                 activeMatch={search.activeMatch}
               />
             ))}
-          {visibleBlockCount === 0 && (
-            <div className="block block-paragraph block-phantom">
-              <div className="block-gutter" />
-              <div className="block-content">
-                <div className="block-textarea-wrap">
-                  <textarea
-                    placeholder="Start typing or / for commands..."
-                    spellCheck={false}
-                    onInput={handlePhantomInput}
-                    onKeyDown={handlePhantomKeyDown}
-                  />
-                </div>
-              </div>
-            </div>
+          {blockTree.length === 0 && !sync.blocks.length && sync.status !== 'connected' && (
+            <div className="empty-state">Loading document...</div>
           )}
         </div>
         </DragProvider>
