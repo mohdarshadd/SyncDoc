@@ -100,30 +100,30 @@ export default function DocumentBrowser() {
     }
   }
 
-  function renderDocRow(d, isShared) {
+  function renderDocCard(d, isShared) {
     return (
-      <li key={d._id} className="doc-row">
-        <span className="doc-avatar" style={{ background: isShared ? '#86868b' : avatarColor(d.author) }}>
-          {isShared ? (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1v14M1 8h14" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          ) : (
-            (d.author || '?')[0]?.toUpperCase()
-          )}
-        </span>
-        <div className="doc-info">
+      <div key={d._id} className="doc-card" onClick={() => navigate('/editor/' + d._id)}>
+        <div className="doc-card-top">
+          <span className="doc-avatar" style={{ background: isShared ? '#86868b' : avatarColor(d.author) }}>
+            {isShared ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v14M1 8h14" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            ) : (
+              (d.author || '?')[0]?.toUpperCase()
+            )}
+          </span>
+          {isShared && d.sharedBy && <span className="badge">by {d.sharedBy.name}</span>}
+        </div>
+        <div className="doc-card-body">
           <div className="doc-title">{d.title}</div>
           <div className="doc-meta">
             <span>{d.author || 'Unknown'}</span>
             {isShared && <span className="badge">{d.role === 'editor' ? 'Can edit' : 'Can view'}</span>}
-            {isShared && d.sharedBy && <span className="badge">by {d.sharedBy.name}</span>}
-            <span className="badge">{d.blockCount} blocks</span>
-            <span className="badge">rev {d.revision}</span>
-            <span>{new Date(d.updatedAt).toLocaleString()}</span>
+            <span>{new Date(d.updatedAt).toLocaleDateString()}</span>
           </div>
         </div>
-        <div className="doc-actions">
+        <div className="doc-card-actions" onClick={(e) => e.stopPropagation()}>
           <button className="btn btn-primary btn-sm" onClick={() => navigate('/editor/' + d._id)}>Open</button>
           <div className="doc-hover-actions">
             <button className="btn btn-ghost btn-sm" onClick={() => handleCopyLink(d._id)}>Copy</button>
@@ -135,7 +135,7 @@ export default function DocumentBrowser() {
             )}
           </div>
         </div>
-      </li>
+      </div>
     )
   }
 
@@ -220,17 +220,17 @@ export default function DocumentBrowser() {
           {visibleOwned.length > 0 && (
             <>
               <h2 className="browser-section-title">Your documents</h2>
-              <ul className="doc-list">
-                {visibleOwned.map((d) => renderDocRow(d, false))}
-              </ul>
+              <div className="doc-cards">
+                {visibleOwned.map((d) => renderDocCard(d, false))}
+              </div>
             </>
           )}
           {visibleShared.length > 0 && (
             <>
               <h2 className="browser-section-title">Shared with you</h2>
-              <ul className="doc-list">
-                {visibleShared.map((d) => renderDocRow(d, true))}
-              </ul>
+              <div className="doc-cards">
+                {visibleShared.map((d) => renderDocCard(d, true))}
+              </div>
             </>
           )}
         </>

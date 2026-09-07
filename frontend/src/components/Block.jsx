@@ -1,4 +1,5 @@
 import { useEffect, useRef, useContext, useState } from 'react'
+import hljs from 'highlight.js/lib/common'
 import { DragContext } from './DragProvider'
 import SlashMenu from './SlashMenu'
 import BlockToolbar from './BlockToolbar'
@@ -478,6 +479,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           {block.type !== 'code' && blockComments.length > 0 && (
             <CommentOverlay text={block.text} comments={blockComments} />
           )}
+          {block.type === 'code' && block.text && (
+            <CodeOverlay text={block.text} lang={block.lang} />
+          )}
           <textarea
             ref={ref}
             defaultValue={block.text}
@@ -669,6 +673,25 @@ function CommentOverlay({ text, comments }) {
         }
         return <span key={i}>{wrapped.length ? wrapped : content}</span>
       })}
+    </div>
+  )
+}
+
+function highlightedHtml(text, lang) {
+  try {
+    const language = lang && hljs.getLanguage(lang)
+    return language
+      ? hljs.highlight(text, { language, ignoreIllegals: true }).value
+      : hljs.highlightAuto(text, { ignoreIllegals: true }).value
+  } catch (e) {
+    return text.replace(/[<>&]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]))
+  }
+}
+
+function CodeOverlay({ text, lang }) {
+  return (
+    <div className="code-overlay" aria-hidden="true">
+      <code dangerouslySetInnerHTML={{ __html: highlightedHtml(text, lang) }} />
     </div>
   )
 }
