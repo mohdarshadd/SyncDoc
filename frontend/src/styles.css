@@ -863,10 +863,6 @@ textarea:focus,
   margin-left: 4px;
 }
 
-.block-phantom .block-textarea-wrap textarea {
-  color: var(--muted);
-}
-
 .block-indent,
 .block-collapse-caret {
   flex-shrink: 0;
