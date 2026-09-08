@@ -806,10 +806,10 @@ textarea:focus,
 
 .editor-body {
   flex: 1;
-  max-width: 960px;
+  max-width: none;
   width: 100%;
   margin: 0 auto;
-  padding: 56px 32px 140px;
+  padding: 56px max(28px, 10vw) 140px;
 }
 
 .editor-title-input {
