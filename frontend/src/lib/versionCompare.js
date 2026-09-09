@@ -1,4 +1,4 @@
-let segKey = 0
+let segKey = 1
 
 export function splitInline(segments) {
   if (!Array.isArray(segments) || segments.length === 0) return [{ key: 0, kind: 'eq', text: '' }]
@@ -33,6 +33,7 @@ export function revisionLabel(version) {
 }
 
 export function previousRevision(versions, revision) {
+  if (!Array.isArray(versions) || versions.length === 0) return null
   const idx = versions.findIndex((v) => v.revision === revision)
   if (versions[0].revision === revision) return versions[1] ? versions[1].revision : null
   return versions[idx - 1] ? versions[idx - 1].revision : null
