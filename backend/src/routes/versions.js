@@ -3,7 +3,7 @@ const Version = require('../models/Version')
 const Document = require('../models/Document')
 const { flattenAst } = require('../validators/ast')
 const { requireAuth } = require('../middleware/auth')
-
+const { diffVersions } = require('../lib/versionDiff')
 const router = express.Router()
 
 router.get('/documents/:id/versions', requireAuth, async (req, res, next) => {
@@ -17,6 +17,37 @@ router.get('/documents/:id/versions', requireAuth, async (req, res, next) => {
       .select('-nodes')
 
     res.json(versions)
+  } catch (e) {
+    next(e)
+  }
+})
+
+router.get('/documents/:id/versions/compare', requireAuth, async (req, res, next) => {
+  try {
+    const doc = await Document.findById(req.params.id)
+    if (!doc) return res.status(404).json({ error: 'Document not found' })
+
+    const fromRev = Number(req.query.from)
+    const toRev = Number(req.query.to)
+    if (!Number.isInteger(fromRev) || !Number.isInteger(toRev)) {
+      return res.status(400).json({ error: 'from and to revisions are required' })
+    }
+
+    const [fromVersion, toVersion] = await Promise.all([
+      Version.findOne({ document: doc._id, revision: fromRev }),
+      Version.findOne({ document: doc._id, revision: toRev }),
+    ])
+    if (!fromVersion || !toVersion) return res.status(404).json({ error: 'Version not found' })
+
+    const { stats, rows } = diffVersions(flattenAst(fromVersion.nodes), flattenAst(toVersion.nodes))
+
+    res.json({
+      document: doc._id,
+      from: { revision: fromVersion.revision, title: fromVersion.title, createdAt: fromVersion.createdAt },
+      to: { revision: toVersion.revision, title: toVersion.title, createdAt: toVersion.createdAt },
+      stats,
+      rows,
+    })
   } catch (e) {
     next(e)
   }
