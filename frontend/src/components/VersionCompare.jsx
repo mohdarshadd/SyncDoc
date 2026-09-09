@@ -3,6 +3,16 @@ import { listVersions, compareVersions, restoreVersion } from '../api'
 import { revisionLabel, statsSummary, splitInline, blockPreviewText } from '../lib/versionCompare'
 import { pushToast } from '../lib/toast'
 
+function defaultsFor(list, fromGiven, toGiven) {
+  const revs = list.map((v) => v.revision)
+  if (revs.length < 2) return [fromGiven ?? (revs[0] ?? null), toGiven ?? null]
+  if (fromGiven != null && toGiven != null) return [fromGiven, toGiven]
+  const a = fromGiven ?? revs[1]
+  const b = toGiven ?? revs[0]
+  if (a === b) return [a, a === revs[0] ? revs[1] : revs[0]]
+  return [a, b]
+}
+
 export default function VersionCompare({ docId, isOwner, initialFrom, initialTo, onClose, onRestored }) {
   const [versions, setVersions] = useState([])
   const [fromRev, setFromRev] = useState(null)
@@ -15,13 +25,9 @@ export default function VersionCompare({ docId, isOwner, initialFrom, initialTo,
     listVersions(docId)
       .then((list) => {
         setVersions(list)
-        if (list.length >= 2) {
-          setFromRev(initialFrom ?? list[1].revision)
-          setToRev(initialTo ?? list[0].revision)
-        } else if (list.length === 1) {
-          setFromRev(initialFrom ?? list[0].revision)
-          setToRev(null)
-        }
+        const [from, to] = defaultsFor(list, initialFrom, initialTo)
+        setFromRev(from)
+        setToRev(to)
       })
       .catch(() => {})
       .finally(() => setLoading(false))

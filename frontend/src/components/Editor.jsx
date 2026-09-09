@@ -7,6 +7,7 @@ import ThemeToggle from './ThemeToggle'
 import ShareDialog from './ShareDialog'
 import VersionHistory from './VersionHistory'
 import VersionViewer from './VersionViewer'
+import VersionCompare from './VersionCompare'
 import { DragProvider } from './DragProvider'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
@@ -27,6 +28,7 @@ export default function Editor() {
   const [showShare, setShowShare] = useState(false)
   const [showVersions, setShowVersions] = useState(false)
   const [viewVersion, setViewVersion] = useState(null)
+  const [comparePair, setComparePair] = useState(null)
   const [showShortcuts, setShowShortcuts] = useState(false)
 
   const isOwner = sync.docRole === 'owner'
@@ -107,6 +109,14 @@ export default function Editor() {
         <div className="exports">
           <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
           <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setComparePair({ from: null, to: null })}
+            title="Compare versions"
+            aria-label="Compare versions"
+          >
+            Compare
+          </button>
           <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
           {mentionsMe.length > 0 && (
             <button className="btn btn-ghost mentions-badge-btn" onClick={handleMentionsClick} title={`${mentionsMe.length} comment${mentionsMe.length === 1 ? '' : 's'} mention you`} aria-label="Mentions of you">
@@ -139,7 +149,18 @@ export default function Editor() {
           docId={docId}
           isOwner={isOwner}
           onSelect={(rev) => { setShowVersions(false); setViewVersion(rev) }}
+          onCompare={(rev) => { setShowVersions(false); setComparePair({ from: rev, to: null }) }}
           onClose={() => setShowVersions(false)}
+        />
+      )}
+
+      {comparePair !== null && (
+        <VersionCompare
+          docId={docId}
+          isOwner={isOwner}
+          initialFrom={comparePair.from}
+          initialTo={comparePair.to}
+          onClose={() => setComparePair(null)}
         />
       )}
 
