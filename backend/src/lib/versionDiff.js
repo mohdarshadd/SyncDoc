@@ -65,6 +65,7 @@ function diffVersions(fromBlocks, toBlocks) {
   const toById = new Map()
   const consumed = new Set()
   toList.forEach((b) => toById.set(b.id, b))
+  const matchedIds = new Set(fromList.filter((b) => toById.has(b.id)).map((b) => b.id))
 
   const rows = []
   const pendingRemoved = []
@@ -79,7 +80,7 @@ function diffVersions(fromBlocks, toBlocks) {
   const emitAddedBefore = (toIndex) => {
     for (let k = 0; k < toIndex; k++) {
       const cand = toList[k]
-      if (!consumed.has(cand.id)) {
+      if (!consumed.has(cand.id) && !matchedIds.has(cand.id)) {
         consumed.add(cand.id)
         rows.push({ kind: 'added', id: cand.id, block: cloneBlock(cand) })
       }
