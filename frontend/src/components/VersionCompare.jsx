@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { listVersions, compareVersions } from '../api'
-import { revisionLabel, statsSummary } from '../lib/versionCompare'
+import { listVersions, compareVersions, restoreVersion } from '../api'
+import { revisionLabel, statsSummary, splitInline, blockPreviewText } from '../lib/versionCompare'
 import { pushToast } from '../lib/toast'
 
 export default function VersionCompare({ docId, isOwner, initialFrom, initialTo, onClose, onRestored }) {
@@ -61,7 +61,6 @@ export default function VersionCompare({ docId, isOwner, initialFrom, initialTo,
 
   async function handleRestore() {
     if (fromRev == null) return
-    const { restoreVersion } = await import('../api')
     if (!window.confirm(`Restore the document to revision ${fromRev}? A new version will be created.`)) return
     setRestoring(true)
     try {
@@ -171,18 +170,24 @@ function renderBlock(row) {
   const block = row.block || {}
   const type = block.type || 'paragraph'
   const text = block.text || ''
+  const preview = row.kind === 'unchanged' ? blockPreviewText(block) : null
+
+  const delta = row.kind === 'modified' && row.inline && row.inline.length
+    ? splitInline(row.inline)
+    : null
+
   if (type === 'heading') {
     const level = (block.attrs && block.attrs.level) || 2
     const Tag = level > 3 ? 'h3' : level === 1 ? 'h1' : 'h2'
-    return <Tag className="version-compare-block version-compare-heading">{text || 'Untitled'}</Tag>
+    return <Tag className="version-compare-block version-compare-heading">{delta ? <DeltaText segments={delta} /> : text || 'Untitled'}</Tag>
   }
   if (type === 'code') {
     return (
-      <pre className="version-compare-block version-compare-code"><code>{text || ''}</code></pre>
+      <pre className="version-compare-block version-compare-code"><code>{delta ? <DeltaText segments={delta} /> : text || ''}</code></pre>
     )
   }
   if (type === 'quote') {
-    return <blockquote className="version-compare-block version-compare-quote">{text || '\u00A0'}</blockquote>
+    return <blockquote className="version-compare-block version-compare-quote">{delta ? <DeltaText segments={delta} /> : text || '\u00A0'}</blockquote>
   }
   if (type === 'divider') {
     return <hr className="version-compare-block version-compare-divider" />
@@ -191,9 +196,31 @@ function renderBlock(row) {
     return (
       <div className="version-compare-block version-compare-check">
         <span className={`version-compare-checkbox ${block.checked ? 'checked' : ''}`} />
-        <span className={block.checked ? 'version-compare-checked-text' : ''}>{text || '\u00A0'}</span>
+        <span className={block.checked ? 'version-compare-checked-text' : ''}>
+          {delta ? <DeltaText segments={delta} /> : text || '\u00A0'}
+        </span>
       </div>
     )
   }
-  return <div className="version-compare-block version-compare-paragraph">{text || '\u00A0'}</div>
+  return (
+    <div className="version-compare-block version-compare-paragraph">
+      {delta ? <DeltaText segments={delta} /> : preview || text || '\u00A0'}
+    </div>
+  )
+}
+
+function DeltaText({ segments }) {
+  return (
+    <>
+      {segments.map((seg) => {
+        if (seg.kind === 'add') {
+          return <span key={seg.key} className="version-compare-ins">{seg.text}</span>
+        }
+        if (seg.kind === 'del') {
+          return <span key={seg.key} className="version-compare-del">{seg.text}</span>
+        }
+        return <span key={seg.key}>{seg.text}</span>
+      })}
+    </>
+  )
 }
