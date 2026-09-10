@@ -4196,4 +4196,42 @@ h3.version-compare-heading {
   }
 }
 
+/* Full-screen overlay sheets on mobile */
+@media (max-width: 640px) {
+  .version-overlay,
+  .share-overlay,
+  .shortcuts-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .version-panel,
+  .version-viewer,
+  .share-dialog,
+  .shortcuts-panel {
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+  }
+
+  .search-dialog {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    transform: none;
+  }
+
+  .comment-thread {
+    position: fixed;
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-height: 60vh;
+  }
+}
+
 
