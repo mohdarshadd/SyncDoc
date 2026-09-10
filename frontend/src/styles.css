@@ -4079,4 +4079,46 @@ h3.version-compare-heading {
   }
 }
 
+/* Mobile editor body and blocks */
+@media (max-width: 640px) {
+  .editor-body {
+    padding: 42px 14px 120px;
+  }
+
+  .editor-title-input {
+    margin-left: 24px;
+    width: calc(100% - 24px);
+    font-size: 32px;
+  }
+
+  .status-pill {
+    margin-left: 24px;
+  }
+
+  .block-gutter {
+    width: 24px;
+    padding: 4px 0;
+  }
+
+  .block-add-btn {
+    display: none;
+  }
+
+  .block-heading textarea {
+    font-size: 24px;
+  }
+
+  .block-code textarea {
+    padding: 10px 36px 10px 12px;
+  }
+
+  .code-overlay {
+    padding: 10px 36px 10px 12px;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+}
+
 
