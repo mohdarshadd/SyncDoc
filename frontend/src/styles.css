@@ -4121,4 +4121,17 @@ h3.version-compare-heading {
   }
 }
 
+/* Mobile editor footer */
+@media (max-width: 640px) {
+  .editor-footer {
+    gap: 10px;
+    justify-content: space-between;
+    padding: 8px 14px 10px;
+  }
+
+  .editor-footer > span:not(.footer-status):not(.footer-search) {
+    display: none;
+  }
+}
+
 
