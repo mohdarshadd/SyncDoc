@@ -1,0 +1,232 @@
+import { useEffect, useState } from 'react'
+import { listVersions, compareVersions, restoreVersion } from '../api'
+import { revisionLabel, statsSummary, splitInline, blockPreviewText } from '../lib/versionCompare'
+import { pushToast } from '../lib/toast'
+
+function defaultsFor(list, fromGiven, toGiven) {
+  const revs = list.map((v) => v.revision)
+  if (revs.length < 2) return [fromGiven ?? (revs[0] ?? null), toGiven ?? null]
+  if (fromGiven != null && toGiven != null) return [fromGiven, toGiven]
+  const a = fromGiven ?? revs[1]
+  const b = toGiven ?? revs[0]
+  if (a === b) return [a, a === revs[0] ? revs[1] : revs[0]]
+  return [a, b]
+}
+
+export default function VersionCompare({ docId, isOwner, initialFrom, initialTo, onClose, onRestored }) {
+  const [versions, setVersions] = useState([])
+  const [fromRev, setFromRev] = useState(null)
+  const [toRev, setToRev] = useState(null)
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [restoring, setRestoring] = useState(false)
+
+  useEffect(() => {
+    listVersions(docId)
+      .then((list) => {
+        setVersions(list)
+        const [from, to] = defaultsFor(list, initialFrom, initialTo)
+        setFromRev(from)
+        setToRev(to)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [docId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (fromRev == null || toRev == null) return
+    let cancelled = false
+    setLoading(true)
+    compareVersions(docId, fromRev, toRev)
+      .then((d) => {
+        if (!cancelled) setData(d)
+      })
+      .catch(() => {
+        if (!cancelled) pushToast('Could not compare revisions', 'error')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [docId, fromRev, toRev])
+
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  function handleSwap() {
+    setFromRev(toRev)
+    setToRev(fromRev)
+  }
+
+  async function handleRestore() {
+    if (fromRev == null) return
+    if (!window.confirm(`Restore the document to revision ${fromRev}? A new version will be created.`)) return
+    setRestoring(true)
+    try {
+      await restoreVersion(docId, fromRev)
+      pushToast(`Restored to revision ${fromRev}`, 'ok')
+      if (onRestored) onRestored(fromRev)
+    } catch (err) {
+      pushToast(err.message, 'error')
+    } finally {
+      setRestoring(false)
+    }
+  }
+
+  const fromVersion = versions.find((v) => v.revision === fromRev)
+  const toVersion = versions.find((v) => v.revision === toRev)
+
+  return (
+    <div className="version-overlay" onClick={onClose}>
+      <div className="version-compare" onClick={(e) => e.stopPropagation()}>
+        <div className="version-compare-header">
+          <div className="version-compare-title-wrap">
+            <h2 className="version-title">Compare Versions</h2>
+            <div className="version-compare-revs">
+              <select
+                className="version-compare-select"
+                value={fromRev ?? ''}
+                onChange={(e) => setFromRev(Number(e.target.value))}
+                aria-label="From revision"
+              >
+                {versions.map((v) => (
+                  <option key={v._id} value={v.revision}>{revisionLabel(v)}</option>
+                ))}
+              </select>
+              <span className="version-compare-arrow">&rarr;</span>
+              <select
+                className="version-compare-select"
+                value={toRev ?? ''}
+                onChange={(e) => setToRev(Number(e.target.value))}
+                aria-label="To revision"
+              >
+                {versions.map((v) => (
+                  <option key={v._id} value={v.revision}>{revisionLabel(v)}</option>
+                ))}
+              </select>
+              <button className="btn btn-ghost version-compare-swap" onClick={handleSwap} title="Swap revisions" aria-label="Swap revisions">
+                Swap
+              </button>
+            </div>
+            <div className="version-compare-stats">
+              {loading ? 'Comparing...' : data ? statsSummary(data.stats) : 'No revisions to compare'}
+            </div>
+          </div>
+          <button className="version-close" onClick={onClose} aria-label="Close">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="version-compare-body">
+          {loading ? (
+            <div className="version-empty">Comparing revisions...</div>
+          ) : !data ? (
+            <div className="version-empty">
+              {versions.length < 2
+                ? 'At least two saved versions are needed to compare.'
+                : 'Select two revisions to compare.'}
+            </div>
+          ) : (
+            <div className="version-compare-list">
+              {data.rows.length === 0 ? (
+                <div className="version-empty">No differences between these revisions.</div>
+              ) : (
+                data.rows.map((row) => (
+                  <div key={`${row.kind}-${row.id}`} className={`version-compare-row version-compare-${row.kind}`}>
+                    <div className="version-compare-gutter">
+                      {row.kind === 'added' ? '+' : row.kind === 'removed' ? '−' : row.kind === 'modified' ? '~' : ''}
+                    </div>
+                    <div className="version-compare-content">
+                      {row.kind === 'modified' && row.typeFrom !== row.typeTo && (
+                        <div className="version-compare-typechange">
+                          {row.typeFrom} &rarr; {row.typeTo}
+                        </div>
+                      )}
+                      {renderBlock(row)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {isOwner && data && fromRev != null && (
+          <div className="version-compare-footer">
+            <button className="btn version-compare-restore" onClick={handleRestore} disabled={restoring}>
+              {restoring ? 'Restoring...' : `Restore to revision ${fromRev}`}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function renderBlock(row) {
+  const block = row.block || {}
+  const type = block.type || 'paragraph'
+  const text = block.text || ''
+  const preview = row.kind === 'unchanged' ? blockPreviewText(block) : null
+
+  const delta = row.kind === 'modified' && row.inline && row.inline.length
+    ? splitInline(row.inline)
+    : null
+
+  if (type === 'heading') {
+    const level = (block.attrs && block.attrs.level) || 2
+    const Tag = level > 3 ? 'h3' : level === 1 ? 'h1' : 'h2'
+    return <Tag className="version-compare-block version-compare-heading">{delta ? <DeltaText segments={delta} /> : text || 'Untitled'}</Tag>
+  }
+  if (type === 'code') {
+    return (
+      <pre className="version-compare-block version-compare-code"><code>{delta ? <DeltaText segments={delta} /> : text || ''}</code></pre>
+    )
+  }
+  if (type === 'quote') {
+    return <blockquote className="version-compare-block version-compare-quote">{delta ? <DeltaText segments={delta} /> : text || '\u00A0'}</blockquote>
+  }
+  if (type === 'divider') {
+    return <hr className="version-compare-block version-compare-divider" />
+  }
+  if (type === 'checklist' || type === 'toggle') {
+    return (
+      <div className="version-compare-block version-compare-check">
+        <span className={`version-compare-checkbox ${block.checked ? 'checked' : ''}`} />
+        <span className={block.checked ? 'version-compare-checked-text' : ''}>
+          {delta ? <DeltaText segments={delta} /> : text || '\u00A0'}
+        </span>
+      </div>
+    )
+  }
+  return (
+    <div className="version-compare-block version-compare-paragraph">
+      {delta ? <DeltaText segments={delta} /> : preview || text || '\u00A0'}
+    </div>
+  )
+}
+
+function DeltaText({ segments }) {
+  return (
+    <>
+      {segments.map((seg) => {
+        if (seg.kind === 'add') {
+          return <span key={seg.key} className="version-compare-ins">{seg.text}</span>
+        }
+        if (seg.kind === 'del') {
+          return <span key={seg.key} className="version-compare-del">{seg.text}</span>
+        }
+        return <span key={seg.key}>{seg.text}</span>
+      })}
+    </>
+  )
+}

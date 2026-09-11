@@ -91,6 +91,8 @@ export const listVersions = (docId) => request(`/documents/${docId}/versions`)
 
 export const getVersion = (docId, revision) => request(`/documents/${docId}/versions/${revision}`)
 
+export const compareVersions = (docId, from, to) => request(`/documents/${docId}/versions/compare?from=${from}&to=${to}`)
+
 export const restoreVersion = (docId, revision) => request(`/documents/${docId}/versions/${revision}/restore`, { method: 'POST' })
 
 export const WS_URL = import.meta.env.VITE_WS_URL || (() => {

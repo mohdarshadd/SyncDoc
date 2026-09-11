@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { listVersions, restoreVersion } from '../api'
 import { pushToast } from '../lib/toast'
 
-export default function VersionHistory({ docId, isOwner, onSelect, onClose }) {
+export default function VersionHistory({ docId, isOwner, onSelect, onCompare, onClose }) {
   const [versions, setVersions] = useState([])
   const [loading, setLoading] = useState(true)
   const [restoring, setRestoring] = useState(null)
@@ -57,7 +57,7 @@ export default function VersionHistory({ docId, isOwner, onSelect, onClose }) {
           ) : versions.length === 0 ? (
             <div className="version-empty">No versions yet. Versions are created automatically when you save.</div>
           ) : (
-            versions.map((v) => (
+            versions.map((v, i) => (
               <div key={v._id} className="version-item">
                 <div className="version-dot" />
                 <div className="version-info">
@@ -74,6 +74,11 @@ export default function VersionHistory({ docId, isOwner, onSelect, onClose }) {
                   <button className="version-btn" onClick={() => onSelect(v.revision)}>
                     View
                   </button>
+                  {versions.length > 1 && (
+                    <button className="version-btn" onClick={() => onCompare(v.revision)}>
+                      Compare
+                    </button>
+                  )}
                   {isOwner && v.revision !== versions[0]?.revision && (
                     <button
                       className="version-btn version-btn-restore"
