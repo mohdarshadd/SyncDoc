@@ -7,6 +7,7 @@ import { diffBlocks, mergeDelta, snapshotFromYArray, commentsFromYArray } from '
 import { uid } from '../lib/uid'
 import { toggleMark, clearMarks as emptyMarks } from '../lib/richText'
 import { buildComment } from '../lib/comments'
+import { pushToast } from '../lib/toast'
 
 const COLORS = ['#e11d48', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#65a30d', '#db2777']
 
@@ -21,6 +22,7 @@ export function useDocumentSync(docId, user) {
   const providerRef = useRef(null)
   const renameTimerRef = useRef(null)
   const typingTimerRef = useRef(null)
+  const prevStatusRef = useRef(null)
   const [status, setStatus] = useState('connecting')
   const [title, setTitle] = useState('')
   const [blocks, setBlocks] = useState([])
@@ -48,8 +50,15 @@ export function useDocumentSync(docId, user) {
         })
         provider.on('status', ({ status: s }) => {
           if (!cancelled) {
+            const prev = prevStatusRef.current
+            prevStatusRef.current = s
             setStatus(s)
             if (s === 'connected') setSavedAt(Date.now())
+            if (s === 'disconnected' && prev && prev !== 'disconnected') {
+              pushToast('Connection lost — retrying…', 'warn')
+            } else if (s === 'connected' && (prev === 'disconnected' || prev === 'error')) {
+              pushToast('Reconnected — changes synced', 'ok')
+            }
           }
         })
 
