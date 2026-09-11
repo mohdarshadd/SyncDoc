@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { listShares, addShare, removeShare } from '../api'
 
 export default function ShareDialog({ docId, isOwner, onClose }) {
@@ -7,6 +7,19 @@ export default function ShareDialog({ docId, isOwner, onClose }) {
   const [role, setRole] = useState('viewer')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
 
   useEffect(() => {
     if (isOwner) {
@@ -57,6 +70,7 @@ export default function ShareDialog({ docId, isOwner, onClose }) {
         {isOwner && (
           <form className="share-form" onSubmit={handleAdd}>
             <input
+              ref={inputRef}
               className="share-input"
               type="email"
               placeholder="Add people by email"
