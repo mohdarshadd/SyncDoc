@@ -21,7 +21,7 @@ import { buildBlockTree } from '../lib/blockTree'
 import { extractMentionIds } from '../lib/comments'
 import { buildEditorNav } from '../lib/editorMenu'
 import useMediaQuery from '../hooks/useMediaQuery'
-import { friendlyStatus, formatSavedAt } from '../lib/presence'
+import { friendlyStatus, formatSavedAt, typingSummary, typers, viewerCountLabel } from '../lib/presence'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -46,6 +46,14 @@ export default function Editor() {
   }, [])
 
   const savedLabel = formatSavedAt(sync.savedAt, now)
+
+  const liveSummary = useMemo(() => {
+    const others = sync.users.filter((u) => u.clientId !== sync.myClientId)
+    return [
+      viewerCountLabel(others.length),
+      typingSummary(typers(sync.users, sync.myClientId)),
+    ].filter(Boolean).join(' · ')
+  }, [sync.users, sync.myClientId])
 
   const stats = useMemo(() => {
     const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
@@ -301,6 +309,7 @@ export default function Editor() {
               : `${search.matches.length} match${search.matches.length === 1 ? '' : 'es'}`}
           </span>
         )}
+        {liveSummary && <span className="footer-live">{liveSummary}</span>}
         <span className="footer-status">
           <i className={`dot ${sync.status}`} />
           {sync.status === 'connected' ? savedLabel : friendlyStatus(sync.status)}

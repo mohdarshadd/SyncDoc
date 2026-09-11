@@ -1693,6 +1693,10 @@ body.dragging-active {
   gap: 6px;
 }
 
+.footer-live {
+  color: var(--muted);
+}
+
 .dot {
   width: 8px;
   height: 8px;
