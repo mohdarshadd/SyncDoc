@@ -86,12 +86,24 @@ export function useDocumentSync(docId, user) {
         }
         const applyUsers = () => {
           setMyClientId(provider.awareness.clientID)
+          const myId = provider.awareness.clientID
           const states = []
           provider.awareness.getStates().forEach((state, clientId) => {
-            if (state?.user) states.push({ clientId, ...state.user, cursor: state.cursor || null, typing: state.typing === true })
+            if (!state?.user) return
+            if (state.hidden === true && clientId !== myId) return
+            states.push({ clientId, ...state.user, cursor: state.cursor || null, typing: state.typing === true })
           })
           setUsers(states)
         }
+
+        const onVisibility = () => {
+          const hidden = document.visibilityState === 'hidden'
+          if (hidden) {
+            provider.awareness.setLocalStateField('typing', false)
+          }
+          provider.awareness.setLocalStateField('hidden', hidden)
+        }
+        document.addEventListener('visibilitychange', onVisibility)
 
         blocksArr.observeDeep(applyBlocks)
         commentsArr.observeDeep(applyComments)
@@ -120,6 +132,7 @@ export function useDocumentSync(docId, user) {
       cancelled = true
       clearTimeout(renameTimerRef.current)
       clearTimeout(typingTimerRef.current)
+      document.removeEventListener('visibilitychange', onVisibility)
       try {
         provider?.awareness.setLocalState(null)
       } catch (e) { /* noop */ }
