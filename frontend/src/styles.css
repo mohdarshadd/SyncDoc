@@ -172,10 +172,12 @@ html {
 .btn:hover {
   background: var(--border);
   border-color: var(--border);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: none;
 }
 
 .btn:disabled {
@@ -202,6 +204,7 @@ a:focus-visible {
 .btn-primary:hover {
   background: var(--accent-strong);
   border-color: var(--accent-strong);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .btn-ghost {
@@ -485,6 +488,12 @@ textarea:focus,
   border: 2px solid var(--border);
   background: var(--panel);
   position: relative;
+  box-shadow: 6px -6px 0 0 color-mix(in srgb, var(--accent) 18%, transparent);
+  transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.empty-state:hover .empty-art {
+  transform: translateY(-3px);
 }
 
 .empty-art::before,
