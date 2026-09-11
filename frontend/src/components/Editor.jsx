@@ -250,6 +250,8 @@ export default function Editor() {
                 myClientId={sync.myClientId}
                 onTextChange={sync.updateBlockText}
                 onCursor={sync.setCursor}
+                onTyping={sync.setTyping}
+                onNotifyTyping={sync.notifyTyping}
                 onDelete={sync.deleteBlock}
                 onMove={sync.moveBlock}
                 onReorder={sync.reorderBlock}

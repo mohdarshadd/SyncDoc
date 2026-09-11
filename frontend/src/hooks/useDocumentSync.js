@@ -70,7 +70,7 @@ export function useDocumentSync(docId, user) {
           setMyClientId(provider.awareness.clientID)
           const states = []
           provider.awareness.getStates().forEach((state, clientId) => {
-            if (state?.user) states.push({ clientId, ...state.user, cursor: state.cursor || null })
+            if (state?.user) states.push({ clientId, ...state.user, cursor: state.cursor || null, typing: state.typing === true })
           })
           setUsers(states)
         }
