@@ -932,6 +932,18 @@ textarea:focus,
   display: flex;
   flex-direction: column;
   gap: 2px;
+  animation: menuFadeIn 0.1s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .block-context-menu button {
@@ -968,9 +980,12 @@ textarea:focus,
   position: relative;
   display: flex;
   align-items: flex-start;
+  border-radius: 8px;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
 .block:hover {
+  background: color-mix(in srgb, var(--panel-2) 45%, transparent);
 }
 
 .block-gutter {
@@ -1009,8 +1024,13 @@ textarea:focus,
 
 .block-add-btn:hover,
 .block-drag-handle:hover {
-  background: var(--panel-2);
+  background: color-mix(in srgb, var(--border) 35%, transparent);
   color: var(--text);
+}
+
+.block-add-btn:active,
+.block-drag-handle:active {
+  transform: scale(0.88);
 }
 
 .block-content {
@@ -1056,11 +1076,21 @@ textarea:focus,
 
 .block-check {
   color: var(--border);
+  transition: color 0.1s;
+}
+
+.block-check svg {
+  transition: transform 0.12s;
+}
+
+.block-check:active svg {
+  transform: scale(0.85);
 }
 
 .block-check svg .check-mark {
   opacity: 0;
-  transition: opacity 0.1s;
+  transform: scale(0.5);
+  transition: opacity 0.12s, transform 0.15s;
 }
 
 .block-check.checked {
@@ -1069,6 +1099,7 @@ textarea:focus,
 
 .block-check.checked svg .check-mark {
   opacity: 1;
+  transform: scale(1);
   stroke: #fff;
 }
 
@@ -1085,6 +1116,7 @@ textarea:focus,
   color: var(--muted);
   text-decoration: line-through;
   text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent);
+  transition: color 0.15s;
 }
 
 @media (hover: none) {
