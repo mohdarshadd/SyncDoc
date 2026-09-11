@@ -96,6 +96,8 @@ body {
 
 html {
   scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -142,10 +144,15 @@ html {
   background: var(--border);
   border-radius: 999px;
   border: 2px solid transparent;
+  min-height: 42px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 #root {
@@ -1581,14 +1588,17 @@ body.dragging-active {
   height: 8px;
   border-radius: 50%;
   background: var(--muted);
+  flex-shrink: 0;
 }
 
 .dot.connected {
   background: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent);
 }
 
 .dot.error {
   background: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
 }
 
 @media (max-width: 640px) {
