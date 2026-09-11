@@ -831,6 +831,40 @@ textarea:focus,
   color: #fff;
   border: 2px solid var(--bg);
   position: relative;
+  animation: avatarIn 0.2s ease-out;
+}
+
+@keyframes avatarIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.presence-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.presence-count-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  animation: pulse 1.6s ease-in-out infinite;
 }
 
 .avatar-self::after {
@@ -903,8 +937,48 @@ textarea:focus,
   color: var(--ok);
 }
 
+.status-pill.connecting {
+  color: var(--muted);
+}
+
+.status-pill.connecting::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.status-pill.disconnected {
+  color: var(--danger);
+}
+
+.status-pill.disconnected::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1s ease-in-out infinite;
+}
+
 .status-pill.error {
   color: var(--danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 /* Nested / collapsed blocks */
@@ -1380,6 +1454,42 @@ textarea:focus,
   border-radius: 2px;
 }
 
+.typing-dots {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.typing-dots span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  animation: typingBounce 1s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+}
+
 /* Drag to reorder */
 .block {
   position: relative;
@@ -1581,6 +1691,10 @@ body.dragging-active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.footer-live {
+  color: var(--muted);
 }
 
 .dot {
