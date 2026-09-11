@@ -1696,6 +1696,34 @@ body.dragging-active {
   transition: opacity 0.2s, transform 0.2s;
 }
 
+.toast-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toast-dismiss:hover {
+  background: color-mix(in srgb, var(--border) 35%, transparent);
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .toast {
+    white-space: normal;
+    max-width: calc(100vw - 32px);
+  }
+}
+
 .toast-exit {
   opacity: 0;
   transform: translateY(8px) scale(0.96);
@@ -1709,6 +1737,7 @@ body.dragging-active {
 .toast-ok .toast-icon { color: var(--ok); }
 .toast-error .toast-icon { color: var(--danger); }
 .toast-warn .toast-icon { color: #facc15; }
+.toast-info .toast-icon { color: var(--accent); }
 
 .toast-ok {
   border-color: color-mix(in srgb, var(--ok) 50%, transparent);

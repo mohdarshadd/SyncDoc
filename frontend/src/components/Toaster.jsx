@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 
 const KIND_ICON = {
+  info: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 7.2v3.3M8 5.2v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
   ok: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
@@ -52,6 +58,11 @@ export default function Toaster() {
         >
           {KIND_ICON[t.kind] && <span className="toast-icon">{KIND_ICON[t.kind]}</span>}
           <span className="toast-msg">{t.message}</span>
+          <button className="toast-dismiss" onClick={(e) => { e.stopPropagation(); dismiss(t.id) }} aria-label="Dismiss notification">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
       ))}
     </div>
