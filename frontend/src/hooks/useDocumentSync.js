@@ -20,6 +20,7 @@ export function useDocumentSync(docId, user) {
   const ydocRef = useRef(null)
   const providerRef = useRef(null)
   const renameTimerRef = useRef(null)
+  const typingTimerRef = useRef(null)
   const [status, setStatus] = useState('connecting')
   const [title, setTitle] = useState('')
   const [blocks, setBlocks] = useState([])
@@ -100,6 +101,7 @@ export function useDocumentSync(docId, user) {
     return () => {
       cancelled = true
       clearTimeout(renameTimerRef.current)
+      clearTimeout(typingTimerRef.current)
       try {
         provider?.awareness.setLocalState(null)
       } catch (e) { /* noop */ }
@@ -283,6 +285,18 @@ export function useDocumentSync(docId, user) {
     if (providerRef.current) providerRef.current.awareness.setLocalStateField('cursor', cursor)
   }
 
+  function setTyping(typing) {
+    if (providerRef.current) providerRef.current.awareness.setLocalStateField('typing', !!typing)
+  }
+
+  function notifyTyping() {
+    clearTimeout(typingTimerRef.current)
+    if (providerRef.current) providerRef.current.awareness.setLocalStateField('typing', true)
+    typingTimerRef.current = setTimeout(() => {
+      if (providerRef.current) providerRef.current.awareness.setLocalStateField('typing', false)
+    }, 1500)
+  }
+
   function deleteBlock(id) {
     const ydoc = ydocRef.current
     if (!ydoc) return
@@ -346,5 +360,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, comments, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
+  return { status, title, blocks, comments, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }
