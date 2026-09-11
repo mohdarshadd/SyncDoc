@@ -21,7 +21,7 @@ import { buildBlockTree } from '../lib/blockTree'
 import { extractMentionIds } from '../lib/comments'
 import { buildEditorNav } from '../lib/editorMenu'
 import useMediaQuery from '../hooks/useMediaQuery'
-import { friendlyStatus } from '../lib/presence'
+import { friendlyStatus, formatSavedAt } from '../lib/presence'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -38,6 +38,14 @@ export default function Editor() {
   const isOwner = sync.docRole === 'owner'
   const canRename = sync.docRole === 'owner' || sync.docRole === 'editor'
   const isMobile = useMediaQuery('(max-width: 640px)')
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15_000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const savedLabel = formatSavedAt(sync.savedAt, now)
 
   const stats = useMemo(() => {
     const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
@@ -295,7 +303,7 @@ export default function Editor() {
         )}
         <span className="footer-status">
           <i className={`dot ${sync.status}`} />
-          {sync.status === 'connected' ? 'saved' : sync.status}
+          {sync.status === 'connected' ? savedLabel : friendlyStatus(sync.status)}
         </span>
       </footer>
     </div>

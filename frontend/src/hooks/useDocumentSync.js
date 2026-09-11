@@ -28,6 +28,7 @@ export function useDocumentSync(docId, user) {
   const [users, setUsers] = useState([])
   const [myClientId, setMyClientId] = useState(null)
   const [docRole, setDocRole] = useState(null)
+  const [savedAt, setSavedAt] = useState(Date.now())
 
   useEffect(() => {
     let cancelled = false
@@ -46,7 +47,10 @@ export function useDocumentSync(docId, user) {
           params: { token: getAccessToken() || '' }
         })
         provider.on('status', ({ status: s }) => {
-          if (!cancelled) setStatus(s)
+          if (!cancelled) {
+            setStatus(s)
+            if (s === 'connected') setSavedAt(Date.now())
+          }
         })
 
         const color = user?.color || COLORS[Math.floor(Math.random() * COLORS.length)]
@@ -60,11 +64,16 @@ export function useDocumentSync(docId, user) {
             const delta = diffBlocks(prev, full)
             return delta.length ? mergeDelta(prev, delta) : prev
           })
+          setSavedAt(Date.now())
         }
-        const applyComments = () => setComments(commentsFromYArray(commentsArr))
+        const applyComments = () => {
+          setComments(commentsFromYArray(commentsArr))
+          setSavedAt(Date.now())
+        }
         const applyTitle = () => {
           const metaTitle = ydoc.getMap('meta').get('title')
           setTitle(metaTitle == null ? 'Untitled' : String(metaTitle))
+          setSavedAt(Date.now())
         }
         const applyUsers = () => {
           setMyClientId(provider.awareness.clientID)
@@ -360,5 +369,5 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  return { status, title, blocks, comments, users, myClientId, docRole, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
+  return { status, title, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }
