@@ -114,6 +114,21 @@ html {
   color: #fff;
 }
 
+[data-theme='light'] ::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -981,6 +996,7 @@ textarea:focus,
   display: flex;
   align-items: flex-start;
   border-radius: 8px;
+  scroll-margin: 90px 0 40px;
   transition: background 0.15s, box-shadow 0.15s;
 }
 
