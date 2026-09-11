@@ -21,6 +21,7 @@ import { buildBlockTree } from '../lib/blockTree'
 import { extractMentionIds } from '../lib/comments'
 import { buildEditorNav } from '../lib/editorMenu'
 import useMediaQuery from '../hooks/useMediaQuery'
+import { friendlyStatus } from '../lib/presence'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -238,7 +239,7 @@ export default function Editor() {
           placeholder="Untitled"
           disabled={!canRename}
         />
-        <div className={`status-pill ${sync.status}`}>{sync.status === 'connected' ? 'All changes saved' : sync.status}</div>
+        <div className={`status-pill ${sync.status}`}>{friendlyStatus(sync.status)}</div>
 
         <DragProvider>
           <div className="blocks">

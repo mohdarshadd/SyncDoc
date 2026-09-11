@@ -903,8 +903,48 @@ textarea:focus,
   color: var(--ok);
 }
 
+.status-pill.connecting {
+  color: var(--muted);
+}
+
+.status-pill.connecting::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.status-pill.disconnected {
+  color: var(--danger);
+}
+
+.status-pill.disconnected::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1s ease-in-out infinite;
+}
+
 .status-pill.error {
   color: var(--danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 /* Nested / collapsed blocks */
