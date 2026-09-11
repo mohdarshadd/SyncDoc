@@ -1352,6 +1352,28 @@ body.dragging-active {
   opacity: 1;
 }
 
+.drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 260px;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.25);
+  opacity: 0.92;
+  will-change: transform;
+}
+
 .add-bar {
   display: flex;
   gap: 8px;

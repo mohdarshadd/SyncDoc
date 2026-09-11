@@ -16,6 +16,29 @@ function indicatorFor(el) {
 function clearIndicators() {
   document.querySelectorAll('.drop-indicator').forEach((i) => i.classList.remove('visible'))
 }
+
+function createGhost(label) {
+  const ghost = document.createElement('div')
+  ghost.className = 'drag-ghost'
+  ghost.textContent = label
+  document.body.appendChild(ghost)
+  return ghost
+}
+
+function blockTextFor(block) {
+  const text = (block.text || '').replace(/\s+/g, ' ').trim()
+  if (text) return text.length > 64 ? `${text.slice(0, 64).trimEnd()}…` : text
+  return block.type.charAt(0).toUpperCase() + block.type.slice(1)
+}
+
+function autoScroll(clientY, edge = 52) {
+  const vh = window.innerHeight
+  if (clientY < edge) {
+    window.scrollBy({ top: -10, behavior: 'smooth' })
+  } else if (vh - clientY < edge) {
+    window.scrollBy({ top: 10, behavior: 'smooth' })
+  }
+}
 const TYPE_CLASS = {
   heading: 'block-heading',
   paragraph: 'block-paragraph',
@@ -294,9 +317,17 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     document.body.classList.add('dragging-active')
     e.currentTarget.setPointerCapture?.(e.pointerId)
 
+    let ghost = createGhost(blockTextFor(block))
+    function moveGhost(x, y) {
+      if (ghost) ghost.style.transform = `translate(${x + 12}px, ${y + 8}px)`
+    }
+    moveGhost(e.clientX, e.clientY)
+
     let currentIndex = blockElements().findIndex((b) => b.dataset.blockId === draggedId)
 
     function onPointerMove(ev) {
+      moveGhost(ev.clientX, ev.clientY)
+      autoScroll(ev.clientY)
       const blocks = blockElements()
       let targetIndex = blocks.length
       for (let i = 0; i < blocks.length; i++) {
@@ -334,6 +365,10 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       window.removeEventListener('pointerup', finish)
       window.removeEventListener('pointercancel', finish)
       clearIndicators()
+      if (ghost) {
+        ghost.remove()
+        ghost = null
+      }
       document.querySelectorAll('.block.dragging').forEach((b) => b.classList.remove('dragging'))
       document.body.classList.remove('dragging-active')
       const from = blockElements().findIndex((b) => b.dataset.blockId === draggedId)
