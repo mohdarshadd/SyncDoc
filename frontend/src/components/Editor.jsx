@@ -8,6 +8,7 @@ import ShareDialog from './ShareDialog'
 import VersionHistory from './VersionHistory'
 import VersionViewer from './VersionViewer'
 import VersionCompare from './VersionCompare'
+import OverflowMenu from './OverflowMenu'
 import { DragProvider } from './DragProvider'
 import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
@@ -18,6 +19,8 @@ import SearchDialog from './SearchDialog'
 import ShortcutsOverlay from './ShortcutsOverlay'
 import { buildBlockTree } from '../lib/blockTree'
 import { extractMentionIds } from '../lib/comments'
+import { buildEditorNav } from '../lib/editorMenu'
+import useMediaQuery from '../hooks/useMediaQuery'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -33,6 +36,7 @@ export default function Editor() {
 
   const isOwner = sync.docRole === 'owner'
   const canRename = sync.docRole === 'owner' || sync.docRole === 'editor'
+  const isMobile = useMediaQuery('(max-width: 640px)')
 
   const stats = useMemo(() => {
     const words = sync.blocks.reduce((n, b) => n + (b.text.trim() ? b.text.trim().split(/\s+/).length : 0), 0)
@@ -55,6 +59,27 @@ export default function Editor() {
     if (mentionsMe.length === 0) return
     window.dispatchEvent(new CustomEvent('syncdoc:open-comment', { detail: { blockId: mentionsMe[0].blockId, commentId: mentionsMe[0].id } }))
   }
+
+  const mobileNav = useMemo(
+    () =>
+      buildEditorNav({
+        isOwner,
+        mentionCount: mentionsMe.length,
+        onHistory: () => setShowVersions(true),
+        onCompare: () => setComparePair({ from: null, to: null }),
+        onCopyLink: handleCopyLink,
+        onSearch: search.openSearch,
+        onMentions: handleMentionsClick,
+        onShare: () => setShowShare(true),
+        onShortcuts: () => setShowShortcuts(true),
+        exportLinks: {
+          html: exportUrl(docId, 'html'),
+          markdown: exportUrl(docId, 'markdown'),
+          pdf: exportUrl(docId, 'pdf'),
+        },
+      }),
+    [isOwner, mentionsMe.length, docId, search.openSearch]
+  )
 
   async function handleCopyLink() {
     const ok = await copyText(documentLink(docId))
@@ -104,40 +129,57 @@ export default function Editor() {
   return (
     <div className="editor">
       <header className="editor-header">
-        <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
-        <PresenceBar users={sync.users} myClientId={sync.myClientId} />
-        <div className="exports">
-          <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
-          <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
-          <button
-            className="btn btn-ghost"
-            onClick={() => setComparePair({ from: null, to: null })}
-            title="Compare versions"
-            aria-label="Compare versions"
-          >
-            Compare
-          </button>
-          <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
-          {mentionsMe.length > 0 && (
-            <button className="btn btn-ghost mentions-badge-btn" onClick={handleMentionsClick} title={`${mentionsMe.length} comment${mentionsMe.length === 1 ? '' : 's'} mention you`} aria-label="Mentions of you">
-              Mentions
-              <span className="mentions-count">{mentionsMe.length}</span>
+        {isMobile ? (
+          <>
+            <button className="btn btn-ghost btn-icon" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592;</button>
+            <PresenceBar users={sync.users} myClientId={sync.myClientId} />
+            <span className="header-spacer" />
+            <OverflowMenu items={mobileNav} ariaLabel="More actions" />
+            <ThemeToggle />
+            <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
+              <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
+                {(user?.name || 'U').charAt(0).toUpperCase()}
+              </span>
             </button>
-          )}
-          {isOwner && (
-            <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
-          )}
-          <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer" title="Export as HTML" aria-label="Export as HTML">HTML</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer" title="Export as Markdown" aria-label="Export as Markdown">MD</a>
-          <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer" title="Export as PDF" aria-label="Export as PDF">PDF</a>
-        </div>
-        <ThemeToggle />
-        <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
-          <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
-            {(user?.name || 'U').charAt(0).toUpperCase()}
-          </span>
-        </button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-ghost" onClick={() => navigate('/documents')} title="Back to documents" aria-label="Back to documents">&#8592; Documents</button>
+            <PresenceBar users={sync.users} myClientId={sync.myClientId} />
+            <div className="exports">
+              <button className="btn btn-ghost" onClick={handleCopyLink} title="Copy document link (Ctrl+C)" aria-label="Copy link">Copy link</button>
+              <button className="btn btn-ghost" onClick={() => setShowVersions(true)} title="Version history" aria-label="Version history">History</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setComparePair({ from: null, to: null })}
+                title="Compare versions"
+                aria-label="Compare versions"
+              >
+                Compare
+              </button>
+              <button className="btn btn-ghost" onClick={search.openSearch} title="Search in document (Ctrl+F)" aria-label="Search">Search</button>
+              {mentionsMe.length > 0 && (
+                <button className="btn btn-ghost mentions-badge-btn" onClick={handleMentionsClick} title={`${mentionsMe.length} comment${mentionsMe.length === 1 ? '' : 's'} mention you`} aria-label="Mentions of you">
+                  Mentions
+                  <span className="mentions-count">{mentionsMe.length}</span>
+                </button>
+              )}
+              {isOwner && (
+                <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
+              )}
+              <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
+              <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer" title="Export as HTML" aria-label="Export as HTML">HTML</a>
+              <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer" title="Export as Markdown" aria-label="Export as Markdown">MD</a>
+              <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer" title="Export as PDF" aria-label="Export as PDF">PDF</a>
+            </div>
+            <ThemeToggle />
+            <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
+              <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
+                {(user?.name || 'U').charAt(0).toUpperCase()}
+              </span>
+            </button>
+          </>
+        )}
       </header>
 
       {showShare && (
