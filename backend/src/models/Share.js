@@ -27,6 +27,8 @@ const shareSchema = new mongoose.Schema(
 )
 
 shareSchema.index({ document: 1, user: 1 }, { unique: true })
+shareSchema.index({ user: 1 })
+shareSchema.index({ document: 1 })
 
 const Share = mongoose.model('Share', shareSchema)
 module.exports = Share

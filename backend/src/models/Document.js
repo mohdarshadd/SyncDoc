@@ -17,6 +17,8 @@ const documentSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
+documentSchema.index({ owner: 1, updatedAt: -1 })
+
 documentSchema.pre('save', function (next) {
   try {
     normalizeTree(this.nodes)
