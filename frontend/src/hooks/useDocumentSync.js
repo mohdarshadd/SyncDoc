@@ -60,6 +60,12 @@ export function useDocumentSync(docId, user) {
       }
     }
 
+    const onVisibility = () => {
+      const hidden = document.visibilityState === 'hidden'
+      if (provider) provider.awareness.setLocalStateField('typing', false)
+      if (provider) provider.awareness.setLocalStateField('hidden', hidden)
+    }
+
     async function init() {
       try {
         const doc = await getDocument(docId)
@@ -134,13 +140,6 @@ export function useDocumentSync(docId, user) {
           }, 1500)
         }
 
-        const onVisibility = () => {
-          const hidden = document.visibilityState === 'hidden'
-          if (hidden) {
-            provider.awareness.setLocalStateField('typing', false)
-          }
-          provider.awareness.setLocalStateField('hidden', hidden)
-        }
         document.addEventListener('visibilitychange', onVisibility)
 
         blocksArr.observeDeep(applyBlocks)
