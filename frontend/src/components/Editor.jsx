@@ -10,8 +10,8 @@ import VersionViewer from './VersionViewer'
 import VersionCompare from './VersionCompare'
 import OverflowMenu from './OverflowMenu'
 import { DragProvider } from './DragProvider'
-import { exportUrl } from '../api'
 import { copyText, documentLink } from '../lib/clipboard'
+import { openExport } from '../lib/export'
 import { pushToast } from '../lib/toast'
 import { useAuth } from '../contexts/AuthContext'
 import useDocumentSearch from '../hooks/useDocumentSearch'
@@ -89,11 +89,7 @@ export default function Editor() {
         onMentions: handleMentionsClick,
         onShare: () => setShowShare(true),
         onShortcuts: () => setShowShortcuts(true),
-        exportLinks: {
-          html: exportUrl(docId, 'html'),
-          markdown: exportUrl(docId, 'markdown'),
-          pdf: exportUrl(docId, 'pdf'),
-        },
+        onExport: (format) => openExport(docId, format, 'document'),
       }),
     [isOwner, mentionsMe.length, docId, search.openSearch]
   )
@@ -185,9 +181,9 @@ export default function Editor() {
                 <button className="btn btn-ghost" onClick={() => setShowShare(true)} title="Share document" aria-label="Share">Share</button>
               )}
               <button className="btn btn-ghost" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
-              <a className="btn btn-ghost" href={exportUrl(docId, 'html')} target="_blank" rel="noreferrer" title="Export as HTML" aria-label="Export as HTML">HTML</a>
-              <a className="btn btn-ghost" href={exportUrl(docId, 'markdown')} target="_blank" rel="noreferrer" title="Export as Markdown" aria-label="Export as Markdown">MD</a>
-              <a className="btn btn-ghost" href={exportUrl(docId, 'pdf')} target="_blank" rel="noreferrer" title="Export as PDF" aria-label="Export as PDF">PDF</a>
+              <button className="btn btn-ghost" onClick={() => openExport(docId, 'html', 'document')} title="Export as HTML" aria-label="Export as HTML">HTML</button>
+              <button className="btn btn-ghost" onClick={() => openExport(docId, 'markdown', 'document')} title="Export as Markdown" aria-label="Export as Markdown">MD</button>
+              <button className="btn btn-ghost" onClick={() => openExport(docId, 'pdf', 'document')} title="Export as PDF" aria-label="Export as PDF">PDF</button>
             </div>
             <ThemeToggle />
             <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">

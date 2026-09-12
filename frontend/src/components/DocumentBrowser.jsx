@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listDocuments, createDocument, deleteDocument, importMarkdown, exportUrl, listSharedWithMe } from '../api'
+import { listDocuments, createDocument, deleteDocument, importMarkdown, listSharedWithMe } from '../api'
+import { openExport } from '../lib/export'
 import ThemeToggle from './ThemeToggle'
 import EmptyState from './EmptyState'
 import { pushToast } from '../lib/toast'
@@ -127,9 +128,9 @@ export default function DocumentBrowser() {
           <button className="btn btn-primary btn-sm" onClick={() => navigate('/editor/' + d._id)}>Open</button>
           <div className="doc-hover-actions">
             <button className="btn btn-ghost btn-sm" onClick={() => handleCopyLink(d._id)}>Copy</button>
-            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'html')} target="_blank" rel="noreferrer">HTML</a>
-            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'markdown')} target="_blank" rel="noreferrer">MD</a>
-            <a className="btn btn-ghost btn-sm" href={exportUrl(d._id, 'pdf')} target="_blank" rel="noreferrer">PDF</a>
+            <button className="btn btn-ghost btn-sm" onClick={() => openExport(d._id, 'html', d.title)}>HTML</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => openExport(d._id, 'markdown', d.title)}>MD</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => openExport(d._id, 'pdf', d.title)}>PDF</button>
             {!isShared && (
               <button className="btn btn-danger btn-sm" onClick={() => handleDelete(d._id)}>Delete</button>
             )}

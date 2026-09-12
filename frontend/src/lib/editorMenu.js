@@ -8,7 +8,7 @@ export function buildEditorNav({
   onMentions,
   onShare,
   onShortcuts,
-  exportLinks = {},
+  onExport,
 }) {
   const items = []
   items.push({ key: 'history', label: 'History', onClick: onHistory })
@@ -21,9 +21,11 @@ export function buildEditorNav({
   if (isOwner) {
     items.push({ key: 'share', label: 'Share', onClick: onShare })
   }
-  if (exportLinks.html) items.push({ key: 'html', label: 'Export HTML', href: exportLinks.html })
-  if (exportLinks.markdown) items.push({ key: 'markdown', label: 'Export Markdown', href: exportLinks.markdown })
-  if (exportLinks.pdf) items.push({ key: 'pdf', label: 'Export PDF', href: exportLinks.pdf })
+  if (onExport) {
+    items.push({ key: 'html', label: 'Export HTML', onClick: () => onExport('html') })
+    items.push({ key: 'markdown', label: 'Export Markdown', onClick: () => onExport('markdown') })
+    items.push({ key: 'pdf', label: 'Export PDF', onClick: () => onExport('pdf') })
+  }
   items.push({ key: 'shortcuts', label: 'Keyboard shortcuts', onClick: onShortcuts })
   return items
 }

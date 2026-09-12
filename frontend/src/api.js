@@ -71,7 +71,22 @@ export const renameDocument = (id, title) => request(`/documents/${id}/rename`, 
 
 export const importMarkdown = (body) => request('/import/markdown', { method: 'POST', body: JSON.stringify(body) })
 
-export const exportUrl = (id, format) => `/api/documents/${id}/export/${format}`
+export async function exportDocument(id, format) {
+  const headers = {}
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`
+  let res = await fetch(`${API_BASE}/documents/${id}/export/${format}`, { headers })
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken()
+    if (!refreshed) throw new Error('Session expired')
+    headers['Authorization'] = `Bearer ${accessToken}`
+    res = await fetch(`${API_BASE}/documents/${id}/export/${format}`, { headers })
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `Request failed: ${res.status}`)
+  }
+  return res.blob()
+}
 
 export const listShares = (docId) => request(`/documents/${docId}/shares`)
 
