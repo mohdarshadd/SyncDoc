@@ -1103,11 +1103,11 @@ textarea:focus,
 }
 
 .block-heading + .block {
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .block + .block-heading {
-  margin-top: 24px;
+  margin-top: 32px;
 }
 
 /* Block */
