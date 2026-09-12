@@ -11,10 +11,6 @@ const { requireAuth } = require('../middleware/auth')
 
 const router = express.Router()
 
-function countNodes(nodes) {
-  return (nodes || []).reduce((acc, n) => acc + 1 + countNodes(n.children), 0)
-}
-
 function toSummary(doc) {
   return {
     _id: doc._id,
@@ -22,7 +18,7 @@ function toSummary(doc) {
     author: doc.author,
     updatedAt: doc.updatedAt,
     revision: doc.revision,
-    blockCount: countNodes(doc.nodes)
+    blockCount: doc.blockCount ?? 0
   }
 }
 
@@ -45,7 +41,9 @@ async function getAccess(docId, userId) {
 
 router.get('/documents', requireAuth, async (req, res, next) => {
   try {
-    const docs = await Document.find({ owner: req.userId }).sort({ updatedAt: -1 })
+    const docs = await Document.find({ owner: req.userId })
+      .sort({ updatedAt: -1 })
+      .select('title author updatedAt revision')
     res.json(docs.map(toSummary))
   } catch (e) {
     next(e)
