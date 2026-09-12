@@ -1077,7 +1077,37 @@ textarea:focus,
 .blocks {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
+}
+
+.block + .block {
+  margin-top: 4px;
+}
+
+.block-list + .block,
+.block-checkbox + .block {
+  margin-top: 2px;
+}
+
+.block-toggle + .block {
+  margin-top: 3px;
+}
+
+.block-quote + .block,
+.block-code + .block {
+  margin-top: 10px;
+}
+
+.block-divider + .block {
+  margin-top: 18px;
+}
+
+.block-heading + .block {
+  margin-top: 18px;
+}
+
+.block + .block-heading {
+  margin-top: 16px;
 }
 
 /* Block */
