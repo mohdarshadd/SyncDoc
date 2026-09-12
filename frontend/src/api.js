@@ -69,6 +69,8 @@ export const deleteDocument = (id) => request(`/documents/${id}`, { method: 'DEL
 
 export const renameDocument = (id, title) => request(`/documents/${id}/rename`, { method: 'PATCH', body: JSON.stringify({ title }) })
 
+export const saveDocumentContent = (id, body) => request(`/documents/${id}/content`, { method: 'PATCH', body: JSON.stringify(body) })
+
 export const importMarkdown = (body) => request('/import/markdown', { method: 'POST', body: JSON.stringify(body) })
 
 export async function exportDocument(id, format) {

@@ -2,11 +2,11 @@ const express = require('express')
 
 const Document = require('../models/Document')
 const Share = require('../models/Share')
-const { flattenAst } = require('../validators/ast')
+const { flattenAst, buildTree } = require('../validators/ast')
 const { astToHtml } = require('../transform/html')
 const { astToMarkdown, markdownToAst } = require('../transform/markdown')
 const { astToPdf } = require('../transform/pdf')
-const { sanitizeBlocks } = require('../security/sanitize')
+const { sanitizeBlocks, sanitizeComments } = require('../security/sanitize')
 const { requireAuth } = require('../middleware/auth')
 
 const router = express.Router()
@@ -93,6 +93,28 @@ router.patch('/documents/:id/rename', requireAuth, async (req, res, next) => {
     doc.title = title
     await doc.save()
     res.json({ _id: doc._id, title: doc.title })
+  } catch (e) {
+    next(e)
+  }
+})
+
+router.patch('/documents/:id/content', requireAuth, async (req, res, next) => {
+  try {
+    const { doc, role } = await getAccess(req.params.id, req.userId)
+    if (!doc) return res.status(404).json({ error: 'document not found' })
+    if (!role || role === 'viewer') return res.status(403).json({ error: 'You do not have permission to edit' })
+    if (req.body.title !== undefined) {
+      doc.title = String(req.body.title).slice(0, 120)
+    }
+    if (Array.isArray(req.body.nodes)) {
+      doc.nodes = buildTree(sanitizeBlocks(req.body.nodes))
+      doc.lastSavedBy = req.userId
+    }
+    if (Array.isArray(req.body.comments)) {
+      doc.comments = sanitizeComments(req.body.comments)
+    }
+    await doc.save()
+    res.json({ _id: doc._id, revision: doc.revision })
   } catch (e) {
     next(e)
   }
