@@ -12,11 +12,7 @@ function base() {
     onMentions: () => {},
     onShare: () => {},
     onShortcuts: () => {},
-    exportLinks: {
-      html: '/api/documents/x/export/html',
-      markdown: '/api/documents/x/export/markdown',
-      pdf: '/api/documents/x/export/pdf',
-    },
+    onExport: () => {},
   }
 }
 
@@ -44,15 +40,17 @@ describe('buildEditorNav', () => {
     expect(item.label).toBe('Mentions (3)')
   })
 
-  it('wires export links as hrefs', () => {
-    const items = buildEditorNav(base())
+  it('wires export items to the onExport callback', () => {
+    const calls = []
+    const items = buildEditorNav({ ...base(), onExport: (f) => calls.push(f) })
     const md = items.find((i) => i.key === 'markdown')
-    expect(md.href).toBe('/api/documents/x/export/markdown')
     expect(md.label).toBe('Export Markdown')
+    md.onClick()
+    expect(calls).toEqual(['markdown'])
   })
 
-  it('omits missing export links', () => {
-    const items = buildEditorNav({ ...base(), exportLinks: {} })
+  it('omits export items without onExport', () => {
+    const items = buildEditorNav({ ...base(), onExport: null })
     expect(items.some((i) => i.key === 'html')).toBe(false)
     expect(items.some((i) => i.key === 'markdown')).toBe(false)
     expect(items.some((i) => i.key === 'pdf')).toBe(false)
