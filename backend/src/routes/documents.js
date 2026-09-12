@@ -106,8 +106,9 @@ router.patch('/documents/:id/content', requireAuth, async (req, res, next) => {
     if (req.body.title !== undefined) {
       doc.title = String(req.body.title).slice(0, 120)
     }
-    if (Array.isArray(req.body.nodes)) {
-      doc.nodes = buildTree(sanitizeBlocks(req.body.nodes))
+    const flatBlocks = req.body.blocks ?? req.body.nodes
+    if (Array.isArray(flatBlocks)) {
+      doc.nodes = sanitizeBlocks(buildTree(flatBlocks))
       doc.lastSavedBy = req.userId
     }
     if (Array.isArray(req.body.comments)) {

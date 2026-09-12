@@ -9,8 +9,25 @@ const {
   flattenAst,
   buildTree
 } = require('../src/validators/ast')
+const { sanitizeBlocks } = require('../src/security/sanitize')
 
 const paragraph = (over = {}) => ({ type: 'paragraph', text: 'x', ...over })
+
+test('content-save payload (flat blocks) survives sanitize + buildTree', () => {
+  const flat = [
+    { id: 'b1', type: 'paragraph', text: 'Hello <i>world</i>', lang: null, checked: false, open: true, collapsed: false, attrs: { marks: [{ from: 0, to: 5, type: 'bold' }] }, parentId: null, order: 0 },
+    { id: 'b2', type: 'list', text: 'item', lang: null, checked: false, open: true, collapsed: false, attrs: { marks: [] }, parentId: 'b1', order: 0 }
+  ]
+  const tree = sanitizeBlocks(buildTree(flat))
+  assert.equal(tree.length, 1)
+  assert.equal(tree[0].nid, 'b1')
+  assert.equal(tree[0].children.length, 1)
+  assert.equal(tree[0].children[0].nid, 'b2')
+  assert.equal(tree[0].text.includes('world'), true)
+  assert.equal(tree[0].attrs.marks.length, 1)
+  normalizeTree(tree)
+  assert.equal(validateAstTree(tree), true)
+})
 
 test('valid tree passes validation', () => {
   assert.equal(
