@@ -3584,6 +3584,8 @@ body.dragging-active {
 /* Search highlight overlay */
 .block-textarea-wrap {
   position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-highlight {
