@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
-import { getDocument, getAccessToken, WS_URL, renameDocument } from '../api'
+import { getDocument, getAccessToken, WS_URL, renameDocument, saveDocumentContent } from '../api'
 import { buildYdoc } from '../lib/ydoc'
 import { diffBlocks, mergeDelta, snapshotFromYArray, commentsFromYArray } from '../store/blockStore'
 import { uid } from '../lib/uid'
@@ -23,6 +23,8 @@ export function useDocumentSync(docId, user) {
   const renameTimerRef = useRef(null)
   const typingTimerRef = useRef(null)
   const prevStatusRef = useRef(null)
+  const fallbackSaveTimerRef = useRef(null)
+  const wsConnectedRef = useRef(false)
   const [status, setStatus] = useState('connecting')
   const [title, setTitle] = useState('')
   const [blocks, setBlocks] = useState([])
@@ -36,6 +38,27 @@ export function useDocumentSync(docId, user) {
     let cancelled = false
     let provider = null
     let ydoc = null
+
+    const buildFallbackPayload = (target) => {
+      if (!target || wsConnectedRef.current) return null
+      const blocks = snapshotFromYArray(target.getArray('blocks')).map((b) => ({
+        id: b.id,
+        type: b.type,
+        text: b.text || '',
+        lang: b.lang || null,
+        checked: !!b.checked,
+        open: b.open !== false,
+        collapsed: !!b.collapsed,
+        attrs: { marks: Array.isArray(b.marks) ? b.marks : [] },
+        parentId: b.parentId || null,
+        order: b.order
+      }))
+      return {
+        title: String(target.getMap('meta').get('title') ?? 'Untitled'),
+        blocks,
+        comments: commentsFromYArray(target.getArray('comments'))
+      }
+    }
 
     async function init() {
       try {
@@ -52,6 +75,7 @@ export function useDocumentSync(docId, user) {
           if (!cancelled) {
             const prev = prevStatusRef.current
             prevStatusRef.current = s
+            wsConnectedRef.current = s === 'connected'
             setStatus(s)
             if (s === 'connected') setSavedAt(Date.now())
             if (s === 'disconnected' && prev && prev !== 'disconnected') {
@@ -74,15 +98,18 @@ export function useDocumentSync(docId, user) {
             return delta.length ? mergeDelta(prev, delta) : prev
           })
           setSavedAt(Date.now())
+          scheduleFallbackSave()
         }
         const applyComments = () => {
           setComments(commentsFromYArray(commentsArr))
           setSavedAt(Date.now())
+          scheduleFallbackSave()
         }
         const applyTitle = () => {
           const metaTitle = ydoc.getMap('meta').get('title')
           setTitle(metaTitle == null ? 'Untitled' : String(metaTitle))
           setSavedAt(Date.now())
+          scheduleFallbackSave()
         }
         const applyUsers = () => {
           setMyClientId(provider.awareness.clientID)
@@ -94,6 +121,17 @@ export function useDocumentSync(docId, user) {
             states.push({ clientId, ...state.user, cursor: state.cursor || null, typing: state.typing === true })
           })
           setUsers(states)
+        }
+
+        const scheduleFallbackSave = () => {
+          if (wsConnectedRef.current) return
+          clearTimeout(fallbackSaveTimerRef.current)
+          fallbackSaveTimerRef.current = setTimeout(() => {
+            if (cancelled) return
+            const payload = buildFallbackPayload(ydoc)
+            if (!payload) return
+            saveDocumentContent(docId, payload).catch(() => { /* retried on next edit */ })
+          }, 1500)
         }
 
         const onVisibility = () => {
@@ -131,6 +169,11 @@ export function useDocumentSync(docId, user) {
       cancelled = true
       clearTimeout(renameTimerRef.current)
       clearTimeout(typingTimerRef.current)
+      clearTimeout(fallbackSaveTimerRef.current)
+      const finalPayload = buildFallbackPayload(ydoc)
+      if (finalPayload) {
+        saveDocumentContent(docId, finalPayload).catch(() => { /* noop */ })
+      }
       document.removeEventListener('visibilitychange', onVisibility)
       try {
         provider?.awareness.setLocalState(null)
