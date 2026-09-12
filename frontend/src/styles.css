@@ -1148,7 +1148,8 @@ textarea:focus,
 }
 
 .block-check,
-.block-caret {
+.block-caret,
+.block-bullet {
   flex-shrink: 0;
   width: 22px;
   height: 28px;
@@ -1158,9 +1159,24 @@ textarea:focus,
   margin-top: 1px;
   border: none;
   background: transparent;
-  cursor: pointer;
   color: var(--muted);
   transition: color 0.15s;
+}
+
+.block-check,
+.block-caret {
+  cursor: pointer;
+}
+
+.block-bullet {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.block-list .block-textarea-wrap textarea {
+  font-size: 17px;
 }
 
 .block-caret svg {
@@ -3144,6 +3160,28 @@ body.dragging-active {
   border: none;
   border-top: 1px solid var(--border);
   margin: 8px 0;
+}
+
+.version-block-list {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.version-bullet {
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.version-check {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.version-checked-text {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 /* Shortcuts overlay */

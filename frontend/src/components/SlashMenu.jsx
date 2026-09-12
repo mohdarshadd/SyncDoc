@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 const COMMANDS = [
   { label: 'Paragraph', type: 'paragraph', icon: '¶', description: 'Plain text block', shortcut: 'p' },
   { label: 'Heading', type: 'heading', icon: 'H', description: 'Section heading', shortcut: 'h' },
+  { label: 'Bulleted List', type: 'list', icon: '•', description: 'Bulleted list item', shortcut: 'l' },
   { label: 'To-do List', type: 'checklist', icon: '☐', description: 'Task with a checkbox', shortcut: 't' },
   { label: 'Toggle', type: 'toggle', icon: '▸', description: 'Collapsible content', shortcut: 'g' },
   { label: 'Code', type: 'code', icon: '<>', description: 'Code block', shortcut: 'c' },
