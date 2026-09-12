@@ -97,6 +97,7 @@ export const restoreVersion = (docId, revision) => request(`/documents/${docId}/
 
 export const WS_URL = import.meta.env.VITE_WS_URL || (() => {
   if (typeof window === 'undefined') return 'ws://localhost:4000/ws'
+  if (import.meta.env.DEV) return 'ws://localhost:4000/ws'
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${proto}//${window.location.host}/ws`
 })()

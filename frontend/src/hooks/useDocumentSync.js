@@ -117,7 +117,6 @@ export function useDocumentSync(docId, user) {
         applyComments()
         applyTitle()
         applyUsers()
-        if (!cancelled) setStatus('connected')
       } catch (e) {
         if (!cancelled) {
           setStatus('error')
