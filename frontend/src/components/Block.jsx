@@ -135,7 +135,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }
 
-  const TYPING_TYPES = ['checklist', 'toggle']
+  const TYPING_TYPES = ['checklist', 'toggle', 'list']
 
   function addBelow() {
     const nextType = TYPING_TYPES.includes(block.type) && onAddAfterType ? block.type : null
@@ -493,6 +493,9 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
               <path className="check-mark" d="M4.5 8.5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+        )}
+        {block.type === 'list' && (
+          <span className="block-bullet" aria-hidden="true">•</span>
         )}
         {block.type === 'toggle' && (
           <button

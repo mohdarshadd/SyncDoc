@@ -65,6 +65,18 @@ export default function VersionViewer({ docId, revision, onClose }) {
                   </pre>
                 )}
                 {b.type === 'quote' && <blockquote className="version-block-quote">{b.text || '\u00A0'}</blockquote>}
+                {b.type === 'list' && (
+                  <div className="version-block-list">
+                    <span className="version-bullet">•</span>
+                    <span>{b.text || '\u00A0'}</span>
+                  </div>
+                )}
+                {b.type === 'checklist' && (
+                  <div className="version-block-list">
+                    <span className="version-check">{b.checked ? '☑' : '☐'}</span>
+                    <span className={b.checked ? 'version-checked-text' : ''}>{b.text || '\u00A0'}</span>
+                  </div>
+                )}
                 {b.type === 'divider' && <hr className="version-block-divider" />}
               </div>
             ))
