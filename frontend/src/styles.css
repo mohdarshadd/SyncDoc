@@ -813,7 +813,6 @@ textarea:focus,
   filter: blur(22px) brightness(1.15);
 }
 
-.editor.has-wallpaper .editor-header,
 .editor.has-wallpaper .editor-body,
 .editor.has-wallpaper .editor-footer {
   position: relative;
