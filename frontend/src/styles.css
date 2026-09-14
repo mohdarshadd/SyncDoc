@@ -4826,6 +4826,43 @@ h3.version-compare-heading {
 }
 
 /* Touch device polish */
+.btn,
+.auth-btn,
+.profile-btn,
+.wallpaper-opt,
+.toolbar-btn,
+.seg-btn,
+.overflow-menu-item,
+.doc-card,
+.block-toggle,
+.block-checkbox,
+.block-drag-handle {
+  touch-action: manipulation;
+}
+
+@media (max-width: 360px) {
+  .wallpaper-menu {
+    min-width: 0;
+    width: 200px;
+  }
+
+  .editor-title-input {
+    font-size: 28px;
+  }
+
+  .block-heading textarea {
+    font-size: 21px;
+  }
+
+  .presence-empty {
+    display: none;
+  }
+
+  .auth-card {
+    padding: 28px 20px 24px;
+  }
+}
+
 @media (hover: none) {
   .doc-card:hover {
     transform: none;
