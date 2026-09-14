@@ -1739,37 +1739,6 @@ body.dragging-active {
   gap: 6px;
 }
 
-.btn-save-float {
-  position: fixed;
-  right: 24px;
-  bottom: 48px;
-  z-index: 30;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--accent, #2997ff);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-  cursor: pointer;
-  transition: filter 0.15s ease, transform 0.15s ease;
-}
-
-.btn-save-float:hover {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
-}
-
-.btn-save-float:disabled {
-  opacity: 0.7;
-  cursor: default;
-  transform: none;
-}
-
 .footer-live {
   color: var(--muted);
 }

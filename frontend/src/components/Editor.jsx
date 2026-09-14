@@ -34,7 +34,6 @@ export default function Editor() {
   const [viewVersion, setViewVersion] = useState(null)
   const [comparePair, setComparePair] = useState(null)
   const [showShortcuts, setShowShortcuts] = useState(false)
-  const [saving, setSaving] = useState(false)
 
   const isOwner = sync.docRole === 'owner'
   const canRename = sync.docRole === 'owner' || sync.docRole === 'editor'
@@ -98,18 +97,6 @@ export default function Editor() {
   async function handleCopyLink() {
     const ok = await copyText(documentLink(docId))
     pushToast(ok ? 'Link copied to clipboard' : 'Could not copy link', ok ? 'ok' : 'error')
-  }
-
-  async function handleSaveNow() {
-    if (saving) return
-    setSaving(true)
-    const result = await sync.saveNow()
-    setSaving(false)
-    if (result.saved) {
-      pushToast('Document saved', 'ok')
-    } else {
-      pushToast(result.reason ? `Failed to save: ${result.reason}` : 'Failed to save', 'error')
-    }
   }
 
   function handleAddBlock(type, afterId = null) {
@@ -324,16 +311,6 @@ export default function Editor() {
           {sync.status === 'connected' ? savedLabel : friendlyStatus(sync.status)}
         </span>
       </footer>
-
-      <button
-        className="btn btn-save-float"
-        onClick={handleSaveNow}
-        disabled={saving}
-        title="Save this document"
-        aria-label="Save document"
-      >
-        {saving ? 'Saving…' : 'Save'}
-      </button>
     </div>
   )
 }
