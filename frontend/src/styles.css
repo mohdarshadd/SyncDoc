@@ -4869,6 +4869,21 @@ h3.version-compare-heading {
     box-shadow: none;
   }
 
+  .doc-card:active {
+    transform: scale(0.99);
+  }
+
+  .btn:active,
+  .auth-btn:active,
+  .profile-btn:active,
+  .wallpaper-opt:active,
+  .toolbar-btn:active,
+  .overflow-menu-item:active,
+  .seg-btn:active {
+    opacity: 0.75;
+    transform: scale(0.97);
+  }
+
   .btn:hover,
   .block-add-btn:hover,
   .block-drag-handle:hover,
