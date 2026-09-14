@@ -14,12 +14,9 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'syncdoc-access-secret-de
 
 const Document = require('../models/Document')
 const Share = require('../models/Share')
-const { astToYdoc, ydocToAst } = require('./astAdapter')
-const { sanitizeBlocks, sanitizeComments } = require('../security/sanitize')
+const { astToYdoc } = require('./astAdapter')
 
-const PERSIST_DEBOUNCE_MS = 400
 const rooms = new Map()
-const persistTimers = new Map()
 
 function roomFor(docId) {
   let room = rooms.get(docId)
@@ -57,7 +54,6 @@ async function loadRoom(room, docId, userId) {
 
       room.ydoc.on('update', (update, origin) => {
         broadcastUpdate(room, update, origin)
-        schedulePersist(docId, room.ydoc)
       })
 
       room.awareness = new awarenessProtocol.Awareness(room.ydoc)
@@ -76,33 +72,6 @@ function broadcastUpdate(room, update, origin) {
     if (conn !== origin) {
       try { conn.send(message) } catch (e) { /* dropped */ }
     }
-  }
-}
-
-function schedulePersist(docId, ydoc) {
-  clearTimeout(persistTimers.get(docId))
-  persistTimers.set(
-    docId,
-    setTimeout(() => persistRoom(docId, ydoc), PERSIST_DEBOUNCE_MS)
-  )
-}
-
-async function persistRoom(docId, ydoc) {
-  try {
-    const ast = ydocToAst(ydoc)
-    ast.nodes = sanitizeBlocks(ast.nodes)
-    ast.comments = sanitizeComments(ast.comments)
-    let doc = null
-    if (mongoose.Types.ObjectId.isValid(docId)) {
-      doc = await Document.findById(docId)
-    }
-    if (!doc) return
-    if (ast.title != null) doc.title = ast.title
-    doc.nodes = ast.nodes
-    doc.comments = ast.comments
-    await doc.save()
-  } catch (e) {
-    console.error(`[sync] persist failed ${docId}: ${e.message}`)
   }
 }
 
