@@ -143,7 +143,10 @@ export default function DocumentBrowser() {
   return (
     <div className="browser">
       <header className="browser-header">
-        <h1>SyncDoc</h1>
+        <a className="browser-brand" onClick={() => navigate('/')} title="Go to home page">
+          <span className="browser-logo">S</span>
+          <h1>SyncDoc</h1>
+        </a>
         <span className="browser-sub">Collaborative AST documents</span>
       </header>
 
