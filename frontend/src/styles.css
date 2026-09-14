@@ -4863,6 +4863,30 @@ h3.version-compare-heading {
   }
 }
 
+/* Landscape phones (small height) */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 520px) {
+  .editor-body {
+    padding: 20px 16px 88px;
+  }
+
+  .editor-title-input {
+    font-size: 26px;
+    margin: 4px 0 8px;
+  }
+
+  .auth-page {
+    padding: 16px;
+  }
+
+  .auth-card {
+    padding: 28px 24px;
+  }
+
+  .profile-page {
+    padding: 20px 12px;
+  }
+}
+
 @media (hover: none) {
   .doc-card:hover {
     transform: none;
