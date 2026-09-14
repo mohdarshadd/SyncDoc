@@ -4643,6 +4643,22 @@ h3.version-compare-heading {
   .empty-state {
     padding: 40px 16px;
   }
+
+  .block-toolbar {
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .block-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .block-toolbar .toolbar-btn {
+    min-width: 30px;
+    min-height: 30px;
+  }
 }
 
 /* Mobile editor footer */
