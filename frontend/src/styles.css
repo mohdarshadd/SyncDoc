@@ -80,6 +80,13 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
 }
 
 body {
@@ -98,6 +105,8 @@ html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4550,6 +4559,32 @@ h3.version-compare-heading {
 
 /* Mobile editor body and blocks */
 @media (max-width: 640px) {
+  .editor-header {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .editor-header::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wallpaper-picker > .btn {
+    font-size: 0;
+    padding: 6px 9px;
+  }
+
+  .wallpaper-picker > .btn::before {
+    content: '\1F5BC';
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .wallpaper-picker .wallpaper-menu {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
   .editor-body {
     padding: 42px 14px calc(120px + env(safe-area-inset-bottom));
   }
@@ -4644,8 +4679,12 @@ h3.version-compare-heading {
   }
 
   .doc-cards {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
+  }
+
+  .doc-hover-actions {
+    flex-wrap: wrap;
   }
 
   .browser-section-title {
@@ -4655,7 +4694,7 @@ h3.version-compare-heading {
 
 @media (max-width: 420px) {
   .doc-cards {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
 
