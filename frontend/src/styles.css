@@ -4664,13 +4664,25 @@ h3.version-compare-heading {
 /* Mobile editor footer */
 @media (max-width: 640px) {
   .editor-footer {
+    position: sticky;
+    bottom: 0;
     gap: 10px;
     justify-content: space-between;
     padding: 8px 14px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
   }
 
   .editor-footer > span:not(.footer-status):not(.footer-search) {
     display: none;
+  }
+
+  .editor-footer .footer-search {
+    max-width: 45vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
