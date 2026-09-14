@@ -33,8 +33,15 @@ export function useDocumentSync(docId, user) {
   const [myClientId, setMyClientId] = useState(null)
   const [docRole, setDocRole] = useState(null)
   const [savedAt, setSavedAt] = useState(Date.now())
+  const statusRef = useRef('connecting')
+
+  function setStatusBoth(s) {
+    statusRef.current = s
+    setStatus(s)
+  }
 
   useEffect(() => {
+    console.debug('[dbg] EFFECT RUN', Date.now(), docId, user?.name, user?.color)
     let cancelled = false
     let provider = null
     let ydoc = null
@@ -82,7 +89,7 @@ export function useDocumentSync(docId, user) {
             const prev = prevStatusRef.current
             prevStatusRef.current = s
             wsConnectedRef.current = s === 'connected'
-            setStatus(s)
+            setStatusBoth(s)
             if (s === 'connected') setSavedAt(Date.now())
             if (s === 'disconnected' && prev && prev !== 'disconnected') {
               pushToast('Connection lost — retrying…', 'warn')
@@ -165,6 +172,7 @@ export function useDocumentSync(docId, user) {
     init()
 
     return () => {
+      console.debug('[dbg] EFFECT CLEANUP', Date.now(), docId, 'hadYdoc', !!ydoc)
       cancelled = true
       clearTimeout(renameTimerRef.current)
       clearTimeout(typingTimerRef.current)
@@ -186,6 +194,7 @@ export function useDocumentSync(docId, user) {
 
   function updateBlockText(id, text) {
     const ydoc = ydocRef.current
+    console.debug('[dbg] updateBlockText', Date.now(), id.slice(0, 6), JSON.stringify(text).slice(0, 20), 'ydoc?', !!ydoc)
     if (!ydoc) return
     ydoc.transact(() => {
       ydoc.getArray('blocks').forEach((m) => {
@@ -431,6 +440,17 @@ export function useDocumentSync(docId, user) {
   function refreshOrder(arr) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
+
+  window.__syncDebug = () => {
+      const ydoc = ydocRef.current
+      return {
+        ydocSet: !!ydoc,
+        status: statusRef.current,
+        blocks: ydoc ? snapshotFromYArray(ydoc.getArray('blocks')).map((b) => ({ id: b.id, type: b.type, text: b.text })) : null,
+        comments: ydoc ? commentsFromYArray(ydoc.getArray('comments')) : null,
+        metaTitle: ydoc ? ydoc.getMap('meta').get('title') : null
+      }
+    }
 
   return { status, title, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }
