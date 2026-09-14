@@ -17,6 +17,19 @@ function cloneMap(m) {
   return c
 }
 
+function dedupeBlocks(blocks) {
+  const map = new Map()
+  for (const b of blocks) {
+    if (!b || !b.id) continue
+    const existing = map.get(b.id)
+    if (!existing) { map.set(b.id, b); continue }
+    const existingText = existing.text || ''
+    const newText = b.text || ''
+    map.set(b.id, newText.length >= existingText.length ? b : existing)
+  }
+  return Array.from(map.values())
+}
+
 export function useDocumentSync(docId, user) {
   const ydocRef = useRef(null)
   const providerRef = useRef(null)
@@ -47,7 +60,7 @@ export function useDocumentSync(docId, user) {
 
     const buildFallbackPayload = (target) => {
       if (!target) return null
-      const blocks = snapshotFromYArray(target.getArray('blocks')).map((b) => ({
+      const blocks = dedupeBlocks(snapshotFromYArray(target.getArray('blocks')).map((b) => ({
         id: b.id,
         type: b.type,
         text: b.text || '',
@@ -58,7 +71,7 @@ export function useDocumentSync(docId, user) {
         attrs: { marks: Array.isArray(b.marks) ? b.marks : [] },
         parentId: b.parentId || null,
         order: b.order
-      }))
+      })))
       return {
         title: String(target.getMap('meta').get('title') ?? 'Untitled'),
         blocks,
@@ -104,7 +117,7 @@ export function useDocumentSync(docId, user) {
         const blocksArr = ydoc.getArray('blocks')
         const commentsArr = ydoc.getArray('comments')
         const applyBlocks = () => {
-          const full = snapshotFromYArray(blocksArr)
+          const full = dedupeBlocks(snapshotFromYArray(blocksArr))
           setBlocks((prev) => {
             const delta = diffBlocks(prev, full)
             return delta.length ? mergeDelta(prev, delta) : prev
@@ -444,7 +457,7 @@ export function useDocumentSync(docId, user) {
     try {
       const payload = {
         title: String(ydoc.getMap('meta').get('title') ?? 'Untitled'),
-        blocks: snapshotFromYArray(ydoc.getArray('blocks')).map((b) => ({
+        blocks: dedupeBlocks(snapshotFromYArray(ydoc.getArray('blocks')).map((b) => ({
           id: b.id,
           type: b.type,
           text: b.text || '',
@@ -455,7 +468,7 @@ export function useDocumentSync(docId, user) {
           attrs: { marks: Array.isArray(b.marks) ? b.marks : [] },
           parentId: b.parentId || null,
           order: b.order
-        })),
+        }))),
         comments: commentsFromYArray(ydoc.getArray('comments'))
       }
       return saveDocumentContent(docId, payload)
