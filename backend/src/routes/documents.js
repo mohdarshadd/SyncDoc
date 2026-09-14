@@ -11,6 +11,8 @@ const { requireAuth } = require('../middleware/auth')
 
 const router = express.Router()
 
+const WALLPAPERS = ['none', 'wall-01', 'wall-02', 'wall-03', 'wall-04', 'wall-05', 'wall-06']
+
 function toSummary(doc) {
   return {
     _id: doc._id,
@@ -77,6 +79,7 @@ router.get('/documents/:id', requireAuth, async (req, res, next) => {
       nodes: doc.nodes,
       blocks: flattenAst(doc.nodes),
       comments: doc.comments || [],
+      wallpaper: doc.wallpaper || 'none',
       role
     })
   } catch (e) {
@@ -113,6 +116,9 @@ router.patch('/documents/:id/content', requireAuth, async (req, res, next) => {
     }
     if (Array.isArray(req.body.comments)) {
       doc.comments = sanitizeComments(req.body.comments)
+    }
+    if (typeof req.body.wallpaper === 'string' && WALLPAPERS.includes(req.body.wallpaper)) {
+      doc.wallpaper = req.body.wallpaper
     }
     await doc.save()
     res.json({ _id: doc._id, revision: doc.revision })

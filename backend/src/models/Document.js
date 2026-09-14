@@ -11,6 +11,7 @@ const documentSchema = new mongoose.Schema(
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     nodes: { type: [astNodeSchema], default: [] },
     comments: { type: [commentSchema], default: [] },
+    wallpaper: { type: String, enum: ['none', 'wall-01', 'wall-02', 'wall-03', 'wall-04', 'wall-05', 'wall-06'], default: 'none' },
     revision: { type: Number, default: 0 },
     lastSavedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
