@@ -2573,16 +2573,25 @@ body.dragging-active {
   }
 
   .hero {
-    padding-top: 64px;
+    padding: 64px 16px 36px;
   }
 
   .feature-grid {
     grid-template-columns: 1fr;
   }
 
+  .features {
+    padding: 64px 16px;
+  }
+
+  .features-head {
+    margin-bottom: 40px;
+  }
+
   .stats-inner {
     grid-template-columns: 1fr 1fr;
     padding: 40px 16px;
+    gap: 24px;
   }
 
   .cta {
@@ -2610,10 +2619,11 @@ body.dragging-active {
 /* Auth pages */
 .auth-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 24px 16px;
   background: var(--bg);
 }
 
@@ -2623,7 +2633,7 @@ body.dragging-active {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 24px;
-  padding: 48px 40px 40px;
+  padding: 36px 28px 32px;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.04),
     0 8px 16px rgba(0, 0, 0, 0.06),
@@ -2819,6 +2829,16 @@ body.dragging-active {
 .auth-swatch.active {
   border-color: var(--text);
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+}
+
+@media (max-width: 480px) {
+  .auth-input {
+    font-size: 16px;
+  }
+
+  .join-title {
+    font-size: 34px;
+  }
 }
 
 .join-title {
