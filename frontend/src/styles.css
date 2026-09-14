@@ -4770,6 +4770,9 @@ h3.version-compare-heading {
     max-height: none;
     border-radius: 0;
     border: none;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+    -webkit-overflow-scrolling: touch;
   }
 
   .search-dialog {
@@ -4785,8 +4788,10 @@ h3.version-compare-heading {
     top: auto;
     left: 8px;
     right: 8px;
-    bottom: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
     max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
