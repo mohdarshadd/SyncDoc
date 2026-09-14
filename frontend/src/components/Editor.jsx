@@ -105,7 +105,11 @@ export default function Editor() {
     setSaving(true)
     const result = await sync.saveNow()
     setSaving(false)
-    pushToast(result.saved ? 'Document saved' : 'Failed to save', result.saved ? 'ok' : 'error')
+    if (result.saved) {
+      pushToast('Document saved', 'ok')
+    } else {
+      pushToast(result.reason ? `Failed to save: ${result.reason}` : 'Failed to save', 'error')
+    }
   }
 
   function handleAddBlock(type, afterId = null) {
