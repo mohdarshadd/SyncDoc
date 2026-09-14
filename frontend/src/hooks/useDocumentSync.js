@@ -450,38 +450,6 @@ export function useDocumentSync(docId, user) {
     arr.toArray().forEach((m, i) => m.set('order', i))
   }
 
-  function saveNow() {
-    clearTimeout(fallbackSaveTimerRef.current)
-    const ydoc = ydocRef.current
-    if (!ydoc) return Promise.resolve({ saved: false, reason: 'no-ydoc' })
-    try {
-      const payload = {
-        title: String(ydoc.getMap('meta').get('title') ?? 'Untitled'),
-        blocks: dedupeBlocks(snapshotFromYArray(ydoc.getArray('blocks')).map((b) => ({
-          id: b.id,
-          type: b.type,
-          text: b.text || '',
-          lang: b.lang || null,
-          checked: !!b.checked,
-          open: b.open !== false,
-          collapsed: !!b.collapsed,
-          attrs: { marks: Array.isArray(b.marks) ? b.marks : [] },
-          parentId: b.parentId || null,
-          order: b.order
-        }))),
-        comments: commentsFromYArray(ydoc.getArray('comments'))
-      }
-      return saveDocumentContent(docId, payload)
-        .then(() => {
-          setSavedAt(Date.now())
-          return { saved: true }
-        })
-        .catch((e) => ({ saved: false, reason: String(e?.message || e) }))
-    } catch (e) {
-      return Promise.resolve({ saved: false, reason: String(e?.message || e) })
-    }
-  }
-
   window.__syncDebug = () => {
       const ydoc = ydocRef.current
       return {
@@ -493,5 +461,5 @@ export function useDocumentSync(docId, user) {
       }
     }
 
-  return { status, title, blocks, comments, users, myClientId, docRole, savedAt, saveNow, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
+  return { status, title, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }
