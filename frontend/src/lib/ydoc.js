@@ -6,9 +6,10 @@ function mapFromObject(obj) {
   return m
 }
 
-export function buildYdoc({ title = 'Untitled', blocks = [], comments = [] } = {}) {
+export function buildYdoc({ title = 'Untitled', blocks = [], comments = [], wallpaper = 'none' } = {}) {
   const ydoc = new Y.Doc()
   ydoc.getMap('meta').set('title', title)
+  ydoc.getMap('meta').set('wallpaper', wallpaper)
 
   const items = blocks.map((b) => {
     const attrs = { ...(b.attrs || {}) }

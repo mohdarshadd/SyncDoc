@@ -791,6 +791,119 @@ textarea:focus,
   flex-direction: column;
 }
 
+/* Wallpaper background */
+.editor.has-wallpaper {
+  position: relative;
+  background: var(--bg);
+}
+
+.doc-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(22px) brightness(0.45);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+[data-theme='light'] .doc-wallpaper {
+  filter: blur(22px) brightness(1.15);
+}
+
+.editor.has-wallpaper .editor-header,
+.editor.has-wallpaper .editor-body,
+.editor.has-wallpaper .editor-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.editor.has-wallpaper .blocks {
+  background: color-mix(in srgb, var(--bg) 42%, transparent);
+  border-radius: 14px;
+  padding: 10px 16px;
+}
+
+/* Wallpaper picker */
+.wallpaper-picker {
+  position: relative;
+}
+
+.wallpaper-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 224px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallpaper-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+
+.wallpaper-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.wallpaper-opt:hover {
+  background: var(--panel-2);
+}
+
+.wallpaper-opt.active {
+  outline: 1px solid var(--accent);
+}
+
+.wallpaper-swatch {
+  width: 34px;
+  height: 24px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--panel-2);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.wallpaper-swatch-default {
+  background: var(--bg);
+}
+
+.wallpaper-name {
+  font-weight: 500;
+}
+
 .editor-header {
   display: flex;
   align-items: center;

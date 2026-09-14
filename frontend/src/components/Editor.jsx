@@ -22,6 +22,7 @@ import { extractMentionIds } from '../lib/comments'
 import { buildEditorNav } from '../lib/editorMenu'
 import useMediaQuery from '../hooks/useMediaQuery'
 import { friendlyStatus, formatSavedAt, typingSummary, typers, viewerCountLabel } from '../lib/presence'
+import WallpaperPicker, { wallpaperById } from './WallpaperPicker'
 
 export default function Editor() {
   const { docId } = useParams()
@@ -140,7 +141,14 @@ export default function Editor() {
   }, [search])
 
   return (
-    <div className="editor">
+    <div className={`editor ${sync.wallpaper && sync.wallpaper !== 'none' ? 'has-wallpaper' : ''}`}>
+      {sync.wallpaper && sync.wallpaper !== 'none' && (
+        <div
+          className="doc-wallpaper"
+          style={{ backgroundImage: `url(${wallpaperById(sync.wallpaper)?.src || ''})` }}
+          aria-hidden="true"
+        />
+      )}
       <header className="editor-header">
         {isMobile ? (
           <>
@@ -149,6 +157,7 @@ export default function Editor() {
             <span className="header-spacer" />
             <OverflowMenu items={mobileNav} ariaLabel="More actions" />
             <ThemeToggle />
+            <WallpaperPicker value={sync.wallpaper} onSelect={sync.setWallpaper} />
             <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
               <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
                 {(user?.name || 'U').charAt(0).toUpperCase()}
@@ -186,6 +195,7 @@ export default function Editor() {
               <button className="btn btn-ghost" onClick={() => openExport(docId, 'pdf', 'document')} title="Export as PDF" aria-label="Export as PDF">PDF</button>
             </div>
             <ThemeToggle />
+            <WallpaperPicker value={sync.wallpaper} onSelect={sync.setWallpaper} />
             <button className="btn btn-ghost profile-btn-header" onClick={() => navigate('/profile')} title="Profile">
               <span className="profile-btn-avatar" style={{ background: user?.color || '#2997ff' }}>
                 {(user?.name || 'U').charAt(0).toUpperCase()}
