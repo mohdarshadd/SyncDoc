@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getProfile, updateProfile, changePassword } from '../api'
+import { getProfile, updateProfile, changePassword, logout } from '../api'
 import { useAuth } from '../contexts/AuthContext'
 import { pushToast } from '../lib/toast'
 
 const COLORS = ['#2997ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff453a', '#64d2ff', '#ffd60a', '#ff375f', '#ac8e68', '#8e8e93']
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, logoutUser } = useAuth()
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
@@ -57,6 +57,16 @@ export default function ProfilePage() {
     } finally {
       setChangingPassword(false)
     }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } catch {
+      // clear locally even if the network call fails
+    }
+    logoutUser()
+    setTimeout(() => navigate('/', { replace: true }), 0)
   }
 
   return (
@@ -163,6 +173,9 @@ export default function ProfilePage() {
         <div className="profile-card profile-danger">
           <h2 className="profile-section-title">Account</h2>
           <p className="profile-info">Signed in as {user?.email}</p>
+          <button className="profile-btn profile-btn-danger" onClick={handleLogout}>
+            Log out
+          </button>
         </div>
       </div>
     </div>
