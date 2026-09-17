@@ -139,7 +139,6 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   }
 
   const TYPING_TYPES = ['checklist', 'select', 'toggle', 'list']
-  const skipNextEnterRef = useRef(false)
 
   function addBelow() {
     const nextType = TYPING_TYPES.includes(block.type) && onAddAfterType ? block.type : null
@@ -204,10 +203,6 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
     if (e.key === 'Enter' && !slashState.active) {
       e.preventDefault()
-      if (skipNextEnterRef.current) {
-        skipNextEnterRef.current = false
-        return
-      }
       addBelow()
       return
     }
@@ -252,7 +247,6 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
   function handleInput(e) {
     const value = e.target.value
-    skipNextEnterRef.current = false
     onTextChange(block.id, value)
     autoGrow()
 
@@ -274,7 +268,6 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       onTextChange(block.id, '')
     }
     onChangeBlockType(block.id, type)
-    skipNextEnterRef.current = true
     setSlashState({ active: false, query: '' })
     requestAnimationFrame(() => el?.focus())
   }

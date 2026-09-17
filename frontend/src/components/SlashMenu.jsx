@@ -41,9 +41,11 @@ export default function SlashMenu({ query, onSelect, onClose }) {
         setActiveIndex((i) => (i - 1 + filtered.length) % filtered.length)
       } else if (e.key === 'Enter') {
         e.preventDefault()
+        e.stopPropagation()
         if (filtered[activeIndex]) onSelect(filtered[activeIndex].type)
       } else if (e.key === 'Escape') {
         e.preventDefault()
+        e.stopPropagation()
         onClose()
       }
     }
