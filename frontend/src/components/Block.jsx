@@ -558,7 +558,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           )}
           <textarea
             ref={ref}
-            rows={block.type === 'heading' ? 1 : 2}
+            rows={['heading', 'checklist', 'select'].includes(block.type) ? 1 : 2}
             defaultValue={block.text}
             placeholder={placeholderFor(block.type)}
             spellCheck={false}
