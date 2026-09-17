@@ -2665,6 +2665,23 @@ body.dragging-active {
   color: var(--muted);
   font-size: 13px;
   letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-report a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.footer-report a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 [data-reveal] {

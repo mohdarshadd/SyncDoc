@@ -24,7 +24,11 @@ export default function Footer() {
         ))}
       </div>
       <div className="footer-bottom">
-        © 2026 SyncDoc. Built with care and an open source license.
+        <span>© 2026 SyncDoc. Built with care and an open source license.</span>
+        <span className="footer-report">
+          Report a bug:{' '}
+          <a href="mailto:mohdarshad1034@gmail.com?subject=SyncDoc%20bug%20report">mohdarshad1034@gmail.com</a>
+        </span>
       </div>
     </footer>
   )
