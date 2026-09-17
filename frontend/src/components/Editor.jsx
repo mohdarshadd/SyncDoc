@@ -143,11 +143,12 @@ export default function Editor() {
   return (
     <div className={`editor ${sync.wallpaper && sync.wallpaper !== 'none' ? 'has-wallpaper' : ''}`}>
       {sync.wallpaper && sync.wallpaper !== 'none' && (
-        <div
-          className="doc-wallpaper"
-          style={{ backgroundImage: `url(${wallpaperById(sync.wallpaper)?.src || ''})` }}
-          aria-hidden="true"
-        />
+        <div className="doc-wallpaper" aria-hidden="true">
+          <div
+            className="doc-wallpaper-img"
+            style={{ backgroundImage: `url(${wallpaperById(sync.wallpaper)?.src || ''})` }}
+          />
+        </div>
       )}
       <header className="editor-header">
         {isMobile ? (

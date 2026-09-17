@@ -810,16 +810,21 @@ textarea:focus,
   position: fixed;
   inset: 0;
   z-index: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(22px) brightness(0.45);
-  transform: scale(1.08);
+  overflow: hidden;
   pointer-events: none;
 }
 
-[data-theme='light'] .doc-wallpaper {
-  filter: blur(22px) brightness(1.15);
+.doc-wallpaper-img {
+  position: absolute;
+  inset: -48px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(14px) brightness(0.45);
+}
+
+[data-theme='light'] .doc-wallpaper-img {
+  filter: blur(14px) brightness(1.15);
 }
 
 .editor.has-wallpaper .editor-body,
