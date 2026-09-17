@@ -51,6 +51,8 @@ function nodeToHtml(node) {
     }
     case 'checklist':
       return `<p><input type="checkbox"${node.checked ? ' checked' : ''} disabled> <span${node.checked ? ' style="text-decoration:line-through"' : ''}>${text}</span></p>`
+    case 'select':
+      return `<p><input type="radio"${node.checked ? ' checked' : ''} disabled> <span>${text}</span></p>`
     case 'toggle':
       return `<details${node.open === false ? '' : ' open'}><summary>${text}</summary></details>`
     case 'image': {

@@ -1327,7 +1327,8 @@ textarea:focus,
 
 .block-check,
 .block-caret,
-.block-bullet {
+.block-bullet,
+.block-radio {
   flex-shrink: 0;
   width: 22px;
   height: 28px;
@@ -1406,6 +1407,32 @@ textarea:focus,
 .block-check.checked rect {
   fill: var(--accent);
   stroke: var(--accent);
+}
+
+.block-radio {
+  color: var(--border);
+  cursor: pointer;
+}
+
+.block-radio .radio-dot {
+  opacity: 0;
+  transform: scale(0.4);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.12s, transform 0.15s;
+}
+
+.block-radio:hover {
+  color: var(--text);
+}
+
+.block-radio.checked {
+  color: var(--accent);
+}
+
+.block-radio.checked .radio-dot {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .block-checkbox .block-textarea-wrap textarea,
@@ -4659,6 +4686,29 @@ h3.version-compare-heading {
 .version-compare-checkbox.checked {
   background: var(--accent);
   border-color: var(--accent);
+}
+
+.version-compare-radio {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  margin-top: 3px;
+  position: relative;
+}
+
+.version-compare-radio.checked {
+  border-color: var(--accent);
+}
+
+.version-compare-radio.checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .version-compare-checked-text {

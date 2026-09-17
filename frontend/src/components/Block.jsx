@@ -46,6 +46,7 @@ const TYPE_CLASS = {
   quote: 'block-quote',
   list: 'block-list',
   checklist: 'block-checkbox',
+  select: 'block-select',
   toggle: 'block-toggle',
   divider: 'block-divider',
   image: 'block-image'
@@ -63,6 +64,8 @@ function placeholderFor(type) {
       return 'List item...'
     case 'checklist':
       return 'To-do...'
+    case 'select':
+      return 'Option...'
     case 'toggle':
       return 'Toggle...'
     default:
@@ -70,7 +73,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onTyping, onNotifyTyping, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch, comments = [], me, onAddComment, onResolveComment, onDeleteComment }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onTyping, onNotifyTyping, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onSelectChoice, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch, comments = [], me, onAddComment, onResolveComment, onDeleteComment }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const depth = block.depth || 0
@@ -135,7 +138,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     }
   }
 
-  const TYPING_TYPES = ['checklist', 'toggle', 'list']
+  const TYPING_TYPES = ['checklist', 'select', 'toggle', 'list']
   const skipNextEnterRef = useRef(false)
 
   function addBelow() {
@@ -203,9 +206,10 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
       })
     }
 
-    if (block.type === 'checklist' && e.key === ' ' && !block.text) {
+    if ((block.type === 'checklist' || block.type === 'select') && e.key === ' ' && !block.text) {
       e.preventDefault()
-      onToggleChecked(block.id)
+      if (block.type === 'select') onSelectChoice(block.id)
+      else onToggleChecked(block.id)
       return
     }
 
@@ -313,6 +317,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
     else if (action === 'expand') onToggleCollapsed(block.id)
     else if (action === 'delete') onDelete(block.id)
     else if (block.type === 'checklist' && action === 'toggle-check') onToggleChecked(block.id)
+    else if (block.type === 'select' && action === 'select-choice') onSelectChoice(block.id)
   }
 
   function onHandlePointerDown(e) {    if (e.button !== undefined && e.button !== 0) return
@@ -501,6 +506,21 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             </svg>
           </button>
         )}
+        {block.type === 'select' && (
+          <button
+            type="button"
+            className={`block-radio ${block.checked ? 'checked' : ''}`}
+            onClick={() => onSelectChoice(block.id)}
+            aria-label={block.checked ? 'Deselect option' : 'Select option'}
+            aria-pressed={block.checked}
+            title={block.checked ? 'Deselect option' : 'Select option'}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle className="radio-ring" cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+              <circle className="radio-dot" cx="8" cy="8" r="3.5" fill="currentColor" />
+            </svg>
+          </button>
+        )}
         {block.type === 'list' && (
           <span className="block-bullet" aria-hidden="true">•</span>
         )}
@@ -586,6 +606,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
           collapsed={block.collapsed}
           hideable={block.hasChildren}
           isChecklist={block.type === 'checklist'}
+          isSelect={block.type === 'select'}
           isChecked={block.checked}
           onAction={handleContextAction}
           onClose={() => setMenuOpen(false)}
@@ -595,7 +616,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
   )
 }
 
-function BlockContextMenu({ x, y, collapsed, hideable, isChecklist, isChecked, onAction, onClose }) {
+function BlockContextMenu({ x, y, collapsed, hideable, isChecklist, isSelect, isChecked, onAction, onClose }) {
   const refMenu = useRef(null)
   useEffect(() => {
     const onDown = (e) => {
@@ -620,6 +641,11 @@ function BlockContextMenu({ x, y, collapsed, hideable, isChecklist, isChecked, o
       {isChecklist && (
         <button type="button" role="menuitem" onClick={() => onAction('toggle-check')}>
           {isChecked ? 'Mark as incomplete' : 'Mark as complete'}
+        </button>
+      )}
+      {isSelect && (
+        <button type="button" role="menuitem" onClick={() => onAction('select-choice')}>
+          {isChecked ? 'Clear selection' : 'Select this option'}
         </button>
       )}
       <button type="button" role="menuitem" className="danger" onClick={() => onAction('delete')}>

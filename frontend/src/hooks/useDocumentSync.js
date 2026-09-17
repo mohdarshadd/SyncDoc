@@ -271,6 +271,22 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function selectBlockChoice(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      let selected = false
+      arr.forEach((m) => {
+        if (m.get('id') === id && m.get('type') === 'select') selected = !!m.get('checked')
+      })
+      arr.forEach((m) => {
+        if (m.get('type') !== 'select') return
+        m.set('checked', m.get('id') === id ? !selected : false)
+      })
+    })
+  }
+
   function toggleBlockOpen(id) {
     const ydoc = ydocRef.current
     if (!ydoc) return
@@ -471,5 +487,5 @@ export function useDocumentSync(docId, user) {
       }
     }
 
-  return { status, title, wallpaper, setWallpaper, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
+  return { status, title, wallpaper, setWallpaper, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, selectBlockChoice, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
 }

@@ -7,6 +7,8 @@ const astNodeSchema = new Schema(
     type: { type: String, enum: NODE_TYPES, required: true },
     text: { type: String, default: '' },
     lang: { type: String, default: null },
+    checked: { type: Boolean, default: false },
+    open: { type: Boolean, default: true },
     attrs: { type: Schema.Types.Mixed, default: () => ({}) },
     parentId: { type: String, default: null },
     order: { type: Number, default: 0 }

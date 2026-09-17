@@ -280,6 +280,7 @@ export default function Editor() {
                 onReorder={sync.reorderBlock}
                 onChangeBlockType={sync.changeBlockType}
                 onToggleChecked={sync.toggleBlockChecked}
+                onSelectChoice={sync.selectBlockChoice}
                 onToggleOpen={sync.toggleBlockOpen}
                 onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}

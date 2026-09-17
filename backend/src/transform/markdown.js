@@ -130,6 +130,9 @@ function astToMarkdown(nodes) {
         case 'checklist':
           lines.push(`- [${node.checked ? 'x' : ' '}] ${richText(node.text, node)}`)
           break
+        case 'select':
+          lines.push(`- (${node.checked ? 'x' : ' '}) ${richText(node.text, node)}`)
+          break
         case 'toggle':
           lines.push(`> ▸ ${richText(node.text, node)}`)
           break

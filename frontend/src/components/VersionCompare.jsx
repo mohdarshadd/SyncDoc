@@ -198,6 +198,14 @@ function renderBlock(row) {
   if (type === 'divider') {
     return <hr className="version-compare-block version-compare-divider" />
   }
+  if (type === 'select') {
+    return (
+      <div className="version-compare-block version-compare-check">
+        <span className={`version-compare-radio ${block.checked ? 'checked' : ''}`} />
+        <span>{delta ? <DeltaText segments={delta} /> : text || '\u00A0'}</span>
+      </div>
+    )
+  }
   if (type === 'checklist' || type === 'toggle') {
     return (
       <div className="version-compare-block version-compare-check">
