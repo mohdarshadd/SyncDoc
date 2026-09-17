@@ -29,6 +29,26 @@ function dedupeBlocks(blocks) {
   return Array.from(map.values())
 }
 
+function subtreeEndIndex(list, rootId) {
+  const byId = new Map(list.map((m) => [m.get('id'), m]))
+  const isDescendant = (m) => {
+    let parentId = m.get('parentId')
+    const seen = new Set()
+    while (parentId != null && !seen.has(parentId)) {
+      if (parentId === rootId) return true
+      seen.add(parentId)
+      const p = byId.get(parentId)
+      parentId = p ? p.get('parentId') : null
+    }
+    return false
+  }
+  let end = -1
+  list.forEach((m, i) => {
+    if (m.get('id') === rootId || isDescendant(m)) end = i
+  })
+  return end
+}
+
 export function useDocumentSync(docId, user) {
   const ydocRef = useRef(null)
   const providerRef = useRef(null)
@@ -229,6 +249,11 @@ export function useDocumentSync(docId, user) {
       }
       const insertIndex = Math.min(idx, arr.length)
       const id = uid()
+      let parentId = null
+      if (afterId) {
+        const ref = existing.find((b) => b.get('id') === afterId)
+        if (ref) parentId = ref.get('parentId') || null
+      }
       const block = new Y.Map()
       block.set('id', id)
       block.set('type', type)
@@ -236,7 +261,7 @@ export function useDocumentSync(docId, user) {
       block.set('lang', type === 'code' ? 'text' : null)
       block.set('checked', false)
       block.set('open', true)
-      block.set('parentId', null)
+      block.set('parentId', parentId)
       block.set('order', insertIndex)
       existing.forEach((m) => {
         if (m.get('order') >= insertIndex) m.set('order', m.get('order') + 1)
@@ -267,6 +292,22 @@ export function useDocumentSync(docId, user) {
     ydoc.transact(() => {
       ydoc.getArray('blocks').forEach((m) => {
         if (m.get('id') === id) m.set('checked', !m.get('checked'))
+      })
+    })
+  }
+
+  function selectBlockChoice(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      let selected = false
+      arr.forEach((m) => {
+        if (m.get('id') === id && m.get('type') === 'select') selected = !!m.get('checked')
+      })
+      arr.forEach((m) => {
+        if (m.get('type') !== 'select') return
+        m.set('checked', m.get('id') === id ? !selected : false)
       })
     })
   }
@@ -438,6 +479,71 @@ export function useDocumentSync(docId, user) {
     })
   }
 
+  function indentBlock(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      const list = arr.toArray()
+      const idx = list.findIndex((m) => m.get('id') === id)
+      if (idx <= 0) return
+      const current = list[idx]
+      const prev = list[idx - 1]
+      if (prev.get('type') === 'code' || current.get('type') === 'code') return
+      if (current.get('parentId') === prev.get('id')) return
+      const byId = new Map(list.map((m) => [m.get('id'), m]))
+      const depthOf = (m) => {
+        let d = 0
+        let p = m.get('parentId')
+        const guard = new Set()
+        while (p != null && !guard.has(p)) {
+          guard.add(p)
+          d += 1
+          const pm = byId.get(p)
+          p = pm ? pm.get('parentId') : null
+        }
+        return d
+      }
+      let walk = prev.get('parentId')
+      const seen = new Set()
+      while (walk != null && !seen.has(walk)) {
+        if (walk === id) return
+        seen.add(walk)
+        const pm = byId.get(walk)
+        walk = pm ? pm.get('parentId') : null
+      }
+      if (depthOf(prev) >= 8) return
+      current.set('parentId', prev.get('id'))
+    })
+  }
+
+  function outdentBlock(id) {
+    const ydoc = ydocRef.current
+    if (!ydoc) return
+    ydoc.transact(() => {
+      const arr = ydoc.getArray('blocks')
+      const list = arr.toArray()
+      const idx = list.findIndex((m) => m.get('id') === id)
+      if (idx === -1) return
+      const current = list[idx]
+      const parentId = current.get('parentId')
+      if (!parentId) return
+      const parent = list.find((m) => m.get('id') === parentId)
+      current.set('parentId', parent ? (parent.get('parentId') || null) : null)
+      const ownEnd = subtreeEndIndex(list, id)
+      const parentEnd = subtreeEndIndex(list, parentId)
+      if (ownEnd < parentEnd) {
+        const slice = list.slice(idx, ownEnd + 1)
+        const rest = [...list.slice(0, idx), ...list.slice(ownEnd + 1)]
+        rest.splice(parentEnd + 1 - slice.length, 0, ...slice)
+        const fresh = rest.map((m) => cloneMap(m))
+        arr.delete(0, arr.length)
+        arr.insert(0, fresh)
+        refreshOrder(arr)
+      }
+    })
+  }
+
   function updateTitle(value) {
     const ydoc = ydocRef.current
     if (!ydoc) return
@@ -471,5 +577,5 @@ export function useDocumentSync(docId, user) {
       }
     }
 
-  return { status, title, wallpaper, setWallpaper, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, addComment, resolveComment, deleteComment }
+  return { status, title, wallpaper, setWallpaper, blocks, comments, users, myClientId, docRole, savedAt, updateBlockText, addBlock, changeBlockType, toggleBlockChecked, selectBlockChoice, toggleBlockOpen, toggleBlockCollapsed, toggleBlockMark, clearBlockMarks, setCursor, setTyping, notifyTyping, updateTitle, deleteBlock, moveBlock, reorderBlock, indentBlock, outdentBlock, addComment, resolveComment, deleteComment }
 }

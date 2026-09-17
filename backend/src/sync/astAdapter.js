@@ -32,6 +32,8 @@ function astToYdoc(doc) {
       type: f.type,
       text: f.text || '',
       lang: f.lang || null,
+      checked: !!f.checked,
+      open: f.open !== false,
       parentId: f.parentId || null,
       order: f.order,
       collapsed: !!f.collapsed
@@ -58,6 +60,8 @@ function ydocToAst(ydoc) {
       type: m.get('type'),
       text: m.get('text') || '',
       lang: m.get('lang') || null,
+      checked: !!m.get('checked'),
+      open: m.get('open') !== false,
       attrs: attrs instanceof Y.Map ? Object.fromEntries(attrs.entries()) : attrs || {},
       parentId: m.get('parentId') || null,
       order: m.get('order'),

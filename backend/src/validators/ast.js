@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 
-const NODE_TYPES = ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle']
+const NODE_TYPES = ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle', 'select']
 const MAX_DEPTH = 20
 
 const genId = () => crypto.randomUUID()

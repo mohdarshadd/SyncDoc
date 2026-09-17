@@ -14,7 +14,7 @@ export function buildBlockTree(blocks) {
     while (parent && !seen.has(parent.id)) {
       seen.add(parent.id)
       depth += 1
-      if (parent.collapsed) hiddenBy += 1
+      if (parent.collapsed || (parent.type === 'toggle' && parent.open === false)) hiddenBy += 1
       parent = parent.parentId != null ? byId.get(parent.parentId) : null
     }
     depthOf.set(b.id, depth)
@@ -22,7 +22,8 @@ export function buildBlockTree(blocks) {
   }
 
   for (const b of blocks) {
-    if (!b.collapsed || !hasChildren.has(b.id)) continue
+    const hides = !!b.collapsed || (b.type === 'toggle' && b.open === false)
+    if (!hides || !hasChildren.has(b.id)) continue
     hasHiddenDescendants.add(b.id)
   }
 

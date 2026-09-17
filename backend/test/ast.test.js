@@ -124,7 +124,7 @@ test('flattened ids stay stable across normalize/round-trip', () => {
 })
 
 test('NODE_TYPES exposes the documented block types', () => {
-  for (const t of ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle']) {
+  for (const t of ['heading', 'paragraph', 'code', 'list', 'quote', 'image', 'divider', 'checklist', 'toggle', 'select']) {
     assert.ok(NODE_TYPES.includes(t))
   }
 })

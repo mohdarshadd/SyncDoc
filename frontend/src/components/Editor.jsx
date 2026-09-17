@@ -280,10 +280,13 @@ export default function Editor() {
                 onReorder={sync.reorderBlock}
                 onChangeBlockType={sync.changeBlockType}
                 onToggleChecked={sync.toggleBlockChecked}
+                onSelectChoice={sync.selectBlockChoice}
                 onToggleOpen={sync.toggleBlockOpen}
                 onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
+                onIndent={sync.indentBlock}
+                onOutdent={sync.outdentBlock}
                 comments={sync.comments}
                 me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color, clientId: sync.myClientId }}
                 onAddComment={sync.addComment}

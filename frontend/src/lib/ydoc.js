@@ -19,6 +19,8 @@ export function buildYdoc({ title = 'Untitled', blocks = [], comments = [], wall
       type: b.type,
       text: b.text || '',
       lang: b.lang || null,
+      checked: !!b.checked,
+      open: b.open !== false,
       parentId: b.parentId || null,
       order: b.order,
       collapsed: !!b.collapsed

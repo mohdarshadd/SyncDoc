@@ -30,6 +30,9 @@ function astToPdf(nodes) {
         case 'list':
           for (const child of node.children || []) doc.font('Helvetica').fontSize(11).text(`- ${child.text || ''}`)
           break
+        case 'select':
+          doc.font('Helvetica').fontSize(11).text(`${node.checked ? '(•)' : '( )'} ${node.text || ''}`)
+          break
         case 'divider':
           doc.moveDown()
           doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).stroke()

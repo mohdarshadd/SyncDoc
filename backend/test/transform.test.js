@@ -168,6 +168,25 @@ test('astToMarkdown renders checklist and toggle', () => {
   assert.ok(md.includes('▸ Fold'))
 })
 
+test('astToHtml renders single-choice select blocks as radios', () => {
+  const html = astToHtml([
+    { type: 'select', text: 'one', checked: true },
+    { type: 'select', text: 'two', checked: false }
+  ])
+  assert.ok(html.includes('type="radio"'))
+  assert.ok(html.includes('checked=""'))
+  assert.ok(html.includes('one'))
+})
+
+test('astToMarkdown renders single-choice select blocks', () => {
+  const md = astToMarkdown([
+    { type: 'select', text: 'one', checked: true },
+    { type: 'select', text: 'two', checked: false }
+  ])
+  assert.ok(md.includes('- (x) one'))
+  assert.ok(md.includes('- ( ) two'))
+})
+
 test('astToHtml renders rich-text marks', () => {
   const html = astToHtml([
     {

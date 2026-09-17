@@ -77,6 +77,12 @@ export default function VersionViewer({ docId, revision, onClose }) {
                     <span className={b.checked ? 'version-checked-text' : ''}>{b.text || '\u00A0'}</span>
                   </div>
                 )}
+                {b.type === 'select' && (
+                  <div className="version-block-list">
+                    <span className="version-check">{b.checked ? '◉' : '○'}</span>
+                    <span>{b.text || '\u00A0'}</span>
+                  </div>
+                )}
                 {b.type === 'divider' && <hr className="version-block-divider" />}
               </div>
             ))
