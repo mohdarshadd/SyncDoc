@@ -47,13 +47,19 @@ async function loadRoom(room, docId, userId) {
         const share = await Share.findOne({ document: docId, user: userId })
         if (!share) throw new Error('Access denied')
       }
-      const loaded = astToYdoc(doc ? { title: doc.title, nodes: doc.nodes } : { title: 'Untitled' })
-      const update = Y.encodeStateAsUpdate(loaded)
-      Y.applyUpdate(room.ydoc, update)
-      loaded.destroy()
+      if (doc.yjsState && doc.yjsState.length) {
+        Y.applyUpdate(room.ydoc, new Uint8Array(doc.yjsState))
+      } else {
+        const loaded = astToYdoc(doc ? { title: doc.title, nodes: doc.nodes, comments: doc.comments } : { title: 'Untitled' })
+        loaded.getMap('meta').set('wallpaper', doc.wallpaper || 'none')
+        Y.applyUpdate(room.ydoc, Y.encodeStateAsUpdate(loaded))
+        loaded.destroy()
+        schedulePersist(room, docId)
+      }
 
       room.ydoc.on('update', (update, origin) => {
         broadcastUpdate(room, update, origin)
+        schedulePersist(room, docId)
       })
 
       room.awareness = new awarenessProtocol.Awareness(room.ydoc)
@@ -61,6 +67,18 @@ async function loadRoom(room, docId, userId) {
     })()
   }
   return room.loadPromise
+}
+
+function schedulePersist(room, docId) {
+  clearTimeout(room.persistTimer)
+  room.persistTimer = setTimeout(async () => {
+    try {
+      const state = Y.encodeStateAsUpdate(room.ydoc)
+      await Document.updateOne({ _id: docId }, { $set: { yjsState: Buffer.from(state) } })
+    } catch (e) {
+      console.error(`[sync] persist failed ${docId}: ${e.message}`)
+    }
+  }, 1000)
 }
 
 function broadcastUpdate(room, update, origin) {
@@ -110,7 +128,8 @@ function handleConnection(ws, req) {
   let loaded = false
 
 const handleMessage = (ws, data) => {
-    const decoder = decoding.createDecoder(new Uint8Array(data))
+    const raw = new Uint8Array(data)
+    const decoder = decoding.createDecoder(raw)
     const messageType = decoding.readVarUint(decoder)
     const encoder = encoding.createEncoder()
     switch (messageType) {
