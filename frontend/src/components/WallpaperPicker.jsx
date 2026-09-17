@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useEffect, useRef } from 'react'
 
 export const WALLPAPERS = [
-  { id: 'wall-01', name: 'Aurora', src: '/wallpapers/wall-01.jpg' },
-  { id: 'wall-02', name: 'Mountain', src: '/wallpapers/wall-02.jpg' },
-  { id: 'wall-03', name: 'Ocean', src: '/wallpapers/wall-03.jpg' },
-  { id: 'wall-04', name: 'Forest', src: '/wallpapers/wall-04.jpg' },
-  { id: 'wall-05', name: 'Desert', src: '/wallpapers/wall-05.jpg' },
-  { id: 'wall-06', name: 'Night', src: '/wallpapers/wall-06.jpg' }
+  { id: 'wall-01', name: 'Spiderman #1', src: '/wallpapers/wall-01.jpg' },
+  { id: 'wall-02', name: 'Spiderman #2', src: '/wallpapers/wall-02.jpg' },
+  { id: 'wall-03', name: 'Energy Bust', src: '/wallpapers/wall-03.jpg' },
+  { id: 'wall-04', name: 'Minecraft', src: '/wallpapers/wall-04.jpg' },
+  { id: 'wall-05', name: 'Magical Space', src: '/wallpapers/wall-05.jpg' },
+  { id: 'wall-06', name: 'Night Soldier', src: '/wallpapers/wall-06.jpg' }
 ]
 
 export default function WallpaperPicker({ value = 'none', onSelect }) {
