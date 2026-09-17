@@ -285,6 +285,8 @@ export default function Editor() {
                 onToggleCollapsed={sync.toggleBlockCollapsed}
                 onToggleBlockMark={sync.toggleBlockMark}
                 onClearBlockMarks={sync.clearBlockMarks}
+                onIndent={sync.indentBlock}
+                onOutdent={sync.outdentBlock}
                 comments={sync.comments}
                 me={{ id: user?._id, name: user?.name || 'Anonymous', color: user?.color, clientId: sync.myClientId }}
                 onAddComment={sync.addComment}

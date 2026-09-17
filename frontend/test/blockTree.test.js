@@ -32,6 +32,28 @@ describe('buildBlockTree', () => {
     expect(tree.find((b) => b.id === 'd').hidden).toBe(false)
   })
 
+  it('hides descendants of a closed toggle', () => {
+    const tree = buildBlockTree([
+      block('t', null, { type: 'toggle', open: false }),
+      block('b', 't'),
+      block('c', 'b'),
+      block('d')
+    ])
+    expect(tree.find((b) => b.id === 't').hidden).toBe(false)
+    expect(tree.find((b) => b.id === 'b').hidden).toBe(true)
+    expect(tree.find((b) => b.id === 'c').hidden).toBe(true)
+    expect(tree.find((b) => b.id === 'd').hidden).toBe(false)
+    expect(tree.find((b) => b.id === 't').hasHiddenDescendants).toBe(true)
+  })
+
+  it('leaves descendants of an open toggle visible', () => {
+    const tree = buildBlockTree([
+      block('t', null, { type: 'toggle', open: true }),
+      block('b', 't')
+    ])
+    expect(tree.find((b) => b.id === 'b').hidden).toBe(false)
+  })
+
   it('still reports depth for hidden descendants', () => {
     const tree = buildBlockTree([
       block('a', null, { collapsed: true }),

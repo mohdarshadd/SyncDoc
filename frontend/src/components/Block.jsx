@@ -73,7 +73,7 @@ function placeholderFor(type) {
   }
 }
 
-export default function Block({ block, users, myClientId, onTextChange, onCursor, onTyping, onNotifyTyping, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onSelectChoice, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, searchQuery, blockMatches, activeMatch, comments = [], me, onAddComment, onResolveComment, onDeleteComment }) {
+export default function Block({ block, users, myClientId, onTextChange, onCursor, onTyping, onNotifyTyping, onDelete, onMove, onAddAfter, onAddAfterType, onReorder, onChangeBlockType, onToggleChecked, onSelectChoice, onToggleOpen, onToggleCollapsed, onToggleBlockMark, onClearBlockMarks, onIndent, onOutdent, searchQuery, blockMatches, activeMatch, comments = [], me, onAddComment, onResolveComment, onDeleteComment }) {
   const ref = useRef(null)
   const cls = TYPE_CLASS[block.type] || 'block-paragraph'
   const depth = block.depth || 0
@@ -165,6 +165,22 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
 
     if (mod && e.key === 's') {
       e.preventDefault()
+      return
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      if (block.type === 'code') {
+        const start = el.selectionStart
+        const end = el.selectionEnd
+        const next = `${el.value.slice(0, start)}  ${el.value.slice(end)}`
+        el.value = next
+        onTextChange(block.id, next)
+        requestAnimationFrame(() => el.setSelectionRange(start + 2, start + 2))
+        return
+      }
+      if (e.shiftKey) onOutdent?.(block.id)
+      else onIndent?.(block.id)
       return
     }
 
@@ -454,7 +470,7 @@ export default function Block({ block, users, myClientId, onTextChange, onCursor
             <span className="block-comment-count">{openComments.length}</span>
           </button>
         )}
-        {block.hasChildren && (
+        {block.hasChildren && block.type !== 'toggle' && (
           <button
             type="button"
             className={`block-collapse-caret ${block.collapsed ? 'collapsed' : ''}`}
