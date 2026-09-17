@@ -73,7 +73,7 @@ router.delete('/documents/:docId/shares/:shareId', requireAuth, async (req, res,
 router.get('/shared-with-me', requireAuth, async (req, res, next) => {
   try {
     const shares = await Share.find({ user: req.userId })
-      .populate('document', 'title author updatedAt revision')
+      .populate('document', 'title author updatedAt createdAt revision')
       .populate('sharedBy', 'name email')
     const docs = shares
       .filter((s) => s.document)
