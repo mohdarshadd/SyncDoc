@@ -1453,7 +1453,7 @@ textarea:focus,
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.03em;
-  padding: 3px 2px;
+  padding: 3px 2px 0;
   line-height: 1.3;
 }
 
