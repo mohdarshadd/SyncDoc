@@ -56,6 +56,7 @@ export default function DocumentBrowser() {
     })
     .sort((a, b) => {
       if (sortBy === 'title') return a.title.localeCompare(b.title)
+      if (sortBy === 'created') return new Date(b.createdAt) - new Date(a.createdAt)
       return new Date(b.updatedAt) - new Date(a.updatedAt)
     })
 
@@ -121,7 +122,10 @@ export default function DocumentBrowser() {
           <div className="doc-meta">
             <span>{d.author || 'Unknown'}</span>
             {isShared && <span className="badge">{d.role === 'editor' ? 'Can edit' : 'Can view'}</span>}
-            <span>{new Date(d.updatedAt).toLocaleDateString()}</span>
+            <span title={sortBy === 'created' ? 'Created' : 'Last updated'}>
+              {sortBy === 'created' ? 'Created ' : 'Updated '}
+              {new Date(sortBy === 'created' ? d.createdAt : d.updatedAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
         <div className="doc-card-actions" onClick={(e) => e.stopPropagation()}>
@@ -184,6 +188,13 @@ export default function DocumentBrowser() {
             onClick={() => setSortBy('recent')}
           >
             Recent
+          </button>
+          <button
+            type="button"
+            className={`seg-btn ${sortBy === 'created' ? 'active' : ''}`}
+            onClick={() => setSortBy('created')}
+          >
+            Created
           </button>
           <button
             type="button"

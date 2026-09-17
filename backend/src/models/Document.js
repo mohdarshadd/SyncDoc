@@ -14,6 +14,7 @@ const documentSchema = new mongoose.Schema(
     wallpaper: { type: String, enum: ['none', 'wall-01', 'wall-02', 'wall-03', 'wall-04', 'wall-05', 'wall-06'], default: 'none' },
     revision: { type: Number, default: 0 },
     lastSavedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    yjsState: { type: Buffer, default: null },
   },
   { timestamps: true }
 )

@@ -19,6 +19,7 @@ function toSummary(doc) {
     title: doc.title,
     author: doc.author,
     updatedAt: doc.updatedAt,
+    createdAt: doc.createdAt,
     revision: doc.revision,
     blockCount: doc.blockCount ?? 0
   }
@@ -45,7 +46,7 @@ router.get('/documents', requireAuth, async (req, res, next) => {
   try {
     const docs = await Document.find({ owner: req.userId })
       .sort({ updatedAt: -1 })
-      .select('title author updatedAt revision')
+      .select('title author updatedAt createdAt revision')
     res.json(docs.map(toSummary))
   } catch (e) {
     next(e)
